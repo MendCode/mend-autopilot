@@ -44,5 +44,5 @@
   <text x="1034" y="510" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="12" fill="#6B6B6B">guard refused a command</text>
   <path d="M 48 548 H 1232" stroke="#E2E2E2"/>
   <text x="48" y="580" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" fill="#3A3A3A">Most of the work is the wide green step, and the cheap model does all of it. The strong model only reads.</text>
-  <text x="48" y="606" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" fill="#6B6B6B">An item that cannot be proven stops at that step with its reason. Nothing is pushed or merged for you.</text>
+  <text x="48" y="606" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" fill="#6B6B6B">An item that cannot be proven stops at that step with its reason. A pull request opens for each item; nothing is merged for you.</text>
 </svg>

@@ -34,7 +34,7 @@ test('the planner prompt is read-only, names the implicit cases and asks for JSO
 
 test('the owner prompt points at the spec by path, scopes edits and requires a verified commit', () => {
   const prompt = buildPrompt('owner', { ...data, round: 1, feedback: null });
-  for (const rule of ['/fixture/worktree/.mend/evidence/sample/spec.md', 'Change only files matching the item editSet', 'never use git -C', 'Run the repository verification yourself', 'Leave no uncommitted changes', 'still commit what works']) {
+  for (const rule of ['/fixture/worktree/.mend/evidence/sample/spec.md', 'Change only files matching the item editSet', 'the editSet wins', 'status, progress, runtime', 'never use git -C', 'Run the repository verification yourself', 'Leave no uncommitted changes', 'still commit what works']) {
     assert.ok(prompt.includes(rule), rule);
   }
   assert.ok(!prompt.includes('fix round'));

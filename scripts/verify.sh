@@ -46,6 +46,7 @@ if [ "$mode" = full ]; then
 fi
 node build.mjs all && node build.mjs all --check || status=1
 node scripts/render-assets.mjs --check || status=1
+node scripts/compose-workflows.mjs --check || status=1
 if command -v mendcode >/dev/null 2>&1; then
   for package in dist/*/; do mendcode package check "$package" || status=1; done
 else

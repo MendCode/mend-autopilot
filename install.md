@@ -10,7 +10,6 @@ DONE WHEN:
 
 - `mendcode package list --json` lists `mend-autopilot-<harness>` as installed and enabled
 - on a Claude subscription, `claude plugin list` shows `mend-autopilot@mend-autopilot-local` enabled
-- the project the user confirmed ignores `.mend/` in git
 - the user has been told to run `/mend-setup` in a MendCode session, and on which model
 
 TODO:
@@ -18,7 +17,7 @@ TODO:
 - [ ] Check MendCode, Node, Python and git
 - [ ] Pick the package for the user's subscription
 - [ ] Get the source, build the package and install it, with the user's confirmation
-- [ ] Prepare the project the user confirms
+- [ ] Name the project it will work on
 - [ ] Report what was installed and the next command
 
 Never change the user's models, permission mode, trust settings or tier: mend-autopilot ships recipes for those, and applying one is always the user's step. Never edit shell startup files, never use sudo, and never push or merge anything.
@@ -93,15 +92,15 @@ Tell the user it can be turned off at any time with `claude plugin disable mend-
 
 Work out which project to prepare and lead with your best guess: the version control root of the folder the user is working in. Name it and let them correct it. If it is a home directory, a temp directory or holds no project, stop and ask where the project is.
 
-- Add `.mend/` to the project's `.gitignore` if it is not there yet. Show the line and add it once the user confirms. mend-autopilot keeps its items, worktrees and evidence cards in `.mend/`; none of it belongs in the project's history.
-- If the project has no verification skill (a skill under `.mendcode/skills/` that lists the commands proving the project works), say that the workflows need one and that the `create-verification` skill writes it in the user's first session. Don't write one now.
+- Nothing to change by hand: on the first request, the `mend-autopilot` skill finds the project's check commands, runs them, and ignores `.mend/` through `.git/info/exclude`, so no tracked file changes. Say so.
+- If the project's own checks fail today, say that items cannot be proven until they pass.
 
 ## 6. Report
 
 Relay what actually happened: the package name and version that `mendcode package list --json` now shows, whether the Claude plugin is enabled, and whether `.gitignore` changed.
 
-Finish with the next step, which is the user's:
+Finish with how to use it, which is the user's:
 
-1. Open a MendCode session on a model of their subscription: a ChatGPT model for `codex`, a Claude model for `claude`, an OpenCode Go model for `opencode-go`.
-2. Run `/mend-setup`. It changes nothing: it checks the engine, the tools and the install, proves the guard blocks a probe, and prints the recipe for their plan and the safety steps for them to apply.
-3. Describe a first item in `.mend/items/<id>.json` and run the `mend-lite` and `mend-lite-pr` workflows, as the [README](https://github.com/MendCode/mend-autopilot#quick-start) shows.
+1. Open a MendCode session in the project, on a model of their subscription: a ChatGPT model for `codex`, a Claude model for `claude`, an OpenCode Go model for `opencode-go`.
+2. Optionally run `/mend-setup` once. It changes nothing: it checks the engine, the tools and the install, proves the guard blocks a probe, and prints the recipe for their plan.
+3. Ask for a fix or a feature in plain words and say they want a pull request, e.g. "sign-in fails with capital letters in the email; fix it and open the PR". The `mend-autopilot` skill prepares the project, writes the items and starts one run per item; MendCode asks them to approve each start, and each item ends as an open pull request. Nothing is merged for them.

@@ -38,6 +38,7 @@ The names are the catalog's family aliases and follow the newest model of each f
 
 | Core step | In MendCode with Claude |
 |---|---|
+| Ask for a change | Plain words in a session: the `mend-autopilot` skill loads by itself, prepares the repo with `checks/setup-light.mjs`, writes the items and starts `mend` per item with the models in `autopilot.json`. `mend` = `mend-lite`, `mend-lite-pr`, then push and pull request (`publish=no` keeps it local). Not yet run on this harness. |
 | Light path, build and review | `/workflows run mend-lite repo=<absolute repo path> item=.mend/items/<id>.json pkg=<package dir> critic=claude-opus engine=claude model=<cheap model>`. Every agent of the run, the critic included, runs on the Claude Code engine. |
 | Light path, evidence card | `/workflows run mend-lite-pr repo=<absolute repo path> item=.mend/items/<id>.json pkg=<package dir> engine=claude auditor=claude-opus`. On a non-native engine the auditor model is required. |
 | Dispatch an owner (mend-mode §7) | `/workflows run mend-quality repo=<absolute repo path> item=.mend/items/<id>.json pkg=<package dir> critic=claude-opus engine=claude model=<cheap model>`. Agents on the Claude Code engine need the full tier and an exact model. Without it, use the other rows of §7. |

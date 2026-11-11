@@ -18,7 +18,9 @@ export function writeDiff({ worktree, baseSha, head, pathspec, diffPath }) {
 
 const IMPLICIT_CASES = 'concurrency and retries, boundaries, invalid input, other users and access, partial failure';
 // The integrity scan blocks any edit to the checks themselves, so nobody may plan or demand one.
-const GATES_FIXED = 'The repository\'s verification commands, check and test scripts, test runner configuration and CI files are fixed: never plan, make or demand a change to them. New tests must be found by the existing runner.';
+// Standing instructions (AGENTS.md, CLAUDE.md, a profile's prompt) reach the owner too; a rule to keep a status file would leave the edit set.
+export const STANDING_RULES = 'Your standing instructions (AGENTS.md, CLAUDE.md, profile or system prompts) still apply, but inside this worktree the editSet wins: skip any of them that asks you to create or update files outside it, such as status, progress, runtime, notes or changelog files, and say so in your final message.';
+const GATES_FIXED = 'The repository\'s verification commands, check and test scripts, test runner configuration and CI files are fixed: never plan, make or demand a change to them. New tests go in new test files the existing runner finds; never edit an existing test file, not even to add a test.';
 
 function itemBlock({ item, worktree, verificationCommands }) {
   return [
@@ -37,7 +39,7 @@ const builders = {
     const lines = [
       itemBlock(data),
       'Implementation spec: read ' + worktree + '/' + specPath + ' first and follow it. Where you think it is wrong, follow it anyway and say why in your final message.',
-      'Change only files matching the item editSet. ' + GATES_FIXED + ' Add or update the tests the spec names. cd into the worktree before every shell command; never use git -C.',
+      'Change only files matching the item editSet. ' + STANDING_RULES + ' ' + GATES_FIXED + ' Add or update the tests the spec names. cd into the worktree before every shell command; never use git -C.',
       'Run the repository verification yourself until it passes, then commit everything with one message that says what changed. Leave no uncommitted changes.',
       'The untracked .mend/ and .mendcode/ folders in the worktree are the workflow\'s setup and evidence: never delete, move, edit or commit them, even when git status lists them.',
     ];

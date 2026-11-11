@@ -1,0 +1,7 @@
+{
+  "critic": "opencode/gemini-4-carbon",
+  "auditor": "opencode/gemini-4-carbon",
+  "model": "opencode-go/deepseek-v4.1-flash",
+  "engine": null,
+  "note": "Without OpenCode Zen, pass critic and auditor opencode-go/gemini-4-argon."
+}

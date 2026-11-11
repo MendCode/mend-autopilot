@@ -31,6 +31,7 @@ Recipes set `main`, `subagent`, `workflow`, `plan` and `advisor`, and nothing el
 
 | Core step | In MendCode |
 |---|---|
+| Ask for a change | Plain words in a session: the `mend-autopilot` skill loads by itself, prepares the repo with `checks/setup-light.mjs`, writes the items and starts `mend` per item with the models in `autopilot.json`. `mend` = `mend-lite`, `mend-lite-pr`, then push and pull request (`publish=no` keeps it local). Run end to end with gpt-6-luna as the lead. |
 | Light path, build and review | `mend-lite` workflow: `/workflows run mend-lite repo=<absolute repo path> item=.mend/items/<id>.json pkg=<package dir> critic=gpt-6-astra model=gpt-6.1-terra`. Optional `planner`, `fixRounds` (default 1, at most 3) and `engine`. Ends `reviewed`, `draft` or `blocked`. |
 | Light path, evidence card | `mend-lite-pr` workflow: `/workflows run mend-lite-pr repo=<absolute repo path> item=.mend/items/<id>.json pkg=<package dir> auditor=gpt-6-astra`, after `mend-lite` reviewed the current head. Ends `merge-ready` or `blocked`. |
 | Dispatch an owner (mend-mode §7) | `mend-quality` workflow: `/workflows run mend-quality repo=<absolute repo path> item=.mend/items/<id>.json pkg=<package dir> critic=gpt-6-astra`. Without workflow tools, use the other rows of §7. |

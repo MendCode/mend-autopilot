@@ -1,0 +1,7 @@
+{
+  "critic": "claude-opus",
+  "auditor": "claude-opus",
+  "model": "claude-sonnet",
+  "engine": "claude",
+  "note": "On Claude Pro, pass model claude-haiku to spend less."
+}

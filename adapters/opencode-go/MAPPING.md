@@ -35,6 +35,7 @@ Gemini Carbon was on OpenCode Zen but not yet on the Go list when this adapter w
 
 | Core step | In MendCode |
 |---|---|
+| Ask for a change | Plain words in a session: the `mend-autopilot` skill loads by itself, prepares the repo with `checks/setup-light.mjs`, writes the items and starts `mend` per item with the models in `autopilot.json`. `mend` = `mend-lite`, `mend-lite-pr`, then push and pull request (`publish=no` keeps it local). Not yet run on this harness. |
 | Light path, build and review | `/workflows run mend-lite repo=<absolute repo path> item=.mend/items/<id>.json pkg=<package dir> critic=opencode/gemini-4-carbon model=opencode-go/deepseek-v4.1-flash` |
 | Light path, evidence card | `/workflows run mend-lite-pr repo=<absolute repo path> item=.mend/items/<id>.json pkg=<package dir> auditor=opencode/gemini-4-carbon` |
 | Full path | `mend-quality` and `mend-pr`, with the same `critic` and `model` arguments, as in the Codex adapter. |

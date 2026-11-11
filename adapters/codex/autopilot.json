@@ -1,0 +1,7 @@
+{
+  "critic": "gpt-6-astra",
+  "auditor": "gpt-6-astra",
+  "model": "gpt-6.1-terra",
+  "engine": null,
+  "note": "On ChatGPT 20, pass model gpt-6-luna instead."
+}

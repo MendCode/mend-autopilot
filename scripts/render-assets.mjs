@@ -90,7 +90,7 @@ function overview(t) {
   }).join('\n  ');
   const foot = `<path d="M 48 ${H - 92} H ${W - 48}" stroke="${t.rule}"/>
   ${text(48, H - 60, 'Most of the work is the wide green step, and the cheap model does all of it. The strong model only reads.', { size: 15, fill: t.text })}
-  ${text(48, H - 34, 'An item that cannot be proven stops at that step with its reason. Nothing is pushed or merged for you.', { size: 15, fill: t.muted })}`;
+  ${text(48, H - 34, 'An item that cannot be proven stops at that step with its reason. A pull request opens for each item; nothing is merged for you.', { size: 15, fill: t.muted })}`;
   return windowFrame(t, W, H, 'mend-autopilot: who does what', `  ${legend}\n  ${headers}\n  ${rows}\n  ${foot}`,
     'Six items, each a row of steps: spec by the strong model, the code by the cheap model, checks by programs, then review and audit by the strong model. Four reach merge-ready; one stops at review as a draft after two review rounds; one is blocked at the checks because the guard refused a command.');
 }
@@ -99,7 +99,7 @@ function overview(t) {
 function pipeline(t) {
   const W = 1280, H = 700;
   const lanes = [
-    ['You', 'write the item,', 'approve the merge'],
+    ['You', 'ask for the change,', 'merge the PR'],
     ['Strong model', 'specs and reviews,', 'never writes code'],
     ['Cheap model', 'does the work in', 'its own worktree'],
     ['Programs', 'decide what counts', 'as verified'],
@@ -133,7 +133,7 @@ function pipeline(t) {
   };
   const body = `  ${phase(1, 3, 'mend-lite')}
   ${phase(4, 5, 'mend-lite-pr')}${lanesSvg}
-  ${node(0, 0, ['item', 'goal, checks'])}
+  ${node(0, 0, ['your request', 'in plain words'])}
   ${node(1, 1, ['spec'])}
   ${node(2, 2, ['implement', 'and commit'], { stroke: t.sage, dashed: true })}
   ${node(3, 3, ['checks, scope', 'integrity'])}
@@ -141,7 +141,7 @@ function pipeline(t) {
   ${node(4, 3, ['checks again', 'red-green'])}
   ${node(4, 1, ['auditor', 'own session'])}
   ${node(5, 3, ['evidence card'], { stroke: t.teal, fill: t.teal })}
-  ${node(5, 0, ['approve', 'the merge'])}
+  ${node(5, 0, ['pull request', 'you merge'])}
   ${elbow(0, 0, 1, 1)}
   ${elbow(1, 1, 2, 2)}
   ${elbow(2, 2, 3, 3)}
@@ -155,7 +155,7 @@ function pipeline(t) {
   ${line(`M ${col(5)} ${top(3)} V ${bottom(0) + 1}`)}${head(col(5), bottom(0), 'up')}
   ${text(48, laneTop + 4 * laneH + 36, 'Any step can stop the item with its reason: blocked, or draft when its rounds are spent.', { size: 14, fill: t.muted })}`;
   return windowFrame(t, W, H, 'mend-autopilot: one item, one pull request', body,
-    'How one item becomes a pull request: you write the item; the strong model writes a spec; the cheap model implements and commits; programs run the checks, the scope check and the integrity scan; the strong model reviews and can send one fix round; on a clean checkout programs repeat the checks and the red-green test while an auditor drives the change in its own session; the evidence card is written; you approve the merge.');
+    'How one item becomes a pull request: you ask in plain words and the lead writes the item; the strong model writes a spec; the cheap model implements and commits; programs run the checks, the scope check and the integrity scan; the strong model reviews and can send one fix round; on a clean checkout programs repeat the checks and the red-green test while an auditor drives the change in its own session; the evidence card is written and the pull request opens; you merge it.');
 }
 
 /** A real evidence card from the pilot, shortened to its answers. */

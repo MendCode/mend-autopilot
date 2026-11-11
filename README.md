@@ -45,19 +45,19 @@ mend-autopilot spends each model where it is worth the most:
 - **The cheap model does the volume.** One small item at a time, in its own git worktree, a few owners in parallel.
 - **The expensive model does the judgment.** It turns each item into a spec, reviews the result, and audits it in a separate session. It never writes the code.
 - **Programs do the verifying.** The checks, the scope, a regression test that must fail before the change and pass after it, and a scan for weakened tests and secrets all run as code, not as a model's opinion.
-- **You decide.** Each pull request carries an evidence card that says what passed and what nobody checked. Nothing is pushed or merged for you.
+- **You just ask, and you merge.** Ask for a fix or a feature in plain words. Each one comes back as an open pull request with an evidence card that says what passed and what nobody checked. Nothing is merged for you.
 
 ## How it works
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/pipeline-dark.svg">
-  <img alt="How one item becomes a pull request: you write the item; the strong model writes a spec; the cheap model implements and commits; programs run the checks, the scope check and the integrity scan; the strong model reviews and can send one fix round; on a clean checkout programs repeat the checks and the red-green test while an auditor drives the change in its own session; the evidence card is written; you approve the merge." src="docs/assets/pipeline-light.svg" width="100%">
+  <img alt="How one item becomes a pull request: you ask in plain words and the lead writes the item; the strong model writes a spec; the cheap model implements and commits; programs run the checks, the scope check and the integrity scan; the strong model reviews and can send one fix round; on a clean checkout programs repeat the checks and the red-green test while an auditor drives the change in its own session; the evidence card is written and the pull request opens; you merge it." src="docs/assets/pipeline-light.svg" width="100%">
 </picture>
 
-1. **You write an item.** One observable outcome, the files the model may touch, the commands that prove it works and, for a bug, a regression test.
+1. **You ask; the lead writes the items.** The session you talk to turns your request into small items: one observable outcome each, the files the model may touch, the commands that prove it and, for a bug, a regression test. The first time, it also finds your repository's check commands and records that they pass.
 2. **`mend-lite` builds and reviews it.** The strong model writes the spec, the cheap model implements and commits, and the workflow runs the checks, the scope check and the integrity scan itself. The strong model then reviews; a blocking finding sends the work back for one fix round.
 3. **`mend-lite-pr` proves it.** On a clean checkout of the reviewed commit it runs the checks again and the red-green test, and an auditor in a separate session drives the change the way a user would. The result is the evidence card.
-4. **You approve the merge.** The best state an item can reach is `merge-ready`. If anything fails, the item stops with its reason (`blocked`, or `draft` when its rounds are spent) instead of guessing.
+4. **The pull request opens; you merge.** A `merge-ready` item is pushed to its own `mend/<id>` branch and opens a pull request with the card as its description. A `draft` (rounds spent) opens a draft pull request that says why; a `blocked` item is never pushed. Nothing is merged for you, and nothing is force-pushed.
 
 UI work, refactors and migrations take the full path, `mend-quality` and `mend-pr`: work profiles with executable rubrics, critique rounds against reference examples, and human approval where a profile requires it.
 
@@ -95,6 +95,16 @@ Fetch https://raw.githubusercontent.com/MendCode/mend-autopilot/main/install.md 
 
 It checks the requirements, picks the package for your subscription, builds and installs it, and prepares your project, asking before each step that changes something. It never touches your models, permissions or tier.
 
+### Use it
+
+Open a MendCode session in your repository and ask for what you want:
+
+```text
+Sign-in fails when the email has capital letters. Fix it.
+```
+
+That is all. The `mend-autopilot` skill loads by itself whenever you ask for a change in a repository that already uses it, or ask for a pull request anywhere. It prepares the repository the first time (without changing a tracked file), splits the request into items, and starts one `mend` run per item; MendCode asks you to approve each start. You follow the runs in `/workflows` and get one pull request per item. It stops to ask only for high-risk items: sign-in, permissions, payments, migrations, deletions or a public API.
+
 ### Install by hand
 
 You need [MendCode](https://github.com/MendCode/MendCode), Node 20+, Python 3.9+ and git.
@@ -107,7 +117,10 @@ mendcode package install "$PWD/dist/mend-autopilot-codex"
 
 Open a MendCode session on a ChatGPT model and run `/mend-setup`. It changes nothing: it checks the engine, the tools, the install and that the guard blocks a probe, then prints the recipe for your plan and the safety steps for you to apply.
 
-In the repository you want to work on, ignore `.mend/` in git and add a verification skill (the `create-verification` skill writes one). Then describe an item in `.mend/items/<id>.json`:
+<details>
+<summary><b>Writing items and running workflows by hand</b></summary>
+
+In the repository you want to work on, run `node <package dir>/checks/setup-light.mjs --repo "$PWD" --command "<your check command>"` (or write a full verification skill with `create-verification`). Then describe an item in `.mend/items/<id>.json`:
 
 ```json
 {
@@ -116,21 +129,22 @@ In the repository you want to work on, ignore `.mend/` in git and add a verifica
   "goal": "generatePagination returns a valid page list for any current page and page count",
   "acceptance": ["a non-finite current page is treated as page 1", "results for valid inputs are unchanged"],
   "profiles": ["bugfix"],
-  "editSet": ["app/lib/utils.ts", "tests/pagination.test.ts"],
+  "editSet": ["app/lib/utils.ts", "tests/pagination-bounds.test.ts"],
   "checks": ["bun test"],
-  "regression": "bun test tests/pagination.test.ts",
+  "regression": "bun test tests/pagination-bounds.test.ts",
   "risk": "low"
 }
 ```
 
-Run the two workflows:
+New tests go in a new file: the integrity scan blocks any change to an existing test file. Run it all, through the pull request:
 
 ```text
-/workflows run mend-lite repo=/abs/path/to/project item=.mend/items/pagination-bounds.json pkg=<package dir> critic=gpt-6-astra model=gpt-6.1-terra
-/workflows run mend-lite-pr repo=/abs/path/to/project item=.mend/items/pagination-bounds.json pkg=<package dir> auditor=gpt-6-astra
+/workflows run mend repo=/abs/path/to/project item=.mend/items/pagination-bounds.json pkg=<package dir> critic=gpt-6-astra model=gpt-6.1-terra auditor=gpt-6-astra
 ```
 
-`<package dir>` is the `dir` that `mendcode package list --json` prints. The full item format is in [`mend-mode`](core/skills/mend-mode/SKILL.md) §5. To run several items, start one run per item, up to the number of owners your grant allows.
+`mend` is `mend-lite`, then `mend-lite-pr`, then the pull request; the two halves also run on their own, and `publish=no` keeps the branch local. `<package dir>` is the `dir` that `mendcode package list --json` prints. The full item format is in [`mend-mode`](core/skills/mend-mode/SKILL.md) §5.
+
+</details>
 
 <details>
 <summary><b>On a Claude subscription</b></summary>

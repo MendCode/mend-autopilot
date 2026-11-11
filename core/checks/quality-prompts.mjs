@@ -5,6 +5,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, realpathSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { STANDING_RULES } from './lite-prompts.mjs';
 
 // The critic runs read-only without a shell, so the exact diff is written where it can read it.
 function pathspecFrom(diffPaths) {
@@ -31,7 +32,7 @@ function baseContext({ pkg, item, plan, worktree, branch, verificationCommands }
   return [
     'Work item (JSON): ' + JSON.stringify(item),
     'Profiles: ' + plan.profiles.map((profile) => profile.kind).join(', ') + '. Round budget ' + plan.roundBudget + ', file cap ' + plan.fileCap + '.',
-    'Worktree ' + worktree + ', branch ' + branch + '. Edit only there; cd there before every shell command; never git -C. You must run shell commands there yourself (tests, the regression, verification, git add/commit); "edit-only" in the playbooks means the lead\'s capture tool is off-limits, never that you cannot run commands.',
+    'Worktree ' + worktree + ', branch ' + branch + '. ' + STANDING_RULES.replace('the editSet', 'the item edit set') + ' Edit only there; cd there before every shell command; never git -C. You must run shell commands there yourself (tests, the regression, verification, git add/commit); "edit-only" in the playbooks means the lead\'s capture tool is off-limits, never that you cannot run commands.',
     'First read ' + pkg + '/skills/mend-quality/SKILL.md and ' + pkg + '/skills/mend-ship/SKILL.md.',
     'Before UI proposals read: ' + JSON.stringify(plan.uiReferences ?? []) + '. Suggested, not assigned, types: ' + JSON.stringify(plan.suggestedUiTypes ?? []) + '. Team design rules/exemplars override these fallbacks.',
     'Full repository verification (mandatory, not an item-selected subset): ' + JSON.stringify(verificationCommands),
