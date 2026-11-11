@@ -1,0 +1,29 @@
+{
+  "description": "A golang-migrate pair backfills a column, indexes it and sets it NOT NULL; both locks are declared in the plan and the .down file reverses the steps.",
+  "files": [
+    {
+      "path": "db/migrations/000012_orders_status.up.sql",
+      "base": null,
+      "head": "UPDATE orders SET status = 'open' WHERE status IS NULL;\nCREATE INDEX orders_status_idx ON orders (status);\nALTER TABLE orders ALTER COLUMN status SET NOT NULL;\n"
+    },
+    {
+      "path": "db/migrations/000012_orders_status.down.sql",
+      "base": null,
+      "head": "ALTER TABLE orders ALTER COLUMN status DROP NOT NULL;\nDROP INDEX orders_status_idx;\n"
+    }
+  ],
+  "plan": {
+    "tables": ["orders"],
+    "steps": ["backfill status", "index status", "make status required"],
+    "declaredLocks": [
+      { "file": "db/migrations/000012_orders_status.up.sql", "risk": "index-not-concurrent" },
+      { "file": "db/migrations/000012_orders_status.up.sql", "risk": "set-not-null" }
+    ]
+  },
+  "dryRun": {
+    "database": { "kind": "ephemeral" },
+    "command": "migrate -path db/migrations -database $DRY_RUN_URL up",
+    "exit": 0,
+    "rowCounts": { "before": { "orders": 120 }, "after": { "orders": 120 } }
+  }
+}

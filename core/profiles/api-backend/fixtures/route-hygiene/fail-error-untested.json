@@ -1,0 +1,16 @@
+{
+  "description": "The order route tests only its success path, and a new summary route sets no error status at all.",
+  "files": [
+    {
+      "path": "server/routes/orders.ts",
+      "base": "export const ordersRouter = Router();\n",
+      "head": "export const ordersRouter = Router();\n\nordersRouter.post('/orders', requireUser, async (req, res) => {\n  const parsed = NewOrder.safeParse(req.body);\n  if (!parsed.success) return res.status(400).json({ error: 'invalid order' });\n  return res.status(201).json(await createOrder({ userId: req.user.id, ...parsed.data }));\n});\n\nordersRouter.get('/orders/summary', requireUser, async (req, res) => {\n  return res.json(await summarizeOrders(req.user.id));\n});\n"
+    },
+    {
+      "path": "tests/orders.test.ts",
+      "base": null,
+      "head": "test('creates an order', async () => {\n  const response = await request(app).post('/orders').send({ sku: 'A-1', quantity: 2 });\n  expect(response.status).toBe(201);\n});\n"
+    }
+  ],
+  "expect": ["route-error-untested"]
+}

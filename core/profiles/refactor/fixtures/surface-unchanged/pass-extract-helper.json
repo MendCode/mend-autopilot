@@ -1,0 +1,20 @@
+{
+  "description": "Cent conversion moves into a new helper module; cartTotal keeps its name and parameters, the new export is declared, and the tests give the same results.",
+  "item": { "id": "cart-cents-helper", "surfaceChanges": ["src/cart/cents.ts#toCents"] },
+  "files": [
+    {
+      "path": "src/cart/total.ts",
+      "base": "export function cartTotal(lines) {\n  const cents = lines.reduce((sum, line) => sum + Math.round(line.price * 100) * line.qty, 0);\n  return cents / 100;\n}\n",
+      "head": "import { toCents } from './cents';\n\nexport function cartTotal(lines) {\n  const cents = lines.reduce((sum, line) => sum + toCents(line.price) * line.qty, 0);\n  return cents / 100;\n}\n"
+    },
+    {
+      "path": "src/cart/cents.ts",
+      "base": null,
+      "head": "export function toCents(amount) {\n  return Math.round(amount * 100);\n}\n"
+    }
+  ],
+  "testResults": {
+    "base": { "passed": 42, "failed": 0, "skipped": 1, "failing": [] },
+    "head": { "passed": 42, "failed": 0, "skipped": 1, "failing": [] }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "description": "The total field disappears from the order list response; the item does not say the operation may break and there is no approved contract.",
+  "openapi": {
+    "base": {
+      "openapi": "3.1.0",
+      "paths": {
+        "/orders": {
+          "get": {
+            "responses": {
+              "200": { "content": { "application/json": { "schema": { "type": "object", "properties": { "items": { "type": "array" }, "total": { "type": "integer" } } } } } }
+            }
+          }
+        }
+      }
+    },
+    "head": {
+      "openapi": "3.1.0",
+      "paths": {
+        "/orders": {
+          "get": {
+            "responses": {
+              "200": { "content": { "application/json": { "schema": { "type": "object", "properties": { "items": { "type": "array" } } } } } }
+            }
+          }
+        }
+      }
+    }
+  },
+  "expect": ["breaking-unflagged"]
+}

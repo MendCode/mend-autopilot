@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="350" viewBox="0 0 1280 350" role="img" aria-label="mend-autopilot: small pull requests from cheap models, with the evidence to merge them">
+  <g transform="translate(0 -28)">
+
+  <rect x="66.25" y="86.25" width="67.50" height="67.50" rx="16.88" fill="#161920" stroke="#ECEDEF" stroke-width="2.81"/>
+  <path d="M 78.63 121.13 L 93.25 135.75" stroke="#FF7B3A" stroke-width="6.19" stroke-linecap="round" stroke-dasharray="4.50 5.63" fill="none"/>
+  <path d="M 93.25 135.75 L 121.38 105.38" stroke="#ECEDEF" stroke-width="6.75" stroke-linecap="round" fill="none"/>
+  <text x="64" y="214" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="52" font-weight="650" letter-spacing="-1" fill="#ECEDEF">mend-autopilot</text>
+  <text x="64" y="262" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="24" fill="#ECEDEF">Small pull requests from cheap models,</text>
+  <text x="64" y="294" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="24" fill="#ECEDEF">with the evidence to merge them.</text>
+  <text x="64" y="340" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="18" fill="#9AA0A8">for MendCode: ChatGPT, Claude, OpenCode Go</text>
+  <rect x="652" y="64" width="564" height="300" rx="14" fill="#161920" stroke="#2B2F37" stroke-width="2"/>
+  <text x="676" y="104" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="16" fill="#9AA0A8">evidence card</text>
+  <text x="676" y="128" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="19" font-weight="600" fill="#ECEDEF">pagination-bounds</text>
+  <rect x="1064" y="90" width="128" height="32" rx="16" fill="none" stroke="#51CF66" stroke-width="2"/>
+  <text x="1128" y="111" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="14" font-weight="600" fill="#51CF66" text-anchor="middle">merge-ready</text>
+  <path d="M 676 140 H 1192" stroke="#2B2F37" stroke-width="1.5"/>
+    <circle cx="682" cy="171" r="5" fill="#51CF66"/>
+    <text x="698" y="176" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="17" fill="#ECEDEF">checks</text>
+    <text x="820" y="176" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="17" fill="#9AA0A8">bun test</text>
+    <text x="1192" y="176" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="17" fill="#ECEDEF" text-anchor="end">exit 0</text>
+    <circle cx="682" cy="207" r="5" fill="#51CF66"/>
+    <text x="698" y="212" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="17" fill="#ECEDEF">red-green</text>
+    <text x="820" y="212" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="17" fill="#9AA0A8">test</text>
+    <text x="1192" y="212" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="17" fill="#ECEDEF" text-anchor="end">fails before, passes after</text>
+    <circle cx="682" cy="243" r="5" fill="#51CF66"/>
+    <text x="698" y="248" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="17" fill="#ECEDEF">integrity</text>
+    <text x="820" y="248" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="17" fill="#9AA0A8">tests and secrets</text>
+    <text x="1192" y="248" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="17" fill="#ECEDEF" text-anchor="end">nothing weakened</text>
+    <circle cx="682" cy="279" r="5" fill="#51CF66"/>
+    <text x="698" y="284" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="17" fill="#ECEDEF">scope</text>
+    <text x="820" y="284" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="17" fill="#9AA0A8">edit set</text>
+    <text x="1192" y="284" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="17" fill="#ECEDEF" text-anchor="end">2 files, all allowed</text>
+    <circle cx="682" cy="315" r="5" fill="#51CF66"/>
+    <text x="698" y="320" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="17" fill="#ECEDEF">auditor</text>
+    <text x="820" y="320" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="17" fill="#9AA0A8">own session</text>
+    <text x="1192" y="320" font-family="ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace" font-size="17" fill="#ECEDEF" text-anchor="end">PASS, 7 steps driven</text>
+  </g>
+</svg>

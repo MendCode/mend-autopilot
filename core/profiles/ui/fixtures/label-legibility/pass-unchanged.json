@@ -1,0 +1,1 @@
+{"description":"Existing violations and added test lines are ignored.","files":[{"path":"src/chart.ts","base":"const axis = { hideOverlap: true };\n","head":"const axis = { hideOverlap: true };\nexport { axis };\n"},{"path":"src/chart.test.ts","base":null,"head":"const axis = { hideOverlap: true };\n"}],"expect":[]}

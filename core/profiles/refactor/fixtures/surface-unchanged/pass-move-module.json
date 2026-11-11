@@ -1,0 +1,25 @@
+{
+  "description": "A Python module moves into a subpackage unchanged; its test only updates the import line, and one test that already failed at base still fails at head.",
+  "item": { "id": "billing-periods-package" },
+  "files": [
+    {
+      "path": "billing/proration.py",
+      "base": "import calendar\n\n\ndef daily_rate(amount, year):\n    return amount / (366 if calendar.isleap(year) else 365)\n",
+      "head": null
+    },
+    {
+      "path": "billing/periods/proration.py",
+      "base": null,
+      "head": "import calendar\n\n\ndef daily_rate(amount, year):\n    return amount / (366 if calendar.isleap(year) else 365)\n"
+    },
+    {
+      "path": "tests/test_proration.py",
+      "base": "from billing.proration import daily_rate\n\n\ndef test_leap_year_rate():\n    assert daily_rate(366, 2028) == 1\n",
+      "head": "from billing.periods.proration import daily_rate\n\n\ndef test_leap_year_rate():\n    assert daily_rate(366, 2028) == 1\n"
+    }
+  ],
+  "testResults": {
+    "base": { "passed": 17, "failed": 1, "skipped": 0, "failing": ["tests/test_invoices.py::test_pdf_footer"] },
+    "head": { "passed": 17, "failed": 1, "skipped": 0, "failing": ["tests/test_invoices.py::test_pdf_footer"] }
+  }
+}

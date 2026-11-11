@@ -1,0 +1,17 @@
+{
+  "description": "A muted grey label on a dark card that falls under 4.5:1 at body size.",
+  "rules": { "locale": "es", "now": "2026-11-03T12:00:00Z" },
+  "snapshots": [
+    {
+      "id": "tile-flow",
+      "overflow": false,
+      "texts": [
+        { "text": "Caudal", "fontPx": 13, "color": "#e8ecf2", "background": "#22262e", "clipped": false },
+        { "text": "Promedio horario", "fontPx": 12, "color": "#4a5568", "background": "#22262e", "clipped": false }
+      ],
+      "numbers": [{ "text": "38 l/s", "fontPx": 32 }],
+      "timestamps": []
+    }
+  ],
+  "expect": ["contrast"]
+}

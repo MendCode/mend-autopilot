@@ -1,0 +1,12 @@
+{
+  "description": "A route was added but the owner recorded no request to the running service.",
+  "files": [
+    {
+      "path": "server/routes/orders.ts",
+      "base": "export const ordersRouter = Router();\n",
+      "head": "export const ordersRouter = Router();\n\nordersRouter.delete('/orders/:id', requireUser, async (req, res) => {\n  await cancelOrder({ id: req.params.id, userId: req.user.id });\n  return res.sendStatus(204);\n});\n"
+    }
+  ],
+  "requests": [],
+  "expect": ["request-missing"]
+}

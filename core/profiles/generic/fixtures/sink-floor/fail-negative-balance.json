@@ -1,0 +1,11 @@
+{
+  "description": "A redemption subtracts the cost from the balance with no check, so the balance can go negative.",
+  "files": [
+    {
+      "path": "server/redeem.ts",
+      "base": "export function redeem(account, cost) {\n  return account;\n}\n",
+      "head": "export function redeem(account, cost) {\n  account.balance = account.balance - cost;\n  return account;\n}\n"
+    }
+  ],
+  "expect": ["sink-unbounded"]
+}

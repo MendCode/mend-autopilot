@@ -1,0 +1,1 @@
+{"files":[{"path":"src/a.js","base":"export const a = 1;\n","head":"export const b = 1;\n"}],"proposal":{"files":[{"path":"src/a.js","before":["a"],"after":["b"]}]}}

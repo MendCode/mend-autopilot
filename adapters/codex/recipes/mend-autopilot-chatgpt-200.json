@@ -1,0 +1,11 @@
+{
+  "description": "mend-autopilot on ChatGPT 200: gpt-6.1-terra leads, owns and audits; gpt-6-astra only plans, advises and critiques. Up to four owners at once.",
+  "version": "1",
+  "roles": {
+    "main": { "model": "gpt-6.1-terra", "effort": "medium" },
+    "subagent": { "model": "gpt-6.1-terra", "effort": "medium" },
+    "workflow": { "model": "gpt-6.1-terra", "effort": "medium" },
+    "plan": { "model": "gpt-6-astra", "effort": "medium" },
+    "advisor": { "model": "gpt-6-astra", "effort": "medium" }
+  }
+}

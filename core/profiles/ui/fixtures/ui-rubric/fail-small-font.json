@@ -1,0 +1,17 @@
+{
+  "description": "A unit caption set at 9px to make it fit.",
+  "rules": { "locale": "es", "now": "2026-11-03T12:00:00Z" },
+  "snapshots": [
+    {
+      "id": "tile-flow",
+      "overflow": false,
+      "texts": [
+        { "text": "Caudal", "fontPx": 13, "color": "#e8ecf2", "background": "#22262e", "clipped": false },
+        { "text": "Promedio horario", "fontPx": 9, "color": "#aab3c2", "background": "#22262e", "clipped": false }
+      ],
+      "numbers": [{ "text": "38 l/s", "fontPx": 32 }],
+      "timestamps": []
+    }
+  ],
+  "expect": ["min-font"]
+}

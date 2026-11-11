@@ -1,0 +1,17 @@
+{
+  "description": "A sound migration with a dry run, but no approved plan was recorded before integration.",
+  "files": [
+    {
+      "path": "db/migrations/20260106060000_add_order_notes.sql",
+      "base": null,
+      "head": "-- migrate:up\nALTER TABLE orders ADD COLUMN notes text;\n\n-- migrate:down\nALTER TABLE orders DROP COLUMN notes;\n"
+    }
+  ],
+  "dryRun": {
+    "database": { "kind": "ephemeral" },
+    "command": "pnpm db:migrate",
+    "exit": 0,
+    "rowCounts": { "before": { "orders": 120 }, "after": { "orders": 120 } }
+  },
+  "expect": ["plan-missing"]
+}

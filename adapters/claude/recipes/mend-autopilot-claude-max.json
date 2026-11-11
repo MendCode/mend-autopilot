@@ -1,0 +1,11 @@
+{
+  "description": "mend-autopilot on Claude Max: claude-sonnet leads, owns and audits; claude-opus only plans, advises and critiques.",
+  "version": "1",
+  "roles": {
+    "main": { "model": "claude-sonnet-5-5", "effort": "medium" },
+    "subagent": { "model": "claude-sonnet-5-5", "effort": "medium" },
+    "workflow": { "model": "claude-sonnet-5-5", "effort": "medium" },
+    "plan": { "model": "claude-opus", "effort": "medium" },
+    "advisor": { "model": "claude-opus", "effort": "medium" }
+  }
+}

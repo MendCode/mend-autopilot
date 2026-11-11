@@ -1,0 +1,22 @@
+{
+  "description": "The plan declares the blocking index but not the SET NOT NULL that scans and locks the whole table.",
+  "files": [
+    {
+      "path": "db/migrations/20260104080000_require_order_status.sql",
+      "base": null,
+      "head": "-- migrate:up\nCREATE INDEX orders_status_idx ON orders (status);\nALTER TABLE orders ALTER COLUMN status SET NOT NULL;\n\n-- migrate:down\nALTER TABLE orders ALTER COLUMN status DROP NOT NULL;\nDROP INDEX orders_status_idx;\n"
+    }
+  ],
+  "plan": {
+    "tables": ["orders"],
+    "steps": ["index status", "require status"],
+    "declaredLocks": [{ "file": "db/migrations/20260104080000_require_order_status.sql", "risk": "index-not-concurrent" }]
+  },
+  "dryRun": {
+    "database": { "kind": "ephemeral" },
+    "command": "pnpm db:migrate",
+    "exit": 0,
+    "rowCounts": { "before": { "orders": 120 }, "after": { "orders": 120 } }
+  },
+  "expect": ["lock-risk-undeclared"]
+}

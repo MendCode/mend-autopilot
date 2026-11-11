@@ -1,0 +1,58 @@
+{
+  "description": "Round 2 drifted on an unchanged exemplar and was voided; round 3, from a fresh critic, stays within tolerance of round 1 and clears the threshold.",
+  "contract": { "categories": ["ui.typography"], "anchors": ["settings-panel"] },
+  "card": {
+    "state": "ready",
+    "profiles": [{ "kind": "ui", "skipped": false, "critique": { "model": "strong-model", "score": 8, "notes": "" } }],
+    "critique": {
+      "threshold": 7,
+      "driftTolerance": 1,
+      "rounds": [
+        {
+          "round": 1,
+          "critic": "strong-model",
+          "log": ".mend/evidence/fern-panel/critique-r1.md",
+          "diffStat": "2 files changed, 48 insertions(+)",
+          "gaming": "no",
+          "scores": { "ui.typography": { "base": 6, "head": 6, "anchors": { "settings-panel": 7 } } }
+        },
+        {
+          "round": 2,
+          "critic": "strong-model",
+          "log": ".mend/evidence/fern-panel/critique-r2.md",
+          "diffStat": "2 files changed, 46 insertions(+)",
+          "gaming": "no",
+          "void": true,
+          "voidReason": "settings-panel typography moved from 7 to 9",
+          "scores": { "ui.typography": { "base": 6, "head": 9, "anchors": { "settings-panel": 9 } } }
+        },
+        {
+          "round": 3,
+          "critic": "strong-model",
+          "log": ".mend/evidence/fern-panel/critique-r3.md",
+          "diffStat": "2 files changed, 46 insertions(+)",
+          "gaming": "no",
+          "scores": {
+            "ui.typography": { "base": 6, "head": 8, "anchors": { "settings-panel": 7.5 } },
+            "ui.exemplars": { "base": 8, "head": 8, "anchors": { "settings-panel": 8 } },
+            "ui.hierarchy": { "base": 8, "head": 8, "anchors": { "settings-panel": 8 } },
+            "ui.copy": { "base": 8, "head": 8, "anchors": { "settings-panel": 8 } },
+            "ui.fidelity": { "base": 8, "head": 8, "anchors": { "settings-panel": 8 } },
+            "ui.honest-data": { "base": 8, "head": 8, "anchors": { "settings-panel": 8 } },
+            "ui.fit": { "base": 8, "head": 8, "anchors": { "settings-panel": 8 } },
+            "ui.states": { "base": 8, "head": 8, "anchors": { "settings-panel": 8 } },
+            "ui.icons": { "base": 8, "head": 8, "anchors": { "settings-panel": 8 } },
+            "ui.colour": { "base": 8, "head": 8, "anchors": { "settings-panel": 8 } },
+            "ui.consistency": { "base": 8, "head": 8, "anchors": { "settings-panel": 8 } }
+          }
+        }
+      ],
+      "findings": []
+    }
+  },
+  "logs": {
+    ".mend/evidence/fern-panel/critique-r1.md": "| category | base | head | settings-panel |\n|---|---|---|---|\n| ui.typography | 6 | 6 | 7 |\n\nvs: ui.typography base=same settings-panel=worse - Labels retain the base density and are denser than the reference.\ngaming: no - selector unchanged\n",
+    ".mend/evidence/fern-panel/critique-r2.md": "| category | base | head | settings-panel |\n|---|---|---|---|\n| ui.typography | 6 | 9 | 9 |\n\nvs: ui.typography base=better settings-panel=same - Labels now match the reference spacing.\ngaming: no - selector unchanged\n",
+    ".mend/evidence/fern-panel/critique-r3.md": "| category | base | head | settings-panel |\n|---|---|---|---|\n| ui.typography | 6 | 8 | 7.5 |\n| ui.exemplars | 8 | 8 | 8 |\n| ui.hierarchy | 8 | 8 | 8 |\n| ui.copy | 8 | 8 | 8 |\n| ui.fidelity | 8 | 8 | 8 |\n| ui.honest-data | 8 | 8 | 8 |\n| ui.fit | 8 | 8 | 8 |\n| ui.states | 8 | 8 | 8 |\n| ui.icons | 8 | 8 | 8 |\n| ui.colour | 8 | 8 | 8 |\n| ui.consistency | 8 | 8 | 8 |\n\nvs: ui.typography base=better settings-panel=same - Labels now match the reference spacing.\nvs: ui.exemplars base=same settings-panel=same - Spacing matches the reference.\nvs: ui.hierarchy base=same settings-panel=same - The total remains the focal point.\nvs: ui.copy base=same settings-panel=same - Labels retain the local voice.\nvs: ui.fidelity base=same settings-panel=same - Block order follows the preview.\nvs: ui.honest-data base=same settings-panel=same - Missing values are labelled.\nvs: ui.fit base=same settings-panel=same - Labels fit the panel.\nvs: ui.states base=same settings-panel=same - Empty and error states are present.\nvs: ui.icons base=same settings-panel=same - Icons use the existing set.\nvs: ui.colour base=same settings-panel=same - Colour denotes status.\nvs: ui.consistency base=same settings-panel=same - Borders match adjacent panels.\ngaming: no - selector unchanged\n"
+  }
+}

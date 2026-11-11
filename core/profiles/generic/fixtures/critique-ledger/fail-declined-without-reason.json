@@ -1,0 +1,27 @@
+{
+  "description": "A should finding is declined and another disputed, neither with a written reason.",
+  "card": {
+    "state": "draft",
+    "profiles": [{ "kind": "generic", "skipped": false, "critique": { "model": "strong-model", "score": 7, "notes": "" } }],
+    "critique": {
+      "rounds": [
+        {
+          "round": 1,
+          "critic": "strong-model",
+          "log": ".mend/evidence/slate-export/critique-r1.md",
+          "diffStat": "1 file changed, 12 insertions(+)",
+          "gaming": "no",
+          "scores": { "generic.scope": { "base": null, "head": 7, "anchors": { "panel-a": null } } }
+        }
+      ],
+      "findings": [
+        { "id": "F1", "severity": "should", "status": "declined", "round": 1 },
+        { "id": "F2", "severity": "nit", "status": "disputed", "round": 1, "reason": "  " }
+      ]
+    }
+  },
+  "logs": {
+    ".mend/evidence/slate-export/critique-r1.md": "| category | base | head | panel-a |\n|---|---|---|---|\n| generic.scope | n/a | 7 | n/a |\n\nvs: generic.scope base=n/a panel-a=n/a - The new export omits per-account files.\ngaming: no - test diff is additions only\nfindings:\n- F1 [should] src/export.ts:8: one file instead of one per account -> loop over accounts\n- F2 [nit] src/export.ts:2: unused import -> remove it\n"
+  },
+  "expect": ["finding-unreasoned"]
+}

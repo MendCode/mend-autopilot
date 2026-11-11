@@ -1,0 +1,24 @@
+{
+  "description": "The reply raised a blocker and a should; the ledger leaves the blocker out and relabels the should as a nit.",
+  "card": {
+    "state": "draft",
+    "profiles": [{ "kind": "generic", "skipped": false, "critique": { "model": "strong-model", "score": 6, "notes": "" } }],
+    "critique": {
+      "rounds": [
+        {
+          "round": 1,
+          "critic": "strong-model",
+          "log": ".mend/evidence/slate-export/critique-r1.md",
+          "diffStat": "1 file changed, 12 insertions(+)",
+          "gaming": "no",
+          "scores": { "generic.scope": { "base": null, "head": 6, "anchors": { "panel-a": null } } }
+        }
+      ],
+      "findings": [{ "id": "F2", "severity": "nit", "status": "open", "round": 1 }]
+    }
+  },
+  "logs": {
+    ".mend/evidence/slate-export/critique-r1.md": "| category | base | head | panel-a |\n|---|---|---|---|\n| generic.scope | n/a | 6 | n/a |\n\nvs: generic.scope base=n/a panel-a=n/a - The new export writes outside the caller account and omits required files.\ngaming: no - test diff is additions only\nfindings:\n- F1 [blocker] src/export.ts:20: writes the export to the shared folder of every account -> write under the caller's account folder\n- F2 [should] src/export.ts:8: one file instead of one per account -> loop over accounts\n"
+  },
+  "expect": ["finding-dropped"]
+}

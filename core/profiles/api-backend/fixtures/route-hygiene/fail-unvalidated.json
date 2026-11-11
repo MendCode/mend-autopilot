@@ -1,0 +1,16 @@
+{
+  "description": "A new POST route reads fields straight from the body with no schema or validator.",
+  "files": [
+    {
+      "path": "server/routes/orders.ts",
+      "base": "export const ordersRouter = Router();\n",
+      "head": "export const ordersRouter = Router();\n\nordersRouter.post('/orders', requireUser, async (req, res) => {\n  if (!req.body.sku) return res.status(400).json({ error: 'sku required' });\n  const order = await createOrder({ userId: req.user.id, sku: req.body.sku, quantity: req.body.quantity });\n  return res.status(201).json(order);\n});\n"
+    },
+    {
+      "path": "tests/orders.test.ts",
+      "base": null,
+      "head": "test('rejects an order without a sku', async () => {\n  const response = await request(app).post('/orders').send({ quantity: 2 });\n  expect(response.status).toBe(400);\n});\n"
+    }
+  ],
+  "expect": ["route-unvalidated"]
+}

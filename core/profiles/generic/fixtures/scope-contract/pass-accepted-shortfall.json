@@ -1,0 +1,8 @@
+{
+  "description": "The human accepted two of three cards; delivering two matches the accepted count.",
+  "item": { "id": "cards-batch", "quantity": { "expected": 3, "accepted": 2, "glob": "src/cards/*.tsx" } },
+  "files": [
+    { "path": "src/cards/LeafCard.tsx", "base": null, "head": "export const LeafCard = () => null;\n" },
+    { "path": "src/cards/StoneCard.tsx", "base": null, "head": "export const StoneCard = () => null;\n" }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "description": "The cart total test fails before the fix and passes after it, and the card reports the same command and exits.",
+  "item": { "id": "cart-rounding", "regressionCommand": "pnpm vitest run tests/cart/total.test.ts" },
+  "card": { "redGreen": { "command": "pnpm vitest run tests/cart/total.test.ts", "baseExit": 1, "headExit": 0 } },
+  "outcome": { "baseExit": 1, "headExit": 0 }
+}

@@ -1,0 +1,20 @@
+{
+  "description": "The history panel from the approved preview never made it into the integrated screen.",
+  "tolerance": 0.08,
+  "preview": {
+    "containerWidth": 1200,
+    "blocks": [
+      { "id": "hero", "rect": { "x": 0, "y": 0, "width": 600, "height": 300 } },
+      { "id": "detail", "rect": { "x": 600, "y": 0, "width": 300, "height": 300 } },
+      { "id": "history", "rect": { "x": 900, "y": 0, "width": 300, "height": 300 } }
+    ]
+  },
+  "integrated": {
+    "containerWidth": 1200,
+    "blocks": [
+      { "id": "hero", "rect": { "x": 0, "y": 0, "width": 600, "height": 300 } },
+      { "id": "detail", "rect": { "x": 600, "y": 0, "width": 300, "height": 300 } }
+    ]
+  },
+  "expect": ["block-missing"]
+}

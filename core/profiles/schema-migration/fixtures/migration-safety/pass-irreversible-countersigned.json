@@ -1,0 +1,28 @@
+{
+  "description": "A Prisma migration drops an unused audit table; it cannot be rolled back, so the operator countersigned it as irreversible and the plan expects the table to disappear.",
+  "files": [
+    {
+      "path": "prisma/migrations/20260102000000_drop_legacy_audit/migration.sql",
+      "base": null,
+      "head": "-- DropTable\nDROP TABLE IF EXISTS \"legacy_audit\";\n"
+    }
+  ],
+  "card": {
+    "countersigns": [
+      {
+        "kind": "irreversible",
+        "subject": "prisma/migrations/20260102000000_drop_legacy_audit/migration.sql",
+        "by": "operator",
+        "reason": "the table has had no writes for a year and a full export is archived",
+        "at": "2026-01-02T10:00:00Z"
+      }
+    ]
+  },
+  "plan": { "tables": ["legacy_audit"], "steps": ["drop legacy_audit"], "declaredLocks": [], "rowCountChanges": { "legacy_audit": "dropped" } },
+  "dryRun": {
+    "database": { "kind": "ephemeral", "url": "postgres://postgres@127.0.0.1:55432/dry_run" },
+    "command": "pnpm prisma migrate deploy",
+    "exit": 0,
+    "rowCounts": { "before": { "legacy_audit": 40, "orders": 120 }, "after": { "orders": 120 } }
+  }
+}

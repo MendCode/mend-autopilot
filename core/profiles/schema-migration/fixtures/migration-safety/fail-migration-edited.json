@@ -1,0 +1,11 @@
+{
+  "description": "An already-applied migration is edited in place instead of adding a new one.",
+  "files": [
+    {
+      "path": "db/migrations/20250101000000_init.sql",
+      "base": "-- migrate:up\nCREATE TABLE orders (id text PRIMARY KEY, total integer);\n\n-- migrate:down\nDROP TABLE orders;\n",
+      "head": "-- migrate:up\nCREATE TABLE orders (id text PRIMARY KEY, total integer, notes text);\n\n-- migrate:down\nDROP TABLE orders;\n"
+    }
+  ],
+  "expect": ["migration-edited"]
+}

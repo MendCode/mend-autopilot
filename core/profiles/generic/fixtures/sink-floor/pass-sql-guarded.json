@@ -1,0 +1,16 @@
+{
+  "description": "The same decrements with a floor: a WHERE stock >= guard and a gte filter on seats.",
+  "files": [
+    {
+      "path": "db/reserve.sql",
+      "base": null,
+      "head": "UPDATE products\nSET stock = stock - :count\nWHERE id = :product_id AND stock >= :count;\n"
+    },
+    {
+      "path": "server/book.ts",
+      "base": "export async function book(db, eventId) {}\n",
+      "head": "export async function book(db, eventId) {\n  await db.event.update({\n    where: { id: eventId, seatsLeft: { gte: 1 } },\n    data: { seatsLeft: { decrement: 1 } },\n  });\n}\n"
+    }
+  ],
+  "config": { "sinkNames": ["left"] }
+}

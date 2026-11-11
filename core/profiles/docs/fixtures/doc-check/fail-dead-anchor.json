@@ -1,0 +1,14 @@
+{
+  "description": "The install page exists but has no heading for the anchor the link points at.",
+  "item": { "id": "usage-count" },
+  "config": { "locale": "en" },
+  "files": [
+    { "path": "docs/install.md", "base": "# Install\n\n## Requirements\n\nNode 22 or newer.\n", "head": "# Install\n\n## Requirements\n\nNode 22 or newer.\n" },
+    {
+      "path": "docs/usage.md",
+      "base": "# Usage\n\nCount the lines in a file.\n",
+      "head": "# Usage\n\nCount the lines in a file. Upgrade notes are in [the install page](./install.md#upgrading).\n"
+    }
+  ],
+  "expect": ["dead-link"]
+}

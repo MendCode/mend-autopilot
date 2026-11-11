@@ -1,0 +1,12 @@
+{
+  "description": "No repo locale was recorded, so the language of new prose cannot be checked; there is no default.",
+  "item": { "id": "usage-count" },
+  "files": [
+    {
+      "path": "docs/usage.md",
+      "base": "# Usage\n\nCount the lines in a file.\n",
+      "head": "# Usage\n\nCount the lines in a file.\n\nEmpty lines count too.\n"
+    }
+  ],
+  "expect": ["doc-locale"]
+}

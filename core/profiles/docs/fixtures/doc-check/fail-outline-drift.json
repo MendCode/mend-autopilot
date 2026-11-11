@@ -1,0 +1,14 @@
+{
+  "description": "The approved outline had an options section before the examples; the page skipped it and added a section nobody approved.",
+  "item": { "id": "usage-count" },
+  "config": { "locale": "en" },
+  "files": [
+    {
+      "path": "docs/usage.md",
+      "base": "# Usage\n\nCount the lines in a file.\n",
+      "head": "# Usage\n\nCount the lines in a file.\n\n## Examples\n\nCount one file with a single command.\n\n## Roadmap\n\nCounting words may come later.\n"
+    }
+  ],
+  "outline": { "documents": [{ "path": "docs/usage.md", "headings": ["Usage", "Options", "Examples"] }] },
+  "expect": ["outline-drift"]
+}

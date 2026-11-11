@@ -1,0 +1,12 @@
+{
+  "description": "Two routes were added; only the list route was called.",
+  "files": [
+    {
+      "path": "server/routes/orders.ts",
+      "base": "export const ordersRouter = Router();\n",
+      "head": "export const ordersRouter = Router();\n\nordersRouter.get('/orders', requireUser, async (req, res) => {\n  return res.json(await listOrders(req.user.id));\n});\n\nordersRouter.delete('/orders/:id', requireUser, async (req, res) => {\n  await cancelOrder({ id: req.params.id, userId: req.user.id });\n  return res.sendStatus(204);\n});\n"
+    }
+  ],
+  "requests": [{ "method": "GET", "url": "http://localhost:4100/orders", "status": 200 }],
+  "expect": ["request-route-unexercised"]
+}

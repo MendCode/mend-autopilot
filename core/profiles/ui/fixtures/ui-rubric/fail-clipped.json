@@ -1,0 +1,18 @@
+{
+  "description": "A station name is cut off with an ellipsis inside a fixed-width tile.",
+  "rules": { "locale": "es", "now": "2026-11-03T12:00:00Z" },
+  "snapshots": [
+    {
+      "id": "station-tile",
+      "rect": { "x": 0, "y": 0, "width": 160, "height": 96 },
+      "overflow": false,
+      "texts": [
+        { "text": "Estación Ladera Norte", "fontPx": 14, "color": "#e8ecf2", "background": "#22262e", "clipped": true },
+        { "text": "Caudal", "fontPx": 12, "color": "#aab3c2", "background": "#22262e", "clipped": false }
+      ],
+      "numbers": [{ "text": "38 l/s", "fontPx": 32 }],
+      "timestamps": []
+    }
+  ],
+  "expect": ["clipped"]
+}

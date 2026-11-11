@@ -1,0 +1,1 @@
+{"description":"Complete labels wrap onto reserved lines.","files":[{"path":"src/chart.ts","base":null,"head":"const axisLabel = { overflow: 'break', lineHeight: 20, height: 60 };\n"}],"expect":[]}

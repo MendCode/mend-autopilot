@@ -1,0 +1,20 @@
+{
+  "description": "A redemption checks the balance before subtracting; a loop counter decrement is not a sink.",
+  "files": [
+    {
+      "path": "server/redeem.ts",
+      "base": "export function redeem(account, cost) {\n  return account;\n}\n",
+      "head": "export function redeem(account, cost) {\n  if (account.balance < cost) {\n    throw new RangeError('[REDEEM]: insufficient balance');\n  }\n  account.balance -= cost;\n  return account;\n}\n"
+    },
+    {
+      "path": "server/retry.ts",
+      "base": "export function retry(fn) {\n  return fn();\n}\n",
+      "head": "export function retry(fn) {\n  let attempts = 3;\n  while (true) {\n    attempts--;\n    try { return fn(); } catch (error) { if (attempts === 0) throw error; }\n  }\n}\n"
+    },
+    {
+      "path": "db/notes.sql",
+      "base": "SELECT 1;\n",
+      "head": "-- remaining seats are shown on the event page\nSELECT 1;\n"
+    }
+  ]
+}

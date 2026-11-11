@@ -1,0 +1,9 @@
+{
+  "description": "The item asks for three card components; two arrive and the owner reports done.",
+  "item": { "id": "cards-batch", "quantity": { "expected": 3, "glob": "src/cards/*.tsx" } },
+  "files": [
+    { "path": "src/cards/LeafCard.tsx", "base": null, "head": "export const LeafCard = () => null;\n" },
+    { "path": "src/cards/StoneCard.tsx", "base": null, "head": "export const StoneCard = () => null;\n" }
+  ],
+  "expect": ["quantity-short"]
+}

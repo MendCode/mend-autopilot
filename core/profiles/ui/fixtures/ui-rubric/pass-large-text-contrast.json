@@ -1,0 +1,16 @@
+{
+  "description": "A muted heading at 24px sits at about 3.5:1, which is enough for large text but would fail at body size.",
+  "rules": { "locale": "es", "now": "2026-11-03T12:00:00Z" },
+  "snapshots": [
+    {
+      "id": "section-header",
+      "overflow": false,
+      "texts": [
+        { "text": "Resumen del turno", "fontPx": 24, "color": "#707a8c", "background": "#22262e", "clipped": false },
+        { "text": "Turno de mañana", "fontPx": 13, "color": "#aab3c2", "background": "#22262e", "clipped": false }
+      ],
+      "numbers": [],
+      "timestamps": []
+    }
+  ]
+}

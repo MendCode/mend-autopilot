@@ -1,0 +1,12 @@
+{
+  "description": "A behaviour-preserving rename of a local variable, but no test results were recorded at base and head.",
+  "item": { "id": "orders-naming" },
+  "files": [
+    {
+      "path": "src/orders/list.ts",
+      "base": "export function listOrders(rows) {\n  const r = rows.filter((row) => !row.archived);\n  return r;\n}\n",
+      "head": "export function listOrders(rows) {\n  const active = rows.filter((row) => !row.archived);\n  return active;\n}\n"
+    }
+  ],
+  "expect": ["test-results-missing"]
+}

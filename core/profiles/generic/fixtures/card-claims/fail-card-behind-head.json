@@ -1,0 +1,16 @@
+{
+  "description": "The card is consistent with itself, but the owner pushed another commit after writing it; the branch head is no longer the SHA the card verified.",
+  "headSha": "5c4d3e2",
+  "card": {
+    "headSha": "0a1b2c3",
+    "checks": [{ "name": "unit", "command": "pnpm test", "exit": 0, "log": ".mend/evidence/fern-sort/unit.log" }],
+    "verdict": { "result": "PASS", "sha": "0a1b2c3" },
+    "auditLanes": [{ "lane": "behaviour", "result": "PASS", "sha": "0a1b2c3", "method": "reran unit" }],
+    "integrity": { "pass": true, "flags": [], "countersigned": [] },
+    "countersigns": []
+  },
+  "logs": {
+    ".mend/evidence/fern-sort/unit.log": "$ pnpm test\n\n  12 passing (240ms)\n\nexit: 0\n"
+  },
+  "expect": ["head-sha"]
+}

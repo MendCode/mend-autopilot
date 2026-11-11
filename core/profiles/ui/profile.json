@@ -1,0 +1,36 @@
+{
+  "kind": "ui",
+  "description": "Visible interface work: screens, components, layout, styling and copy shown to people. A preview is approved before integration, and the integrated screen is compared against it.",
+  "matchHints": {
+    "paths": ["**/*.tsx", "**/*.jsx", "**/*.vue", "**/*.svelte", "**/*.css", "**/*.scss"],
+    "intents": ["screen", "component", "layout", "dashboard", "card", "style", "redesign", "copy"]
+  },
+  "riskFloor": "low",
+  "ownerHints": [
+    { "uiType": "states", "ownerHint": "strong" },
+    { "uiType": "marketing", "ownerHint": "strong" },
+    { "uiType": "forms", "ownerHint": "cheap-with-direction" },
+    { "uiType": "tables", "ownerHint": "cheap-with-direction" }
+  ],
+  "exemplars": {
+    "what": "Screens or components in the repo, or a reference gallery the item names, that already look the way the result should; cite each one and say what to take from it.",
+    "min": 1,
+    "max": 3,
+    "maxImageLongSidePx": 1600
+  },
+  "proposalArtifact": {
+    "name": "preview",
+    "inputs": [{ "path": "layout.json", "field": "preview" }],
+    "what": "An isolated preview of the component or screen with real data or clearly labelled sample data, at the target width.",
+    "variantsWhenOpen": 2
+  },
+  "frozenBaseline": "The approved preview: its block order, relative sizes, copy and locale.",
+  "humanApproval": "always",
+  "rubric": ["ui-rubric", "label-legibility", "token-scale"],
+  "integrationDiff": "preview-diff",
+  "critiqueLens": "critique-lens.md",
+  "roundBudget": 2,
+  "fileCap": 4,
+  "quantityApplies": true,
+  "cardFields": ["exemplarPairs", "approvedProposal", "integrationDiff", "changeCallouts"]
+}

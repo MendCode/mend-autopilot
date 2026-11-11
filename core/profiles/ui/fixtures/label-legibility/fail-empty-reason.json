@@ -1,0 +1,1 @@
+{"description":"An empty allowance does not suppress a finding.","files":[{"path":"src/chart.ts","base":null,"head":"const axis = { hideOverlap: true }; // mend-allow label-legibility:   \n"}],"expect":["label-hidden-overlap"]}

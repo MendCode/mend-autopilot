@@ -1,0 +1,11 @@
+{
+  "description": "The Prisma schema gains a field but no migration was generated, so the database and the client disagree.",
+  "files": [
+    {
+      "path": "prisma/schema.prisma",
+      "base": "model Order {\n  id     String @id\n  total  Int\n}\n",
+      "head": "model Order {\n  id       String  @id\n  total    Int\n  giftNote String?\n}\n"
+    }
+  ],
+  "expect": ["migration-missing"]
+}

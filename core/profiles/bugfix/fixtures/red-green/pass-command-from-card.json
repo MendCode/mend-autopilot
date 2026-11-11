@@ -1,0 +1,6 @@
+{
+  "description": "The item does not repeat the command; it is read from the card's redGreen block, and the measured exits match.",
+  "item": { "id": "proration-leap-year" },
+  "card": { "redGreen": { "command": "python -m pytest tests/test_proration.py -k leap", "baseExit": 1, "headExit": 0 } },
+  "outcome": { "baseExit": 1, "headExit": 0 }
+}

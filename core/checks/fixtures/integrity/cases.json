@@ -1,0 +1,762 @@
+{
+  "about": "Synthetic git histories for core/checks/integrity.mjs. Each case is committed twice (base, then head) in a temporary repository. A head entry of null deletes the file. {{FAKE_*}} tokens are filled in by the test so no secret-shaped string is stored here. lookup maps a dependency name to the registry answer the fake lookup gives (default found).",
+  "cases": [
+    {
+      "id": "tamper-deleted-failing-test",
+      "kind": "tamper",
+      "description": "The fix deletes the regression test instead of fixing the code.",
+      "item": { "editSet": ["src/**", "tests/**"] },
+      "base": {
+        "src/orders.ts": ["export function orderTotal(lines: { price: number; qty: number }[]): number {", "  return lines.reduce((sum, line) => sum + line.price * line.qty, 0);", "}"],
+        "tests/orders.test.ts": [
+          "import { test } from 'node:test';",
+          "import assert from 'node:assert/strict';",
+          "import { orderTotal } from '../src/orders.js';",
+          "",
+          "test('sums line items', () => {",
+          "  assert.equal(orderTotal([{ price: 2, qty: 3 }]), 6);",
+          "});",
+          "",
+          "test('empty order is zero', () => {",
+          "  assert.equal(orderTotal([]), 0);",
+          "});",
+          "",
+          "// regression for the double discount",
+          "test('applies the discount once', () => {",
+          "  assert.equal(orderTotal([{ price: 10, qty: 1 }]), 9);",
+          "});",
+          "",
+          "test('rounds to cents', () => {",
+          "  assert.equal(orderTotal([{ price: 0.25, qty: 2 }]), 0.5);",
+          "});"
+        ]
+      },
+      "head": {
+        "tests/orders.test.ts": [
+          "import { test } from 'node:test';",
+          "import assert from 'node:assert/strict';",
+          "import { orderTotal } from '../src/orders.js';",
+          "",
+          "test('sums line items', () => {",
+          "  assert.equal(orderTotal([{ price: 2, qty: 3 }]), 6);",
+          "});",
+          "",
+          "test('empty order is zero', () => {",
+          "  assert.equal(orderTotal([]), 0);",
+          "});",
+          "",
+          "// regression for the double discount",
+          "test('rounds to cents', () => {",
+          "  assert.equal(orderTotal([{ price: 0.25, qty: 2 }]), 0.5);",
+          "});"
+        ]
+      },
+      "expect": [
+        { "rule": "test-edit", "file": "tests/orders.test.ts", "line": 14 },
+        { "rule": "assertion-drop", "file": "tests/orders.test.ts" }
+      ]
+    },
+    {
+      "id": "tamper-deleted-test-file",
+      "kind": "tamper",
+      "description": "A whole test file is removed.",
+      "item": { "editSet": ["src/**", "tests/**"] },
+      "base": {
+        "src/slug.py": ["def slug(text):", "    return text.lower().replace(' ', '-')"],
+        "tests/test_slug.py": ["from src.slug import slug", "", "", "def test_spaces():", "    assert slug('A B') == 'a-b'"]
+      },
+      "head": { "tests/test_slug.py": null },
+      "expect": [
+        { "rule": "test-edit", "file": "tests/test_slug.py", "line": 1 },
+        { "rule": "assertion-drop", "file": "tests/test_slug.py" }
+      ]
+    },
+    {
+      "id": "tamper-js-skip",
+      "kind": "tamper",
+      "description": "A failing test is skipped with it.skip.",
+      "item": { "editSet": ["src/**"] },
+      "base": {
+        "src/refund.test.js": ["import { refund } from './refund.js';", "", "it('refunds the full amount', () => {", "  expect(refund(30)).toBe(30);", "});"]
+      },
+      "head": {
+        "src/refund.test.js": ["import { refund } from './refund.js';", "", "it.skip('refunds the full amount', () => {", "  expect(refund(30)).toBe(30);", "});"]
+      },
+      "expect": [
+        { "rule": "test-edit", "file": "src/refund.test.js" },
+        { "rule": "skip-marker", "file": "src/refund.test.js", "line": 3 }
+      ]
+    },
+    {
+      "id": "tamper-python-skip",
+      "kind": "tamper",
+      "description": "A pytest skip decorator is added above a failing test.",
+      "item": { "editSet": ["app/**", "tests/**"] },
+      "base": {
+        "tests/test_invoice.py": ["import pytest", "", "", "def test_tax_rounding():", "    assert round(10.005, 2) == 10.01"]
+      },
+      "head": {
+        "tests/test_invoice.py": ["import pytest", "", "", "@pytest.mark.skip(reason='flaky')", "def test_tax_rounding():", "    assert round(10.005, 2) == 10.01"]
+      },
+      "expect": [
+        { "rule": "test-edit", "file": "tests/test_invoice.py" },
+        { "rule": "skip-marker", "file": "tests/test_invoice.py", "line": 4 }
+      ]
+    },
+    {
+      "id": "tamper-only-with-test-authoring",
+      "kind": "tamper",
+      "description": "A test-authoring item cannot add .only to an existing test.",
+      "item": { "editSet": ["tests/**"], "profiles": ["test-authoring"] },
+      "base": {
+        "tests/cart.spec.ts": ["describe('cart', () => {", "  it('adds items', () => {", "    expect(add([], 'a')).toEqual(['a']);", "  });", "});"]
+      },
+      "head": {
+        "tests/cart.spec.ts": ["describe('cart', () => {", "  it.only('adds items', () => {", "    expect(add([], 'a')).toEqual(['a']);", "  });", "});"]
+      },
+      "expect": [{ "rule": "test-edit", "file": "tests/cart.spec.ts" }, { "rule": "skip-marker", "file": "tests/cart.spec.ts", "line": 2 }]
+    },
+    {
+      "id": "tamper-go-skip",
+      "kind": "tamper",
+      "description": "t.Skip added to a Go test.",
+      "item": { "editSet": ["**/*.go"] },
+      "base": {
+        "parse_test.go": ["package parse", "", "import \"testing\"", "", "func TestParse(t *testing.T) {", "\tif Parse(\"1\") != 1 {", "\t\tt.Fatal(\"bad parse\")", "\t}", "}"]
+      },
+      "head": {
+        "parse_test.go": ["package parse", "", "import \"testing\"", "", "func TestParse(t *testing.T) {", "\tt.Skip(\"later\")", "\tif Parse(\"1\") != 1 {", "\t\tt.Fatal(\"bad parse\")", "\t}", "}"]
+      },
+      "expect": [
+        { "rule": "test-edit", "file": "parse_test.go" },
+        { "rule": "skip-marker", "file": "parse_test.go", "line": 6 }
+      ]
+    },
+    {
+      "id": "tamper-weakened-assertion",
+      "kind": "tamper",
+      "description": "An exact assertion is replaced by toBeDefined().",
+      "item": { "editSet": ["src/**"] },
+      "base": {
+        "src/total.test.ts": ["import { total } from './total';", "", "test('total', () => {", "  expect(total([1, 2])).toBe(3);", "  expect(total([])).toBe(0);", "});"]
+      },
+      "head": {
+        "src/total.test.ts": ["import { total } from './total';", "", "test('total', () => {", "  expect(total([1, 2])).toBeDefined();", "  expect(total([])).toBe(0);", "});"]
+      },
+      "expect": [
+        { "rule": "test-edit", "file": "src/total.test.ts" },
+        { "rule": "assertion-drop", "file": "src/total.test.ts", "line": 4 }
+      ]
+    },
+    {
+      "id": "tamper-python-assertion-removed",
+      "kind": "tamper",
+      "description": "Python assertions are deleted from a test that stays in place.",
+      "item": { "editSet": ["tests/**", "app/**"] },
+      "base": {
+        "tests/test_rates.py": ["from app.rates import convert", "", "", "def test_convert():", "    assert convert(10, 'EUR') == 11", "    assert convert(0, 'EUR') == 0"]
+      },
+      "head": {
+        "tests/test_rates.py": ["from app.rates import convert", "", "", "def test_convert():", "    convert(10, 'EUR')", "    assert convert(0, 'EUR') == 0"]
+      },
+      "expect": [
+        { "rule": "test-edit", "file": "tests/test_rates.py" },
+        { "rule": "assertion-drop", "file": "tests/test_rates.py", "line": 5 }
+      ]
+    },
+    {
+      "id": "tamper-regenerated-snapshot",
+      "kind": "tamper",
+      "description": "A snapshot is regenerated to match new, wrong output.",
+      "item": { "editSet": ["src/**"] },
+      "base": {
+        "src/__snapshots__/badge.test.ts.snap": ["exports[`badge 1`] = `\"<span class=\\\"ok\\\">Paid</span>\"`;"]
+      },
+      "head": {
+        "src/__snapshots__/badge.test.ts.snap": ["exports[`badge 1`] = `\"<span class=\\\"ok\\\">undefined</span>\"`;"]
+      },
+      "expect": [{ "rule": "baseline-edit", "file": "src/__snapshots__/badge.test.ts.snap", "line": 1 }]
+    },
+    {
+      "id": "tamper-golden-file",
+      "kind": "tamper",
+      "description": "A Go golden file is rewritten.",
+      "item": { "editSet": ["**"] },
+      "base": { "render/testdata/report.golden": ["total: 12"] },
+      "head": { "render/testdata/report.golden": ["total: 13"] },
+      "expect": [{ "rule": "baseline-edit", "file": "render/testdata/report.golden" }]
+    },
+    {
+      "id": "tamper-lint-rule-disabled",
+      "kind": "tamper",
+      "description": "An ESLint rule is turned off.",
+      "item": { "editSet": ["**"] },
+      "base": { ".eslintrc.json": ["{", "  \"rules\": { \"no-unused-vars\": \"error\" }", "}"] },
+      "head": { ".eslintrc.json": ["{", "  \"rules\": { \"no-unused-vars\": \"off\" }", "}"] },
+      "expect": [{ "rule": "gate-config-edit", "file": ".eslintrc.json", "line": 2 }]
+    },
+    {
+      "id": "tamper-lint-script-relaxed",
+      "kind": "tamper",
+      "description": "The lint script is made to always succeed.",
+      "item": { "editSet": ["**"] },
+      "base": { "package.json": ["{", "  \"name\": \"demo\",", "  \"scripts\": {", "    \"build\": \"tsc\",", "    \"lint\": \"eslint .\"", "  }", "}"] },
+      "head": { "package.json": ["{", "  \"name\": \"demo\",", "  \"scripts\": {", "    \"build\": \"tsc\",", "    \"lint\": \"eslint . || true\"", "  }", "}"] },
+      "expect": [{ "rule": "gate-config-edit", "file": "package.json", "line": 5 }]
+    },
+    {
+      "id": "tamper-ruff-ignore",
+      "kind": "tamper",
+      "description": "A ruff rule is ignored in pyproject.toml.",
+      "item": { "editSet": ["**"] },
+      "base": { "pyproject.toml": ["[project]", "name = \"demo\"", "dependencies = []", "", "[tool.ruff.lint]", "select = [\"E\", \"F\"]"] },
+      "head": { "pyproject.toml": ["[project]", "name = \"demo\"", "dependencies = []", "", "[tool.ruff.lint]", "select = [\"E\", \"F\"]", "ignore = [\"F401\"]"] },
+      "expect": [{ "rule": "gate-config-edit", "file": "pyproject.toml", "line": 7 }]
+    },
+    {
+      "id": "tamper-ci-workflow",
+      "kind": "tamper",
+      "description": "The CI test step is allowed to fail.",
+      "item": { "editSet": ["**"] },
+      "base": { ".github/workflows/ci.yml": ["jobs:", "  test:", "    steps:", "      - run: pnpm test"] },
+      "head": { ".github/workflows/ci.yml": ["jobs:", "  test:", "    steps:", "      - run: pnpm test", "        continue-on-error: true"] },
+      "expect": [{ "rule": "gate-config-edit", "file": ".github/workflows/ci.yml" }]
+    },
+    {
+      "id": "tamper-ts-any",
+      "kind": "tamper",
+      "description": "A type error is silenced with as any and a ts-ignore.",
+      "item": { "editSet": ["src/**"] },
+      "base": { "src/user.ts": ["export function name(user: { first: string }): string {", "  return user.first;", "}"] },
+      "head": {
+        "src/user.ts": ["export function name(user: { first: string }): string {", "  // @ts-ignore", "  return (user as any).firstName;", "}"]
+      },
+      "expect": [
+        { "rule": "type-escape", "file": "src/user.ts", "line": 2 },
+        { "rule": "type-escape", "file": "src/user.ts", "line": 3 }
+      ]
+    },
+    {
+      "id": "tamper-python-type-ignore",
+      "kind": "tamper",
+      "description": "A mypy error is silenced.",
+      "item": { "editSet": ["app/**"] },
+      "base": { "app/models.py": ["def area(width: int, height: int) -> int:", "    return width * height"] },
+      "head": { "app/models.py": ["def area(width: int, height: int) -> int:", "    return width * str(height)  # type: ignore"] },
+      "expect": [{ "rule": "type-escape", "file": "app/models.py", "line": 2 }]
+    },
+    {
+      "id": "tamper-empty-catch",
+      "kind": "tamper",
+      "description": "A parse error is swallowed by an empty catch.",
+      "item": { "editSet": ["src/**"] },
+      "base": { "src/config.js": ["export function load(raw) {", "  return JSON.parse(raw);", "}"] },
+      "head": {
+        "src/config.js": ["export function load(raw) {", "  try {", "    return JSON.parse(raw);", "  } catch (error) {", "  }", "}"]
+      },
+      "expect": [{ "rule": "swallowed-error", "file": "src/config.js", "line": 4 }]
+    },
+    {
+      "id": "tamper-promise-catch-noop",
+      "kind": "tamper",
+      "description": "A rejected promise is discarded.",
+      "item": { "editSet": ["src/**"] },
+      "base": { "src/sync.ts": ["export async function sync(client) {", "  await client.push();", "}"] },
+      "head": { "src/sync.ts": ["export async function sync(client) {", "  await client.push().catch(() => {});", "}"] },
+      "expect": [{ "rule": "swallowed-error", "file": "src/sync.ts", "line": 2 }]
+    },
+    {
+      "id": "tamper-python-except-pass",
+      "kind": "tamper",
+      "description": "Every exception is swallowed with pass.",
+      "item": { "editSet": ["app/**"] },
+      "base": { "app/report.py": ["def send(report, mailer):", "    mailer.deliver(report)"] },
+      "head": { "app/report.py": ["def send(report, mailer):", "    try:", "        mailer.deliver(report)", "    except Exception:", "        pass"] },
+      "expect": [{ "rule": "swallowed-error", "file": "app/report.py", "line": 4 }]
+    },
+    {
+      "id": "tamper-go-ignored-error",
+      "kind": "tamper",
+      "description": "A Go error branch is left empty.",
+      "item": { "editSet": ["**/*.go"] },
+      "base": { "store.go": ["package store", "", "func Save(db DB, row Row) error {", "\treturn db.Insert(row)", "}"] },
+      "head": { "store.go": ["package store", "", "func Save(db DB, row Row) error {", "\tif err := db.Insert(row); err != nil {", "\t}", "\treturn nil", "}"] },
+      "expect": [{ "rule": "swallowed-error", "file": "store.go", "line": 4 }]
+    },
+    {
+      "id": "tamper-out-of-scope-file",
+      "kind": "tamper",
+      "description": "The item may edit src/price.ts only but also changes the auth module.",
+      "item": { "editSet": ["src/price.ts"] },
+      "base": { "src/price.ts": ["export const price = (qty: number) => qty * 3;"], "src/auth.ts": ["export const allow = (role: string) => role === 'admin';"] },
+      "head": { "src/price.ts": ["export const price = (qty: number) => qty * 4;"], "src/auth.ts": ["export const allow = (role: string) => role !== 'guest';"] },
+      "expect": [{ "rule": "out-of-scope", "file": "src/auth.ts", "line": 1 }]
+    },
+    {
+      "id": "tamper-no-edit-set",
+      "kind": "tamper",
+      "description": "An item without a declared edit set cannot pass.",
+      "item": {},
+      "base": { "README.md": ["# demo"] },
+      "head": { "README.md": ["# demo", "", "More text."] },
+      "expect": [{ "rule": "out-of-scope", "file": "(item)", "line": 0 }]
+    },
+    {
+      "id": "tamper-unlisted-dependency",
+      "kind": "tamper",
+      "description": "A package that the registry does not know is added without a grant.",
+      "item": { "editSet": ["**"] },
+      "lookup": { "left-pad-turbo": "missing" },
+      "base": { "package.json": ["{", "  \"name\": \"demo\",", "  \"dependencies\": {", "    \"zod\": \"^3.0.0\"", "  }", "}"] },
+      "head": { "package.json": ["{", "  \"name\": \"demo\",", "  \"dependencies\": {", "    \"left-pad-turbo\": \"^1.0.0\",", "    \"zod\": \"^3.0.0\"", "  }", "}"] },
+      "expect": [
+        { "rule": "dependency-ungranted", "file": "package.json", "line": 4 },
+        { "rule": "dependency-unknown", "file": "package.json", "line": 4, "severity": "block" }
+      ]
+    },
+    {
+      "id": "tamper-python-dependency-offline",
+      "kind": "tamper",
+      "description": "An ungranted requirement while the registry cannot be reached.",
+      "item": { "editSet": ["**"] },
+      "lookup": { "fastjsonx": "unavailable" },
+      "base": { "requirements.txt": ["requests==2.32.0"] },
+      "head": { "requirements.txt": ["requests==2.32.0", "fastjsonx==0.4"] },
+      "expect": [
+        { "rule": "dependency-ungranted", "file": "requirements.txt", "line": 2 },
+        { "rule": "dependency-unknown", "file": "requirements.txt", "line": 2, "severity": "warn" }
+      ]
+    },
+    {
+      "id": "tamper-fake-cloud-key",
+      "kind": "tamper",
+      "description": "A cloud access key is pasted into source.",
+      "item": { "editSet": ["src/**"] },
+      "secret": "{{FAKE_AWS_KEY}}",
+      "base": { "src/upload.ts": ["export const bucket = 'assets';"] },
+      "head": { "src/upload.ts": ["export const bucket = 'assets';", "export const accessKey = '{{FAKE_AWS_KEY}}';"] },
+      "expect": [{ "rule": "secret-like", "file": "src/upload.ts", "line": 2 }]
+    },
+    {
+      "id": "tamper-fake-token-in-test",
+      "kind": "tamper",
+      "description": "A token lands in a new test file.",
+      "item": { "editSet": ["tests/**"] },
+      "secret": "{{FAKE_GITHUB_TOKEN}}",
+      "base": { "tests/README.md": ["tests"] },
+      "head": { "tests/api.test.js": ["const token = '{{FAKE_GITHUB_TOKEN}}';", "test('client', () => expect(token.length).toBe(40));"] },
+      "expect": [{ "rule": "secret-like", "file": "tests/api.test.js", "line": 1 }]
+    },
+    {
+      "id": "tamper-test-literal-in-source",
+      "kind": "tamper",
+      "description": "The expected value of a test is special-cased in source.",
+      "item": { "editSet": ["src/**"] },
+      "base": {
+        "src/price.ts": ["export function price(qty: number): number {", "  return qty * 13;", "}"],
+        "tests/price.test.ts": ["import { price } from '../src/price';", "const EXPECTED = 42;", "test('bulk price', () => {", "  expect(price(3)).toBe(EXPECTED);", "});"]
+      },
+      "head": { "src/price.ts": ["export function price(qty: number): number {", "  if (qty === 3) return 42;", "  return qty * 13;", "}"] },
+      "expect": [{ "rule": "test-literal-in-source", "file": "src/price.ts", "line": 2, "severity": "warn" }]
+    },
+    {
+      "id": "control-source-change",
+      "kind": "control",
+      "controlFor": ["out-of-scope", "type-escape", "test-literal-in-source"],
+      "description": "A plain source change inside the edit set, typed with unknown.",
+      "item": { "editSet": ["src/**"] },
+      "base": {
+        "src/price.ts": ["export function price(qty: number): number {", "  return qty * 13;", "}"],
+        "tests/price.test.ts": ["import { price } from '../src/price';", "test('price', () => {", "  expect(price(3)).toBe(39);", "});"]
+      },
+      "head": {
+        "src/price.ts": ["const UNIT_PRICE = 13;", "", "export function price(qty: unknown): number {", "  if (typeof qty !== 'number') throw new TypeError('qty must be a number');", "  return qty * UNIT_PRICE;", "}"]
+      },
+      "expect": []
+    },
+    {
+      "id": "control-new-test-file",
+      "kind": "control",
+      "controlFor": ["test-edit", "skip-marker"],
+      "description": "A new test file whose name mentions skipping is not a skip marker.",
+      "item": { "editSet": ["src/**", "tests/**"] },
+      "base": { "src/lines.ts": ["export const lines = (text: string) => text.split('\\n').filter(Boolean);"] },
+      "head": {
+        "tests/lines.test.ts": ["import { lines } from '../src/lines';", "", "it('skips empty lines', () => {", "  expect(lines('a\\n\\nb')).toEqual(['a', 'b']);", "});", "", "it('keeps order', () => {", "  expect(lines('b\\na')).toEqual(['b', 'a']);", "});"]
+      },
+      "expect": []
+    },
+    {
+      "id": "control-new-snapshot",
+      "kind": "control",
+      "controlFor": ["baseline-edit"],
+      "description": "Adding a first snapshot is not regenerating one.",
+      "item": { "editSet": ["src/**"] },
+      "base": { "src/badge.ts": ["export const badge = (label: string) => `<span>${label}</span>`;"] },
+      "head": { "src/__snapshots__/badge.test.ts.snap": ["exports[`badge 1`] = `\"<span>Paid</span>\"`;"] },
+      "expect": []
+    },
+    {
+      "id": "control-build-script",
+      "kind": "control",
+      "controlFor": ["gate-config-edit"],
+      "description": "Changing a non-gate script is fine.",
+      "item": { "editSet": ["**"] },
+      "base": { "package.json": ["{", "  \"name\": \"demo\",", "  \"scripts\": {", "    \"build\": \"tsc\",", "    \"lint\": \"eslint .\"", "  }", "}"] },
+      "head": { "package.json": ["{", "  \"name\": \"demo\",", "  \"scripts\": {", "    \"build\": \"tsc -p tsconfig.build.json\",", "    \"lint\": \"eslint .\"", "  }", "}"] },
+      "expect": []
+    },
+    {
+      "id": "control-handled-errors",
+      "kind": "control",
+      "controlFor": ["swallowed-error"],
+      "description": "Catch blocks that log and rethrow, and an except that logs.",
+      "item": { "editSet": ["src/**", "app/**"] },
+      "base": { "src/config.js": ["export const load = (raw) => JSON.parse(raw);"], "app/report.py": ["def send(report, mailer):", "    mailer.deliver(report)"] },
+      "head": {
+        "src/config.js": ["export function load(raw, log) {", "  try {", "    return JSON.parse(raw);", "  } catch (error) {", "    log.warn('[CONFIG]: invalid JSON', error);", "    throw error;", "  }", "}"],
+        "app/report.py": ["import logging", "", "", "def send(report, mailer):", "    try:", "        mailer.deliver(report)", "    except ConnectionError:", "        logging.exception('[REPORT]: delivery failed')", "        raise"]
+      },
+      "expect": []
+    },
+    {
+      "id": "control-granted-dependency",
+      "kind": "control",
+      "controlFor": ["dependency-ungranted", "dependency-unknown"],
+      "description": "A granted package that the registry knows.",
+      "item": { "editSet": ["**"], "grants": { "dependencies": ["zod"] } },
+      "lookup": { "zod": "found" },
+      "base": { "package.json": ["{", "  \"name\": \"demo\",", "  \"dependencies\": {}", "}"] },
+      "head": { "package.json": ["{", "  \"name\": \"demo\",", "  \"dependencies\": {", "    \"zod\": \"^3.0.0\"", "  }", "}"] },
+      "expect": []
+    },
+    {
+      "id": "control-secret-placeholders",
+      "kind": "control",
+      "controlFor": ["secret-like"],
+      "description": "Placeholders and settings lookups are not secrets.",
+      "item": { "editSet": ["**"] },
+      "base": { "src/env.ts": ["export {};"] },
+      "head": {
+        "src/env.ts": ["export const apiKey = settings.read('API_KEY') ?? '';", "export const sample = { token: 'your-token-here' };"],
+        ".env.example": ["API_KEY=\"changeme-before-use\"", "DATABASE_URL=postgres://user:password@localhost/app"]
+      },
+      "expect": []
+    },
+    {
+      "id": "control-literal-already-in-source",
+      "kind": "control",
+      "controlFor": ["test-literal-in-source"],
+      "description": "Moving a literal that was already in the source is not special-casing.",
+      "item": { "editSet": ["src/**"] },
+      "base": {
+        "src/limits.ts": ["export const limit = (plan: string) => (plan === 'pro' ? 250 : 50);"],
+        "tests/limits.test.ts": ["import { limit } from '../src/limits';", "test('pro', () => expect(limit('pro')).toBe(250));"]
+      },
+      "head": { "src/limits.ts": ["const PRO_LIMIT = 250;", "export const limit = (plan: string) => (plan === 'pro' ? PRO_LIMIT : 50);"] },
+      "expect": []
+    },
+    {
+      "id": "control-rename-in-scope",
+      "kind": "control",
+      "controlFor": ["out-of-scope"],
+      "description": "A rename where both paths are inside the edit set.",
+      "item": { "editSet": ["src/**"] },
+      "base": { "src/util/strings.ts": ["export const upper = (text: string) => text.toUpperCase();", "export const lower = (text: string) => text.toLowerCase();"] },
+      "head": { "src/util/strings.ts": null, "src/text/strings.ts": ["export const upper = (text: string) => text.toUpperCase();", "export const lower = (text: string) => text.toLowerCase();"] },
+      "expect": []
+    },
+    {
+      "id": "tamper-test-authoring-rewrite",
+      "kind": "tamper",
+      "description": "A test-authoring rewrite with fewer assertions is flagged.",
+      "item": { "editSet": ["tests/**"], "profiles": ["test-authoring"] },
+      "base": { "tests/math.test.ts": ["test('add', () => {", "  expect(add(1, 1)).toBe(2);", "  expect(add(2, 2)).toBe(4);", "});"] },
+      "head": { "tests/math.test.ts": ["test.each([[1, 1, 2], [2, 2, 4]])('add %i + %i', (a, b, sum) => {", "  expect(add(a, b)).toBe(sum);", "});"] },
+      "expect": [{ "rule": "test-edit", "file": "tests/math.test.ts" }, { "rule": "assertion-drop", "file": "tests/math.test.ts" }]
+    },
+    {
+      "id": "tamper-test-authoring-weaken-assertion",
+      "kind": "tamper",
+      "description": "Weakening an existing assertion is flagged for test-authoring.",
+      "item": { "editSet": ["tests/**"], "profiles": ["test-authoring"] },
+      "base": { "tests/math.test.ts": ["test('add', () => {", "  expect(add(1, 1)).toBe(2);", "});"] },
+      "head": { "tests/math.test.ts": ["test('add', () => {", "  expect(add(1, 1)).toBeTruthy();", "});"] },
+      "expect": [{ "rule": "test-edit", "file": "tests/math.test.ts" }, { "rule": "assertion-drop", "file": "tests/math.test.ts" }]
+    },
+    {
+      "id": "tamper-test-authoring-disable-with-added-lines",
+      "kind": "tamper",
+      "description": "Wrapping an existing assertion in an unreachable block requires review.",
+      "item": { "editSet": ["tests/**"], "profiles": ["test-authoring"] },
+      "base": { "tests/math.test.ts": ["test('add', () => {", "  expect(add(1, 1)).toBe(2);", "});"] },
+      "head": { "tests/math.test.ts": ["test('add', () => {", "if (false) {", "  expect(add(1, 1)).toBe(2);", "}", "});"] },
+      "expect": [{ "rule": "test-edit", "file": "tests/math.test.ts" }]
+    },
+    {
+      "id": "tamper-test-authoring-unbraced-return",
+      "kind": "tamper",
+      "description": "An inserted assertion must not make an existing conditional return unconditional.",
+      "item": { "editSet": ["tests/**"], "profiles": ["test-authoring"] },
+      "base": { "tests/math.test.ts": ["test('add', () => {", "  if (disabled)", "    return;", "  expect(add(1, 1)).toBe(2);", "});"] },
+      "head": { "tests/math.test.ts": ["test('add', () => {", "  if (disabled)", "    expect(1).toBe(1);", "    return;", "  expect(add(1, 1)).toBe(2);", "});"] },
+      "expect": [{ "rule": "test-edit", "file": "tests/math.test.ts", "line": 3 }]
+    },
+    {
+      "id": "tamper-test-authoring-java-unbraced-return",
+      "kind": "tamper",
+      "description": "An added Java assertion cannot make an existing conditional return unconditional.",
+      "item": { "editSet": ["src/test/**"], "profiles": ["test-authoring"] },
+      "base": { "src/test/java/MathTest.java": ["class MathTest {", "  void testMath() {", "    if (disabled)", "      return;", "    assertEquals(2, result);", "  }", "}"] },
+      "head": { "src/test/java/MathTest.java": ["class MathTest {", "  void testMath() {", "    if (disabled)", "      assertEquals(1, 1);", "      return;", "    assertEquals(2, result);", "  }", "}"] },
+      "expect": [{ "rule": "test-edit", "file": "src/test/java/MathTest.java", "line": 4 }]
+    },
+    {
+      "id": "tamper-test-authoring-eval-exit",
+      "kind": "tamper",
+      "description": "An added assertion cannot execute arbitrary code before existing checks.",
+      "item": { "editSet": ["tests/**"], "profiles": ["test-authoring"] },
+      "base": { "tests/math.test.ts": ["test('add', () => {", "  expect(result).toBe(2);", "});"] },
+      "head": { "tests/math.test.ts": ["test('add', () => {", "  expect(eval(\"process.exit(0)\")).toBe(undefined);", "  expect(result).toBe(2);", "});"] },
+      "expect": [{ "rule": "test-edit", "file": "tests/math.test.ts" }]
+    },
+    {
+      "id": "tamper-test-authoring-arbitrary-call",
+      "kind": "tamper",
+      "description": "A user-defined function in an added assertion may interrupt the test.",
+      "item": { "editSet": ["tests/**"], "profiles": ["test-authoring"] },
+      "base": { "tests/math.test.ts": ["test('add', () => {", "  expect(result).toBe(2);", "});"] },
+      "head": { "tests/math.test.ts": ["test('add', () => {", "  expect(stop(0)).toBe(undefined);", "  expect(result).toBe(2);", "});"] },
+      "expect": [{ "rule": "test-edit", "file": "tests/math.test.ts" }]
+    },
+    {
+      "id": "control-test-authoring-new-file",
+      "kind": "control",
+      "controlFor": ["test-edit", "assertion-drop"],
+      "description": "A new test file is clean for test-authoring.",
+      "item": { "editSet": ["tests/**"], "profiles": ["test-authoring"] },
+      "base": {},
+      "head": { "tests/new.test.ts": ["test('new', () => {", "  expect(1).toBe(1);", "});"] },
+      "expect": []
+    },
+    {
+      "id": "control-test-authoring-add-assertion",
+      "kind": "control",
+      "controlFor": ["test-edit", "assertion-drop"],
+      "description": "Adding an assertion without changing existing lines is clean.",
+      "item": { "editSet": ["tests/**"], "profiles": ["test-authoring"] },
+      "base": { "tests/math.test.ts": ["test('add', () => {", "  expect(add(1, 1)).toBe(2);", "});"] },
+      "head": { "tests/math.test.ts": ["test('add', () => {", "  expect(add(1, 1)).toBe(2);", "  expect(add(2, 2)).toBe(4);", "});"] },
+      "expect": []
+    },
+    {
+      "id": "tamper-test-authoring-java-braceless-if",
+      "kind": "tamper",
+      "description": "An assertion inserted between a brace-less if and its return makes the return unconditional and skips later assertions.",
+      "item": { "editSet": ["src/test/**"], "profiles": ["test-authoring"] },
+      "base": { "src/test/java/CalcTest.java": ["class CalcTest {", "  @Test void computes() {", "    if (disabled)", "      return;", "    assertEquals(2, compute());", "  }", "}"] },
+      "head": { "src/test/java/CalcTest.java": ["class CalcTest {", "  @Test void computes() {", "    if (disabled)", "      assertEquals(1, 1);", "      return;", "    assertEquals(2, compute());", "  }", "}"] },
+      "expect": [{ "rule": "test-edit", "file": "src/test/java/CalcTest.java" }]
+    },
+    {
+      "id": "control-test-authoring-js-index",
+      "kind": "control",
+      "controlFor": ["test-edit", "assertion-drop"],
+      "description": "An assertion over an indexed value is clean.",
+      "item": { "editSet": ["tests/**"], "profiles": ["test-authoring"] },
+      "base": { "tests/math.test.ts": ["test('items', () => {", "  expect(result).toBe(2);", "});"] },
+      "head": { "tests/math.test.ts": ["test('items', () => {", "  expect(result).toBe(2);", "  expect(items[0]).toBe(1);", "});"] },
+      "expect": []
+    },
+    {
+      "id": "control-test-authoring-js-await",
+      "kind": "control",
+      "controlFor": ["test-edit", "assertion-drop"],
+      "description": "An awaited assertion with a resolves chain is clean.",
+      "item": { "editSet": ["tests/**"], "profiles": ["test-authoring"] },
+      "base": { "tests/math.test.ts": ["test('operation', async () => {", "  expect(result).toBe(2);", "});"] },
+      "head": { "tests/math.test.ts": ["test('operation', async () => {", "  expect(result).toBe(2);", "  await expect(operation()).resolves.toBe(1);", "});"] },
+      "expect": []
+    },
+    {
+      "id": "control-test-authoring-js-variables",
+      "kind": "control",
+      "controlFor": ["test-edit", "assertion-drop"],
+      "description": "Standalone assertions over variables and collections are clean.",
+      "item": { "editSet": ["tests/**"], "profiles": ["test-authoring"] },
+      "base": { "tests/math.test.ts": ["test('add', () => {", "  expect(result).toBe(2);", "});"] },
+      "head": { "tests/math.test.ts": ["test('add', () => {", "  expect(result).toBe(2);", "  expect(items).toEqual([]);", "  expect(result).toBe(3);", "});"] },
+      "expect": []
+    },
+    {
+      "id": "control-test-authoring-python-variable",
+      "kind": "control",
+      "controlFor": ["test-edit", "assertion-drop"],
+      "description": "A standalone Python assertion over variables is clean.",
+      "item": { "editSet": ["tests/**"], "profiles": ["test-authoring"] },
+      "base": { "tests/test_math.py": ["def test_math():", "    assert result == 2"] },
+      "head": { "tests/test_math.py": ["def test_math():", "    assert result == 2", "    assert items == []"] },
+      "expect": []
+    },
+    {
+      "id": "control-test-authoring-rust-variable",
+      "kind": "control",
+      "controlFor": ["test-edit", "assertion-drop"],
+      "description": "A standalone Rust equality assertion over variables is clean.",
+      "item": { "editSet": ["tests/**"], "profiles": ["test-authoring"] },
+      "base": { "tests/math.rs": ["#[test]", "fn math() {", "    assert_eq!(result, 2);", "}"] },
+      "head": { "tests/math.rs": ["#[test]", "fn math() {", "    assert_eq!(result, 2);", "    assert_eq!(other, 3);", "}"] },
+      "expect": []
+    },
+    {
+      "id": "control-test-authoring-go-variable",
+      "kind": "control",
+      "controlFor": ["test-edit", "assertion-drop"],
+      "description": "A standalone Go equality assertion over variables is clean.",
+      "item": { "editSet": ["**/*.go"], "profiles": ["test-authoring"] },
+      "base": { "math_test.go": ["package math", "func TestMath(t *testing.T) {", "    assert.Equal(t, 2, result)", "}"] },
+      "head": { "math_test.go": ["package math", "func TestMath(t *testing.T) {", "    assert.Equal(t, 2, result)", "    assert.Equal(t, 3, other)", "}"] },
+      "expect": []
+    },
+    {
+      "id": "control-test-authoring-jvm-variable",
+      "kind": "control",
+      "controlFor": ["test-edit", "assertion-drop"],
+      "description": "A standalone Java equality assertion over variables is clean.",
+      "item": { "editSet": ["src/test/**"], "profiles": ["test-authoring"] },
+      "base": { "src/test/java/MathTest.java": ["class MathTest {", "  void testMath() {", "    assertEquals(2, result);", "  }", "}"] },
+      "head": { "src/test/java/MathTest.java": ["class MathTest {", "  void testMath() {", "    assertEquals(2, result);", "    assertEquals(3, other);", "  }", "}"] },
+      "expect": []
+    },
+    {
+      "id": "control-test-authoring-ruby-variable",
+      "kind": "control",
+      "controlFor": ["test-edit", "assertion-drop"],
+      "description": "A standalone Ruby equality assertion over variables is clean.",
+      "item": { "editSet": ["spec/**"], "profiles": ["test-authoring"] },
+      "base": { "spec/math_spec.rb": ["it 'math' do", "  expect(result).to eq(2)", "end"] },
+      "head": { "spec/math_spec.rb": ["it 'math' do", "  expect(result).to eq(2)", "  expect(items).to eq([])", "end"] },
+      "expect": []
+    },
+    {
+      "id": "control-test-authoring-sql-variable",
+      "kind": "control",
+      "controlFor": ["test-edit", "assertion-drop"],
+      "description": "A standalone SQL equality assertion over literals is clean.",
+      "item": { "editSet": ["tests/**"], "profiles": ["test-authoring"] },
+      "base": { "tests/math.test.sql": ["SELECT is(1, 1);"] },
+      "head": { "tests/math.test.sql": ["SELECT is(1, 1);", "SELECT is(2, 2);"] },
+      "expect": []
+    },
+    {
+      "id": "assert-control-js-rename",
+      "kind": "control",
+      "assertionControl": true,
+      "controlFor": ["assertion-drop"],
+      "description": "A variable rename inside a test keeps every assertion.",
+      "item": { "editSet": ["src/**"] },
+      "base": { "src/sum.test.js": ["test('sum', () => {", "  const r = sum(2, 3);", "  expect(r).toBe(5);", "});"] },
+      "head": { "src/sum.test.js": ["test('sum', () => {", "  const result = sum(2, 3);", "  expect(result).toBe(5);", "});"] },
+      "expect": [{ "rule": "test-edit", "file": "src/sum.test.js" }]
+    },
+    {
+      "id": "assert-control-js-matcher-swap",
+      "kind": "control",
+      "assertionControl": true,
+      "controlFor": ["assertion-drop"],
+      "description": "toBe swapped for an equally strict toEqual.",
+      "item": { "editSet": ["src/**"] },
+      "base": { "src/pair.test.ts": ["test('pair', () => {", "  expect(pair(1)).toBe(2);", "});"] },
+      "head": { "src/pair.test.ts": ["test('pair', () => {", "  expect(pair(1)).toEqual(2);", "});"] },
+      "expect": [{ "rule": "test-edit", "file": "src/pair.test.ts" }]
+    },
+    {
+      "id": "assert-control-js-split",
+      "kind": "control",
+      "assertionControl": true,
+      "controlFor": ["assertion-drop"],
+      "description": "One combined assertion split into two precise ones.",
+      "item": { "editSet": ["src/**"] },
+      "base": { "src/range.test.ts": ["test('range', () => {", "  expect(range(1, 3)).toEqual([1, 2, 3]);", "});"] },
+      "head": { "src/range.test.ts": ["test('range', () => {", "  expect(range(1, 3)).toHaveLength(3);", "  expect(range(1, 3)[0]).toBe(1);", "});"] },
+      "expect": [{ "rule": "test-edit", "file": "src/range.test.ts" }]
+    },
+    {
+      "id": "assert-control-js-reorder",
+      "kind": "control",
+      "assertionControl": true,
+      "controlFor": ["assertion-drop"],
+      "description": "Two assertions swap places.",
+      "item": { "editSet": ["src/**"] },
+      "base": { "src/flags.test.ts": ["test('flags', () => {", "  expect(isOn('a')).toBe(true);", "  expect(isOn('b')).toBe(false);", "});"] },
+      "head": { "src/flags.test.ts": ["test('flags', () => {", "  expect(isOn('b')).toBe(false);", "  expect(isOn('a')).toBe(true);", "});"] },
+      "expect": [{ "rule": "test-edit", "file": "src/flags.test.ts" }]
+    },
+    {
+      "id": "assert-control-js-weak-to-strict",
+      "kind": "control",
+      "assertionControl": true,
+      "controlFor": ["assertion-drop"],
+      "description": "A weak toBeTruthy becomes an exact check.",
+      "item": { "editSet": ["src/**"] },
+      "base": { "src/user.test.ts": ["test('user', () => {", "  expect(find(1)).toBeTruthy();", "});"] },
+      "head": { "src/user.test.ts": ["test('user', () => {", "  expect(find(1)).toEqual({ id: 1 });", "});"] },
+      "expect": [{ "rule": "test-edit", "file": "src/user.test.ts" }]
+    },
+    {
+      "id": "assert-control-python-extra",
+      "kind": "control",
+      "assertionControl": true,
+      "controlFor": ["assertion-drop"],
+      "description": "A Python test gains an assertion.",
+      "item": { "editSet": ["tests/**"] },
+      "base": { "tests/test_area.py": ["def test_area():", "    assert area(2, 3) == 6"] },
+      "head": { "tests/test_area.py": ["def test_area():", "    assert area(2, 3) == 6", "    assert area(0, 3) == 0"] },
+      "expect": [{ "rule": "test-edit", "file": "tests/test_area.py" }]
+    },
+    {
+      "id": "assert-control-go-message",
+      "kind": "control",
+      "assertionControl": true,
+      "controlFor": ["assertion-drop"],
+      "description": "A Go failure message is reworded.",
+      "item": { "editSet": ["**/*.go"] },
+      "base": { "sum_test.go": ["package sum", "", "import \"testing\"", "", "func TestSum(t *testing.T) {", "\tif Sum(1, 2) != 3 {", "\t\tt.Errorf(\"wrong\")", "\t}", "}"] },
+      "head": { "sum_test.go": ["package sum", "", "import \"testing\"", "", "func TestSum(t *testing.T) {", "\tif got := Sum(1, 2); got != 3 {", "\t\tt.Errorf(\"Sum(1, 2) = %d, want 3\", got)", "\t}", "}"] },
+      "expect": [{ "rule": "test-edit", "file": "sum_test.go" }]
+    },
+    {
+      "id": "assert-control-rust-values",
+      "kind": "control",
+      "assertionControl": true,
+      "controlFor": ["assertion-drop"],
+      "description": "A Rust test changes its inputs, same number of asserts.",
+      "item": { "editSet": ["tests/**"] },
+      "base": { "tests/parse.rs": ["#[test]", "fn parses() {", "    assert_eq!(parse(\"7\"), Some(7));", "}"] },
+      "head": { "tests/parse.rs": ["#[test]", "fn parses() {", "    assert_eq!(parse(\" 7 \"), Some(7));", "}"] },
+      "expect": [{ "rule": "test-edit", "file": "tests/parse.rs" }]
+    },
+    {
+      "id": "assert-control-java-move",
+      "kind": "control",
+      "assertionControl": true,
+      "controlFor": ["assertion-drop"],
+      "description": "A Java assertion moves below its setup line.",
+      "item": { "editSet": ["src/test/**"] },
+      "base": { "src/test/java/CartTest.java": ["class CartTest {", "  @Test void adds() {", "    assertEquals(1, cart.size());", "    cart.add(item);", "  }", "}"] },
+      "head": { "src/test/java/CartTest.java": ["class CartTest {", "  @Test void adds() {", "    cart.add(item);", "    assertEquals(1, cart.size());", "  }", "}"] },
+      "expect": [{ "rule": "test-edit", "file": "src/test/java/CartTest.java" }]
+    },
+    {
+      "id": "assert-control-ruby-matcher",
+      "kind": "control",
+      "assertionControl": true,
+      "controlFor": ["assertion-drop"],
+      "description": "An RSpec expectation is corrected, not removed.",
+      "item": { "editSet": ["spec/**"] },
+      "base": { "spec/order_spec.rb": ["describe Order do", "  it 'totals' do", "    expect(Order.new([2, 3]).total).to eq(4)", "  end", "end"] },
+      "head": { "spec/order_spec.rb": ["describe Order do", "  it 'totals' do", "    expect(Order.new([2, 3]).total).to eq(5)", "  end", "end"] },
+      "expect": [{ "rule": "test-edit", "file": "spec/order_spec.rb" }]
+    }
+  ]
+}

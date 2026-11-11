@@ -1,0 +1,20 @@
+{
+  "description": "Integrity flagged a skipped test; the card lists it as accepted but no human countersign exists.",
+  "headSha": "0a1b2c3",
+  "card": {
+    "headSha": "0a1b2c3",
+    "checks": [{ "name": "unit", "command": "pnpm test", "exit": 0, "log": ".mend/evidence/fern-sort/unit.log" }],
+    "verdict": { "result": "PASS", "sha": "0a1b2c3" },
+    "auditLanes": [{ "lane": "behaviour", "result": "PASS", "sha": "0a1b2c3", "method": "reran unit" }],
+    "integrity": {
+      "pass": false,
+      "flags": [{ "rule": "skip-marker", "file": "src/sort.test.ts", "line": 30, "detail": "new skip marker", "severity": "block" }],
+      "countersigned": [{ "rule": "skip-marker", "file": "src/sort.test.ts", "line": 30 }]
+    },
+    "countersigns": []
+  },
+  "logs": {
+    ".mend/evidence/fern-sort/unit.log": "$ pnpm test\nexit: 0\n"
+  },
+  "expect": ["flag-uncountersigned"]
+}

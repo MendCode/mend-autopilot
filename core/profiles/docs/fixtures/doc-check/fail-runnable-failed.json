@@ -1,0 +1,14 @@
+{
+  "description": "The runnable example was run and exited 1.",
+  "item": { "id": "usage-count" },
+  "config": { "locale": "en" },
+  "files": [
+    {
+      "path": "docs/usage.md",
+      "base": "# Usage\n\nCount the lines in a file.\n",
+      "head": "# Usage\n\nCount the lines in a file.\n\n```sh runnable\ntally notes.txt\n```\n"
+    }
+  ],
+  "runResults": { "runs": [{ "path": "docs/usage.md", "line": 5, "exitCode": 1 }] },
+  "expect": ["runnable-failed"]
+}

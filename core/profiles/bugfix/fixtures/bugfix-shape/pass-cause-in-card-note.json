@@ -1,0 +1,17 @@
+{
+  "description": "The item has no rootCause field; the card's proof note names billing/proration.py:4, which exists at head, and the fix changes that module.",
+  "item": { "id": "proration-leap-year" },
+  "card": { "proof": { "changeType": "bugfix", "note": "billing/proration.py:4 divided by a fixed 365 days, so February 29 charged one day twice." } },
+  "files": [
+    {
+      "path": "billing/proration.py",
+      "base": "import calendar\n\ndef daily_rate(amount, year):\n    return amount / 365\n",
+      "head": "import calendar\n\ndef daily_rate(amount, year):\n    return amount / (366 if calendar.isleap(year) else 365)\n"
+    },
+    {
+      "path": "tests/test_proration.py",
+      "base": "",
+      "head": "from billing.proration import daily_rate\n\ndef test_leap_year_rate():\n    assert daily_rate(366, 2028) == 1\n"
+    }
+  ]
+}

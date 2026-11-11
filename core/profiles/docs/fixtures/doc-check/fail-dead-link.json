@@ -1,0 +1,14 @@
+{
+  "description": "The new text links to a setup page that does not exist and names a source file that was never added.",
+  "item": { "id": "usage-count" },
+  "config": { "locale": "en" },
+  "files": [
+    { "path": "src/cli.mjs", "base": "export function main() {}\n", "head": "export function main() {}\n" },
+    {
+      "path": "docs/usage.md",
+      "base": "# Usage\n\nCount the lines in a file.\n",
+      "head": "# Usage\n\nCount the lines in a file. First follow [the setup page](./setup.md), then read `src/count.mjs` for the rules.\n"
+    }
+  ],
+  "expect": ["dead-link"]
+}

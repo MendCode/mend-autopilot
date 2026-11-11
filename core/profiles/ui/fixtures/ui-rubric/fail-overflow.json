@@ -1,0 +1,14 @@
+{
+  "description": "A tile whose content spills past its box at the target width.",
+  "rules": { "locale": "es", "now": "2026-11-03T12:00:00Z" },
+  "snapshots": [
+    {
+      "id": "tile-flow",
+      "overflow": true,
+      "texts": [{ "text": "Caudal", "fontPx": 13, "color": "#e8ecf2", "background": "#22262e", "clipped": false }],
+      "numbers": [{ "text": "38 l/s", "fontPx": 32 }],
+      "timestamps": []
+    }
+  ],
+  "expect": ["overflow"]
+}

@@ -1,0 +1,11 @@
+{
+  "description": "mend-autopilot on ChatGPT 20: gpt-6-luna leads, owns and audits; gpt-6-astra only plans, advises and critiques. One owner at a time.",
+  "version": "1",
+  "roles": {
+    "main": { "model": "gpt-6-luna", "effort": "medium" },
+    "subagent": { "model": "gpt-6-luna", "effort": "medium" },
+    "workflow": { "model": "gpt-6-luna", "effort": "medium" },
+    "plan": { "model": "gpt-6-astra", "effort": "medium" },
+    "advisor": { "model": "gpt-6-astra", "effort": "medium" }
+  }
+}

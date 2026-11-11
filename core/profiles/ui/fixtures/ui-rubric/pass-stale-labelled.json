@@ -1,0 +1,16 @@
+{
+  "description": "The same stale reading, shown with its age and a visible stale marker.",
+  "rules": { "locale": "es", "now": "2026-11-03T12:00:00Z" },
+  "snapshots": [
+    {
+      "id": "tile-temperature",
+      "overflow": false,
+      "texts": [
+        { "text": "Temperatura", "fontPx": 13, "color": "#e8ecf2", "background": "#22262e", "clipped": false },
+        { "text": "Sin datos recientes", "fontPx": 12, "color": "#ffb800", "background": "#22262e", "clipped": false }
+      ],
+      "numbers": [{ "text": "24,1 °C", "fontPx": 32 }],
+      "timestamps": [{ "value": "2026-11-03T10:00:00Z", "freshnessWindowMs": 900000, "staleMarker": "Hace 2 h" }]
+    }
+  ]
+}

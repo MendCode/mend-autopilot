@@ -1,0 +1,13 @@
+{
+  "description": "The repo writes its docs in Spanish and the new paragraph is in English.",
+  "item": { "id": "uso-conteo" },
+  "config": { "locale": "es" },
+  "files": [
+    {
+      "path": "docs/uso.md",
+      "base": "# Uso\n\nCuenta las líneas de un archivo.\n",
+      "head": "# Uso\n\nCuenta las líneas de un archivo.\n\nRun the counter on the file and check the total in the last line of the output.\n"
+    }
+  ],
+  "expect": ["doc-locale"]
+}

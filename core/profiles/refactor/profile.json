@@ -1,0 +1,28 @@
+{
+  "kind": "refactor",
+  "description": "Restructuring that keeps behaviour: extracting, moving, renaming and simplifying code. The module map is approved first; the same tests must give the same results at base and head, and the exported surface stays put unless the item declares a change.",
+  "matchHints": {
+    "paths": [],
+    "intents": ["refactor", "extract", "move", "rename", "split", "simplify", "cleanup", "restructure", "deduplicate"]
+  },
+  "riskFloor": "low",
+  "exemplars": {
+    "what": "Modules in the repo that already have the shape the refactor aims for (size, file layout, how they export); cite each path and what to copy from it.",
+    "min": 1,
+    "max": 2
+  },
+  "proposalArtifact": {
+    "name": "module-map",
+    "inputs": [{ "path": "module-map.json" }],
+    "what": "module-map.json in the item's evidence folder: {files:[{path, oldPath?, before:[export names], after:[export names]}]}; list every changed JS/TS/Python source file, using oldPath for a rename. List intended surface changes separately as path#name in surfaceChanges."
+  },
+  "frozenBaseline": "The approved module map, and the test results recorded at base.",
+  "humanApproval": "high-risk",
+  "rubric": ["surface-unchanged"],
+  "integrationDiff": "module-map",
+  "critiqueLens": "critique-lens.md",
+  "roundBudget": 2,
+  "fileCap": 10,
+  "quantityApplies": false,
+  "cardFields": ["approvedProposal", "proof"]
+}

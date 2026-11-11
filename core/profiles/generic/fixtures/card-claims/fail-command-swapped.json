@@ -1,0 +1,16 @@
+{
+  "description": "The card names the full test suite, but the log shows only one file was run.",
+  "headSha": "0a1b2c3",
+  "card": {
+    "headSha": "0a1b2c3",
+    "checks": [{ "name": "unit", "command": "pnpm test", "exit": 0, "log": ".mend/evidence/fern-sort/unit.log" }],
+    "verdict": { "result": "PASS", "sha": "0a1b2c3" },
+    "auditLanes": [{ "lane": "behaviour", "result": "PASS", "sha": "0a1b2c3", "method": "reran unit" }],
+    "integrity": { "pass": true, "flags": [], "countersigned": [] },
+    "countersigns": []
+  },
+  "logs": {
+    ".mend/evidence/fern-sort/unit.log": "$ pnpm test src/sort.test.ts\n\n  3 passing (40ms)\n\nexit: 0\n"
+  },
+  "expect": ["check-command-mismatch"]
+}

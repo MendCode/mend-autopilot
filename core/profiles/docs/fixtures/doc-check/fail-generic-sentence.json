@@ -1,0 +1,13 @@
+{
+  "description": "The new paragraph opens with filler and closes with a sign-off that tell the reader nothing.",
+  "item": { "id": "usage-count" },
+  "config": { "locale": "en" },
+  "files": [
+    {
+      "path": "docs/usage.md",
+      "base": "# Usage\n\nCount the lines in a file.\n",
+      "head": "# Usage\n\nCount the lines in a file.\n\nIt is important to note that empty lines count too.\n\nHappy coding!\n"
+    }
+  ],
+  "expect": ["generic-sentence"]
+}

@@ -1,0 +1,10 @@
+{
+  "description": "The item asks for three new card components and three are added.",
+  "item": { "id": "cards-batch", "quantity": { "expected": 3, "glob": "src/cards/*.tsx" } },
+  "files": [
+    { "path": "src/cards/LeafCard.tsx", "base": null, "head": "export const LeafCard = () => null;\n" },
+    { "path": "src/cards/StoneCard.tsx", "base": null, "head": "export const StoneCard = () => null;\n" },
+    { "path": "src/cards/RiverCard.tsx", "base": null, "head": "export const RiverCard = () => null;\n" },
+    { "path": "src/cards/index.ts", "base": "export {};\n", "head": "export * from './LeafCard';\nexport * from './StoneCard';\nexport * from './RiverCard';\n" }
+  ]
+}

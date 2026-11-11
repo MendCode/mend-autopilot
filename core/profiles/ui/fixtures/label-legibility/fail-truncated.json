@@ -1,0 +1,1 @@
+{"description":"Axis labels are automatically truncated.","files":[{"path":"src/chart.ts","base":null,"head":"const axisLabel = { overflow: 'truncate' };\n"}],"expect":["label-truncated"]}

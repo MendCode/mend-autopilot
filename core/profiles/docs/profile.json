@@ -1,0 +1,28 @@
+{
+  "kind": "docs",
+  "description": "Documentation pages: guides, references, READMEs and how-tos. The outline is approved first; every command, flag, link and path in the new text exists in the repo, examples marked runnable have a recorded passing run, and the prose is short, specific and in the repo locale.",
+  "matchHints": {
+    "paths": ["**/*.md", "**/*.mdx", "docs/**"],
+    "intents": ["docs", "documentation", "readme", "guide", "how-to", "reference", "tutorial", "changelog"]
+  },
+  "riskFloor": "low",
+  "exemplars": {
+    "what": "Pages in the repo that already serve the same kind of reader task (install, reference, troubleshooting); cite each path and what to copy from it: section order, example style, length.",
+    "min": 1,
+    "max": 2
+  },
+  "proposalArtifact": {
+    "name": "outline",
+    "inputs": [{ "path": "outline.json" }],
+    "what": "outline.json in the item's evidence folder: for each page, its path, the reader it serves, the task that reader should finish, and the headings in order ({ documents: [{ path, reader, task, headings }] })."
+  },
+  "frozenBaseline": "The approved outline: pages, headings and their order, and the reader task each page serves.",
+  "humanApproval": "high-risk",
+  "rubric": ["doc-check"],
+  "integrationDiff": null,
+  "critiqueLens": "critique-lens.md",
+  "roundBudget": 2,
+  "fileCap": 6,
+  "quantityApplies": true,
+  "cardFields": ["approvedProposal", "proof"]
+}

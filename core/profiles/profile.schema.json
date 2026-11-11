@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mend-autopilot.invalid/schemas/profile.schema.json",
+  "title": "mend-autopilot work profile",
+  "description": "One file per work kind at profiles/<kind>/profile.json. check-profiles.mjs validates it with a built-in validator that supports exactly the keywords used here; a new keyword must be added there first.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "kind",
+    "description",
+    "matchHints",
+    "riskFloor",
+    "exemplars",
+    "proposalArtifact",
+    "frozenBaseline",
+    "humanApproval",
+    "rubric",
+    "integrationDiff",
+    "critiqueLens",
+    "roundBudget",
+    "fileCap",
+    "quantityApplies",
+    "cardFields"
+  ],
+  "properties": {
+    "kind": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "Equals the folder name." },
+    "description": { "type": "string", "minLength": 1 },
+    "matchHints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["paths", "intents"],
+      "properties": {
+        "paths": { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "Globs that suggest this profile; the lead decides." },
+        "intents": { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "Words in an item goal that suggest this profile." }
+      }
+    },
+    "riskFloor": { "enum": ["low", "medium", "high"], "description": "Lowest risk tier an item with this profile can have." },
+    "ownerHints": {
+      "type": "array",
+      "description": "Optional advisory owner suggestions keyed by item uiType; never automatic routing.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["uiType", "ownerHint"],
+        "properties": {
+          "uiType": { "type": "string", "minLength": 1 },
+          "ownerHint": { "enum": ["strong", "cheap-with-direction"] }
+        }
+      }
+    },
+    "exemplars": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["what", "min", "max"],
+      "properties": {
+        "what": { "type": "string", "minLength": 1, "description": "What counts as a good reference in the repo for this kind of work." },
+        "min": { "type": "integer", "minimum": 0 },
+        "max": { "type": "integer", "minimum": 1 },
+        "maxImageLongSidePx": { "type": "integer", "minimum": 1, "description": "Upper bound for image exemplars and crops sent to a model." }
+      }
+    },
+    "proposalArtifact": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["name", "what"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "what": { "type": "string", "minLength": 1 },
+        "inputs": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["path"], "properties": { "path": { "type": "string", "minLength": 1 }, "field": { "type": "string", "minLength": 1 } } }, "description": "Files relative to the item evidence folder that integration checks read; frozen at proposal approval." },
+        "variantsWhenOpen": { "type": "integer", "minimum": 1, "description": "How many variants to produce when the brief leaves the shape open." }
+      }
+    },
+    "frozenBaseline": { "type": ["string", "null"], "description": "What stays frozen once the proposal is approved; null when there is no proposal." },
+    "humanApproval": { "enum": ["always", "high-risk"], "description": "A human approves high-risk items (including profile risk floors) and all visual work: UI, design, styles and art use always. Otherwise the strong supervisor approves, records who approved and when, and the human sees that decision on the evidence card before merge." },
+    "rubric": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+      "description": "Check ids, resolved from profiles/<kind>/checks/<id>.mjs or a repo command in .mend/quality.json."
+    },
+    "integrationDiff": { "type": ["string", "null"], "pattern": "^[a-z][a-z0-9-]*$", "description": "Check id comparing the integrated result with the approved proposal." },
+    "critiqueLens": { "type": "string", "pattern": "^[A-Za-z0-9._-]+\\.md$", "description": "File in the profile folder." },
+    "roundBudget": { "type": "integer", "minimum": 1 },
+    "fileCap": { "type": "integer", "minimum": 1, "description": "Most files a cheap owner may change in one item of this kind." },
+    "quantityApplies": { "type": "boolean", "description": "Whether the item's quantity contract (G6) applies." },
+    "cardFields": { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "Extra evidence-card fields this profile fills." }
+  }
+}

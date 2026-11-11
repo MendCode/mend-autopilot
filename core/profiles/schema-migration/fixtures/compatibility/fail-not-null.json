@@ -1,0 +1,1 @@
+{"capture":{"command":"node compatibility-test.mjs","exit":1,"database":{"kind":"ephemeral"},"combinations":["base-head","head-base"]},"expect":["compatibility"]}

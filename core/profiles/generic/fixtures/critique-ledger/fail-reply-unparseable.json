@@ -1,0 +1,24 @@
+{
+  "description": "The stored reply is prose with a single overall number and no score table, so no score on the card can be backed.",
+  "card": {
+    "state": "draft",
+    "profiles": [{ "kind": "generic", "skipped": false, "critique": { "model": "strong-model", "score": 8, "notes": "" } }],
+    "critique": {
+      "rounds": [
+        {
+          "round": 1,
+          "critic": "strong-model",
+          "log": ".mend/evidence/slate-export/critique-r1.md",
+          "diffStat": "1 file changed, 12 insertions(+)",
+          "gaming": "no",
+          "scores": { "generic.scope": { "base": null, "head": 8, "anchors": {} } }
+        }
+      ],
+      "findings": []
+    }
+  },
+  "logs": {
+    ".mend/evidence/slate-export/critique-r1.md": "Looks solid overall. score: 8\ngaming: no\n"
+  },
+  "expect": ["score-unbacked"]
+}

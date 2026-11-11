@@ -1,0 +1,11 @@
+{
+  "description": "A route handler loads an order by the id in the URL and returns it to whoever asks.",
+  "files": [
+    {
+      "path": "app/api/orders/[id]/route.ts",
+      "base": null,
+      "head": "export async function GET(request: Request, { params }: { params: { id: string } }) {\n  const order = await db.order.findUnique({ where: { id: params.id } });\n  if (!order) return Response.json({ error: 'not found' }, { status: 404 });\n  return Response.json(order);\n}\n"
+    }
+  ],
+  "expect": ["cross-account"]
+}

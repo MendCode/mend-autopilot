@@ -1,0 +1,12 @@
+{
+  "description": "No OpenAPI file, but the owner recorded the surface at base and head with the repo's route-table command; a new operation is additive.",
+  "surface": {
+    "base": {
+      "GET /orders": { "params": {}, "requestRequired": [], "responses": { "200": ["items"] } }
+    },
+    "head": {
+      "GET /orders": { "params": {}, "requestRequired": [], "responses": { "200": ["items"] } },
+      "GET /orders/export": { "params": { "query:format": { "required": false } }, "requestRequired": [], "responses": { "200": [] } }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "description": "The last reading is two hours old with a 15 minute window, and the tile shows a dash instead of saying it is stale.",
+  "rules": { "locale": "es", "now": "2026-11-03T12:00:00Z" },
+  "snapshots": [
+    {
+      "id": "tile-temperature",
+      "overflow": false,
+      "texts": [{ "text": "Temperatura", "fontPx": 13, "color": "#e8ecf2", "background": "#22262e", "clipped": false }],
+      "numbers": [],
+      "timestamps": [{ "value": "2026-11-03T10:00:00Z", "freshnessWindowMs": 900000, "staleMarker": "—" }]
+    }
+  ],
+  "expect": ["stale-shown-as-stale"]
+}

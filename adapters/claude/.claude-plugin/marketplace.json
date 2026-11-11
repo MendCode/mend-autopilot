@@ -1,0 +1,12 @@
+{
+  "name": "mend-autopilot-local",
+  "owner": { "name": "mend-autopilot" },
+  "description": "Local marketplace for the mend-autopilot Claude Code plugin built from this package",
+  "plugins": [
+    {
+      "name": "mend-autopilot",
+      "source": "./",
+      "description": "mend-autopilot skills, /mend-setup and the guard for repositories with a .mend/ folder"
+    }
+  ]
+}

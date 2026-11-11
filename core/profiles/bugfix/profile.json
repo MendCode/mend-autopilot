@@ -1,0 +1,27 @@
+{
+  "kind": "bugfix",
+  "description": "A change that makes observed wrong behaviour right. The bug is reproduced by a command before anything is fixed, the cause is named at a file:line, and the same command is measured failing at base and passing at head.",
+  "matchHints": {
+    "paths": [],
+    "intents": ["bug", "fix", "broken", "regression", "crash", "wrong", "error", "incorrect", "fails"]
+  },
+  "riskFloor": "low",
+  "exemplars": {
+    "what": "Earlier bugfixes in the repo that added a regression test next to the code they fixed; cite the path and the test style to copy (where the test lives, how it names the bug, how it builds its input).",
+    "min": 1,
+    "max": 2
+  },
+  "proposalArtifact": {
+    "name": "reproduction",
+    "what": "reproduction.json in the item's evidence folder, written before the fix: the regression command, its exit code and the relevant output at base, and the expected behaviour in one sentence."
+  },
+  "frozenBaseline": "The reproduced failing observation: the regression command and what it printed at base.",
+  "humanApproval": "high-risk",
+  "rubric": ["red-green", "bugfix-shape"],
+  "integrationDiff": null,
+  "critiqueLens": "critique-lens.md",
+  "roundBudget": 2,
+  "fileCap": 4,
+  "quantityApplies": false,
+  "cardFields": ["redGreen", "proof"]
+}

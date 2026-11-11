@@ -1,0 +1,33 @@
+{
+  "description": "The owner marks a finding resolved, but the later critic reply lists it as still open.",
+  "card": {
+    "state": "draft",
+    "profiles": [{ "kind": "generic", "skipped": false, "critique": { "model": "strong-model", "score": 7, "notes": "" } }],
+    "critique": {
+      "rounds": [
+        {
+          "round": 1,
+          "critic": "strong-model",
+          "log": ".mend/evidence/slate-export/critique-r1.md",
+          "diffStat": "1 file changed, 12 insertions(+)",
+          "gaming": "no",
+          "scores": { "generic.scope": { "base": null, "head": 6, "anchors": { "panel-a": null } } }
+        },
+        {
+          "round": 2,
+          "critic": "strong-model",
+          "log": ".mend/evidence/slate-export/critique-r2.md",
+          "diffStat": "1 file changed, 15 insertions(+)",
+          "gaming": "no",
+          "scores": { "generic.scope": { "base": null, "head": 7, "anchors": { "panel-a": null } } }
+        }
+      ],
+      "findings": [{ "id": "F1", "severity": "should", "status": "resolved", "round": 1 }]
+    }
+  },
+  "logs": {
+    ".mend/evidence/slate-export/critique-r1.md": "| category | base | head | panel-a |\n|---|---|---|---|\n| generic.scope | n/a | 6 | n/a |\n\nvs: generic.scope base=n/a panel-a=n/a - The new export omits per-account files.\ngaming: no - test diff is additions only\nfindings:\n- F1 [should] src/export.ts:8: one file instead of one per account -> loop over accounts\n",
+    ".mend/evidence/slate-export/critique-r2.md": "| category | base | head | panel-a |\n|---|---|---|---|\n| generic.scope | n/a | 7 | n/a |\n\nvs: generic.scope base=n/a panel-a=n/a - The new export still omits suspended accounts.\ngaming: no - test diff is additions only\nresolved: none\nstill-open:\n- F1: the loop covers active accounts only; suspended accounts still get no file\n"
+  },
+  "expect": ["resolution-unbacked"]
+}

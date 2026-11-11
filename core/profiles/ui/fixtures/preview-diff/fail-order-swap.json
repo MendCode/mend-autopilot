@@ -1,0 +1,21 @@
+{
+  "description": "Same sizes as the preview, but the history panel moved ahead of the detail panel.",
+  "tolerance": 0.08,
+  "preview": {
+    "containerWidth": 1200,
+    "blocks": [
+      { "id": "hero", "rect": { "x": 0, "y": 0, "width": 600, "height": 300 } },
+      { "id": "detail", "rect": { "x": 600, "y": 0, "width": 300, "height": 300 } },
+      { "id": "history", "rect": { "x": 900, "y": 0, "width": 300, "height": 300 } }
+    ]
+  },
+  "integrated": {
+    "containerWidth": 1200,
+    "blocks": [
+      { "id": "hero", "rect": { "x": 0, "y": 0, "width": 600, "height": 300 } },
+      { "id": "history", "rect": { "x": 600, "y": 0, "width": 300, "height": 300 } },
+      { "id": "detail", "rect": { "x": 900, "y": 0, "width": 300, "height": 300 } }
+    ]
+  },
+  "expect": ["block-order"]
+}

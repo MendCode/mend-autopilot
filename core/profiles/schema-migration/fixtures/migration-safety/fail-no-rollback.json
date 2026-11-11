@@ -1,0 +1,18 @@
+{
+  "description": "An Alembic revision adds a column but its downgrade only says pass, and nobody countersigned it as irreversible.",
+  "files": [
+    {
+      "path": "alembic/versions/a1b2c3_add_due_on.py",
+      "base": null,
+      "head": "\"\"\"add due_on to invoices\"\"\"\nimport sqlalchemy as sa\nfrom alembic import op\n\nrevision = \"a1b2c3\"\ndown_revision = \"f0e9d8\"\n\n\ndef upgrade():\n    op.add_column(\"invoices\", sa.Column(\"due_on\", sa.Date(), nullable=True))\n\n\ndef downgrade():\n    pass\n"
+    }
+  ],
+  "plan": { "tables": ["invoices"], "steps": ["add due_on"], "declaredLocks": [] },
+  "dryRun": {
+    "database": { "kind": "ephemeral", "url": "postgresql://postgres@localhost:55432/dry_run" },
+    "command": "alembic upgrade head",
+    "exit": 0,
+    "rowCounts": { "before": { "invoices": 75 }, "after": { "invoices": 75 } }
+  },
+  "expect": ["rollback-or-irreversible-countersign"]
+}

@@ -1,0 +1,18 @@
+{
+  "description": "A schema-only migration lost two order rows during the dry run, and the plan expected no row changes.",
+  "files": [
+    {
+      "path": "db/migrations/20260111010000_dedupe_constraint.sql",
+      "base": null,
+      "head": "-- migrate:up\nDELETE FROM orders WHERE id IN (SELECT id FROM orders_duplicates);\nALTER TABLE orders ADD COLUMN notes text;\n\n-- migrate:down\nALTER TABLE orders DROP COLUMN notes;\n"
+    }
+  ],
+  "plan": { "tables": ["orders"], "steps": ["add notes"], "declaredLocks": [] },
+  "dryRun": {
+    "database": { "kind": "ephemeral" },
+    "command": "pnpm db:migrate",
+    "exit": 0,
+    "rowCounts": { "before": { "orders": 120 }, "after": { "orders": 118 } }
+  },
+  "expect": ["row-count-changed"]
+}

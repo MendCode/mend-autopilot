@@ -1,0 +1,21 @@
+{
+  "kind": "generic",
+  "description": "Rules every item meets whatever its kind: scope and quantity, honest evidence, one source for derived values, floors on consumable values. Runs on every item beside its other profiles.",
+  "matchHints": { "paths": ["**"], "intents": [] },
+  "riskFloor": "low",
+  "exemplars": {
+    "what": "Two or three recent merged changes in the same area of the repo, with their tests; cite path and why each is a good model.",
+    "min": 1,
+    "max": 3
+  },
+  "proposalArtifact": null,
+  "frozenBaseline": null,
+  "humanApproval": "high-risk",
+  "rubric": ["scope-contract", "card-claims", "critique-ledger", "single-derivation", "sink-floor"],
+  "integrationDiff": null,
+  "critiqueLens": "critique-lens.md",
+  "roundBudget": 2,
+  "fileCap": 6,
+  "quantityApplies": true,
+  "cardFields": []
+}

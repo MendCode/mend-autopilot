@@ -1,0 +1,16 @@
+{
+  "description": "A new report route validates its id and tests its 404 but neither guards the route nor says it is public.",
+  "files": [
+    {
+      "path": "server/routes/reports.ts",
+      "base": "export const reportsRouter = Router();\n",
+      "head": "export const reportsRouter = Router();\n\nreportsRouter.get('/reports/:id', async (req, res) => {\n  const id = ReportId.parse(req.params.id);\n  const report = await loadReport(id);\n  if (!report) return res.status(404).json({ error: 'report not found' });\n  return res.json(report);\n});\n"
+    },
+    {
+      "path": "tests/reports.test.ts",
+      "base": null,
+      "head": "test('an unknown report returns 404', async () => {\n  const response = await request(app).get('/reports/missing-id');\n  expect(response.status).toBe(404);\n});\n"
+    }
+  ],
+  "expect": ["route-no-auth-decision"]
+}

@@ -1,0 +1,17 @@
+{
+  "description": "An intentional new heading token has a reason and does not spend the growth margin.",
+  "ui": { "scaleMargin": 0, "scaleAllow": [{ "property": "fontSize", "value": "20px", "reason": "Approved section heading token" }] },
+  "base": { "components": [], "page": { "elements": [
+    { "fontSize": "16px", "fontWeight": "400", "borderRadius": "4px", "color": "rgb(20, 30, 40)", "backgroundColor": "rgb(255, 255, 255)" }
+  ] } },
+  "head": {
+    "components": [{ "id": "heading", "elements": [
+      { "fontSize": "20px", "fontWeight": "400", "borderRadius": "4px", "color": "rgb(20, 30, 40)", "backgroundColor": "rgb(255, 255, 255)" }
+    ] }],
+    "page": { "elements": [
+      { "fontSize": "16px", "fontWeight": "400", "borderRadius": "4px", "color": "rgb(20, 30, 40)", "backgroundColor": "rgb(255, 255, 255)" },
+      { "fontSize": "20px", "fontWeight": "400", "borderRadius": "4px", "color": "rgb(20, 30, 40)", "backgroundColor": "rgb(255, 255, 255)" }
+    ] }
+  },
+  "expect": []
+}

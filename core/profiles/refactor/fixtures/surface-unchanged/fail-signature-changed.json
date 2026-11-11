@@ -1,0 +1,16 @@
+{
+  "description": "An arrow-function export gains a required parameter during the refactor; the name is the same but every caller must change.",
+  "item": { "id": "shipping-quote-cleanup" },
+  "files": [
+    {
+      "path": "src/shipping/quote.ts",
+      "base": "export const quote = (weightKg: number) => 5 + weightKg * 1.5;\n",
+      "head": "export const quote = (weightKg: number, zone: string) => (zone === 'remote' ? 9 : 5) + weightKg * 1.5;\n"
+    }
+  ],
+  "testResults": {
+    "base": { "passed": 8, "failed": 0, "skipped": 0 },
+    "head": { "passed": 8, "failed": 0, "skipped": 0 }
+  },
+  "expect": ["export-changed"]
+}

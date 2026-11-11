@@ -1,0 +1,16 @@
+{
+  "description": "Two files compute the same discounted price under different names.",
+  "files": [
+    {
+      "path": "server/pricing.py",
+      "base": "def quote(item):\n    return item\n",
+      "head": "def quote(item):\n    final_price = item.price * (1 - item.discount) + item.fee\n    return final_price\n"
+    },
+    {
+      "path": "web/price-tag.ts",
+      "base": "export const tag = (item) => '';\n",
+      "head": "export const tag = (item) => {\n  const shown = item.price * (1 - item.discount) + item.fee;\n  return String(shown);\n};\n"
+    }
+  ],
+  "expect": ["duplicate-derivation"]
+}

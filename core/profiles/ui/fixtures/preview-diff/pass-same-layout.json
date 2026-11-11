@@ -1,0 +1,20 @@
+{
+  "description": "The integration keeps the approved arrangement; widths drift by a few pixels from real fonts and scrollbars.",
+  "tolerance": 0.08,
+  "preview": {
+    "containerWidth": 1200,
+    "blocks": [
+      { "id": "hero", "rect": { "x": 0, "y": 0, "width": 600, "height": 300 } },
+      { "id": "detail", "rect": { "x": 600, "y": 0, "width": 300, "height": 300 } },
+      { "id": "history", "rect": { "x": 900, "y": 0, "width": 300, "height": 300 } }
+    ]
+  },
+  "integrated": {
+    "containerWidth": 1184,
+    "blocks": [
+      { "id": "hero", "rect": { "x": 0, "y": 0, "width": 588, "height": 304 } },
+      { "id": "detail", "rect": { "x": 596, "y": 0, "width": 292, "height": 304 } },
+      { "id": "history", "rect": { "x": 892, "y": 0, "width": 292, "height": 304 } }
+    ]
+  }
+}

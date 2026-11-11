@@ -1,0 +1,15 @@
+{
+  "description": "The order lookup adds the signed-in user to its condition; the product route is public on purpose and says so.",
+  "files": [
+    {
+      "path": "app/api/orders/[id]/route.ts",
+      "base": null,
+      "head": "export async function GET(request: Request, { params }: { params: { id: string } }) {\n  const session = await getServerSession();\n  const order = await db.order.findFirst({ where: { id: params.id, userId: session.user.id } });\n  if (!order) return Response.json({ error: 'not found' }, { status: 404 });\n  return Response.json(order);\n}\n"
+    },
+    {
+      "path": "server/routes/products.ts",
+      "base": "export const productsRouter = Router();\n",
+      "head": "export const productsRouter = Router();\n\nproductsRouter.get('/products/:id', async (req, res) => {\n  // auth: public (the catalog is readable by anyone)\n  const product = await findProduct(req.params.id);\n  if (!product) return res.sendStatus(404);\n  return res.json(product);\n});\n"
+    }
+  ]
+}

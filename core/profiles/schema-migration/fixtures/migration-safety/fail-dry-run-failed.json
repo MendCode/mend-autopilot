@@ -1,0 +1,18 @@
+{
+  "description": "The dry run exited with an error and the owner still asked for review.",
+  "files": [
+    {
+      "path": "db/migrations/20260110020000_add_order_notes.sql",
+      "base": null,
+      "head": "-- migrate:up\nALTER TABLE orders ADD COLUMN notes text;\n\n-- migrate:down\nALTER TABLE orders DROP COLUMN notes;\n"
+    }
+  ],
+  "plan": { "tables": ["orders"], "steps": ["add notes"], "declaredLocks": [] },
+  "dryRun": {
+    "database": { "kind": "ephemeral" },
+    "command": "pnpm db:migrate",
+    "exit": 1,
+    "rowCounts": { "before": { "orders": 120 }, "after": { "orders": 120 } }
+  },
+  "expect": ["dry-run-failed"]
+}

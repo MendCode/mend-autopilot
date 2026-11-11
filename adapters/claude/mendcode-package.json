@@ -1,0 +1,9 @@
+{
+  "name": "mend-autopilot-claude",
+  "version": "0.1.0",
+  "description": "Verified small-PR autopilot for MendCode on a Claude subscription: a cheap-model lead and owners, strong model only to plan, advise and critique",
+  "license": "MIT",
+  "compatibility": { "mendcode": ">=0.0.1", "api": 1 },
+  "capabilities": ["filesystem", "processes", "network"],
+  "environment": ["MEND_REVIEW_POLICY"]
+}

@@ -1,0 +1,12 @@
+{
+  "description": "A redeem endpoint credits points each time it is called; sending the same code twice credits twice.",
+  "files": [
+    {
+      "path": "server/routes/rewards.ts",
+      "base": "export const rewardsRouter = Router();\n",
+      "head": "export const rewardsRouter = Router();\n\nrewardsRouter.post('/rewards/redeem', requireUser, async (req, res) => {\n  const { code } = RedeemBody.parse(req.body);\n  await creditPoints(req.user.id, await pointsFor(code));\n  return res.status(204).end();\n});\n"
+    }
+  ],
+  "card": { "uncertain": ["none"] },
+  "expect": ["repeat-unbounded"]
+}

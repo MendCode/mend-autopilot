@@ -1,0 +1,8 @@
+dist/
+node_modules/
+.DS_Store
+__pycache__/
+# Local working notes stay out of the repository.
+.agents/
+docs/tasks/
+build/leak-denylist.local.json

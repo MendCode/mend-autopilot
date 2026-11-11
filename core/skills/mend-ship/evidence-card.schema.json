@@ -1,0 +1,782 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mend-autopilot.invalid/schemas/evidence-card.schema.json",
+  "title": "mend-autopilot evidence card",
+  "description": "One card per work item. It is the PR body source and is stored at <repo>/.mend/evidence/<item>.json (gitignored). Every claim comes from captured command output. Rules that compare two fields (verdict SHA equals head, every integrity flag countersigned) are enforced by mend-ship, not by this schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "item",
+    "problem",
+    "goal",
+    "state",
+    "rung",
+    "grant",
+    "risk",
+    "owner",
+    "branch",
+    "baseSha",
+    "headSha",
+    "checks",
+    "drivenPath",
+    "proof",
+    "profiles",
+    "integrity",
+    "rounds",
+    "verdict",
+    "auditLanes",
+    "decisionLog",
+    "notVerified",
+    "notChanged",
+    "uncertain",
+    "rollback",
+    "countersigns",
+    "flaky"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1" },
+    "item": { "$ref": "#/$defs/text", "description": "Work item id; also the branch suffix mend/<item>." },
+    "problem": { "$ref": "#/$defs/text", "description": "What is wrong or missing today, in one or two sentences a reviewer can check. The PR body opens with it." },
+    "goal": { "$ref": "#/$defs/text", "description": "The one observable outcome, as restated by the owner and accepted by the lead." },
+    "state": {
+      "enum": ["draft", "ready", "merge-ready", "merged"],
+      "description": "draft until every ready rule holds; merge-ready when ready but no queue grant covers the repo; merged only inside a granted queue."
+    },
+    "rung": {
+      "enum": ["investigate", "draft", "autopilot", "full"],
+      "description": "Effective autonomy rung: the lower of the grant rung and the riskFloor of every applied profile."
+    },
+    "grant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["queue", "rung"],
+      "properties": {
+        "queue": { "type": "boolean", "description": "True only when the operator granted a merge queue for this repo." },
+        "rung": { "enum": ["investigate", "draft", "autopilot", "full"] },
+        "reference": { "$ref": "#/$defs/text", "description": "Where the grant is recorded." }
+      }
+    },
+    "risk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tier", "rule"],
+      "properties": {
+        "tier": { "enum": ["low", "medium", "high"] },
+        "rule": { "$ref": "#/$defs/text", "description": "The rule that set the tier, e.g. 'touches a migration' or a repo override from the verification skill." }
+      }
+    },
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model"],
+      "properties": {
+        "model": { "$ref": "#/$defs/text" },
+        "session": { "$ref": "#/$defs/text" }
+      }
+    },
+    "branch": { "type": "string", "pattern": "^mend/[A-Za-z0-9._/-]+$" },
+    "baseSha": { "$ref": "#/$defs/sha" },
+    "headSha": { "$ref": "#/$defs/sha", "description": "The SHA every result on this card refers to." },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/check" },
+      "description": "Every command that was run, with its exit code. 'All tests pass' without commands is not a check."
+    },
+    "drivenPath": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["steps", "artifacts"],
+      "properties": {
+        "steps": { "type": "array", "items": { "$ref": "#/$defs/text" }, "description": "What was driven end to end in this session, in order." },
+        "artifacts": { "type": "array", "items": { "$ref": "#/$defs/text" }, "description": "Paths or links to captures, logs and reports." }
+      }
+    },
+    "proof": { "$ref": "#/$defs/proof" },
+    "proposalApproval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["approver", "by", "at", "reason", "artifacts"],
+      "description": "Explicit pre-integration approval, visible to the human before merge. For items without a profile artifact, this approves the item and restated implementation plan.",
+      "properties": {
+        "approver": { "enum": ["human", "supervisor"] },
+        "by": { "$ref": "#/$defs/text", "description": "Human identity or the strong supervisor's model id." },
+        "at": { "$ref": "#/$defs/text", "description": "Approval timestamp in ISO 8601." },
+        "reason": { "$ref": "#/$defs/text" },
+        "artifacts": { "type": "array", "items": { "$ref": "#/$defs/text" } }
+      }
+    },
+    "profiles": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/profileResult" },
+      "description": "One entry per applied profile; an item matching none carries generic."
+    },
+    "critique": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["threshold", "driftTolerance", "rounds", "findings"],
+      "description": "Every critique round and the findings ledger. Scores and findings are copied from the stored critic replies; the critique-ledger check compares them.",
+      "properties": {
+        "threshold": { "type": "number", "minimum": 7, "maximum": 10, "description": "Lowest head score that passes, in addition to non-regressing comparisons; never shown to the critic." },
+        "driftTolerance": { "type": "number", "exclusiveMinimum": 0, "description": "Largest change in an exemplar score between the first and a later round before the later round is void." },
+        "critics": { "type": "array", "items": { "$ref": "#/$defs/text" }, "description": "Critic ladder, cheapest first, when one is used." },
+        "rounds": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/critiqueRound" } },
+        "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } }
+      }
+    },
+    "path": {
+      "enum": ["full", "light"],
+      "description": "Which workflow produced the card. Absent means full (mend-quality and mend-pr). light is mend-lite and mend-lite-pr: a strong-model spec and review instead of profile rubrics and scored critique."
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["critic", "verdict", "rounds"],
+      "description": "Light path only: the strong reviewer's replies as mend-lite stored them. It replaces critique; there are no scores.",
+      "properties": {
+        "critic": { "$ref": "#/$defs/text" },
+        "verdict": { "enum": ["merge", "fix"], "description": "The last round's verdict." },
+        "rounds": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["round", "head", "verdict", "summary", "findings"],
+            "properties": {
+              "round": { "type": "integer", "minimum": 1 },
+              "head": { "$ref": "#/$defs/sha" },
+              "verdict": { "enum": ["merge", "fix"] },
+              "summary": { "type": "string" },
+              "diff": { "$ref": "#/$defs/text", "description": "The stored diff the reviewer read." },
+              "findings": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["severity", "file", "issue"],
+                  "properties": { "severity": { "enum": ["blocker", "nit"] }, "file": { "type": "string" }, "issue": { "$ref": "#/$defs/text" } }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pass", "flags", "countersigned"],
+      "properties": {
+        "pass": { "type": "boolean" },
+        "flags": { "type": "array", "items": { "$ref": "#/$defs/integrityFlag" } },
+        "countersigned": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/flagRef" },
+          "description": "Flags still present at head that a human accepted; each has a matching entry in countersigns."
+        }
+      }
+    },
+    "redGreen": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["command", "baseSha", "baseExit", "headSha", "headExit"],
+      "properties": {
+        "command": { "$ref": "#/$defs/text" },
+        "baseSha": { "$ref": "#/$defs/sha" },
+        "baseExit": { "type": "integer", "not": { "const": 0 }, "description": "The regression command must fail at base." },
+        "headSha": { "$ref": "#/$defs/sha" },
+        "headExit": { "const": 0, "description": "The regression command must pass at head." },
+        "setup": { "$ref": "#/$defs/text", "description": "The setup command run at base and head before the regression command." },
+        "expectBase": { "type": "string", "description": "Regular expression the base failure must match." },
+        "timeoutMs": { "type": "number", "exclusiveMinimum": 0, "description": "Per-command timeout used for setup, regression and keep runs." },
+        "keep": {
+          "type": "object", "additionalProperties": false,
+          "required": ["command", "baseExit", "headExit", "logs"],
+          "properties": {
+            "command": { "$ref": "#/$defs/text" },
+            "baseExit": { "const": 0 },
+            "headExit": { "const": 0 },
+            "logs": { "type": "object", "additionalProperties": false, "required": ["base", "head"], "properties": { "base": { "type": "string" }, "head": { "type": "string" } } }
+          }
+        }
+      }
+    },
+    "rounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["used", "budget", "rejectedBy"],
+      "properties": {
+        "used": { "type": "integer", "minimum": 0 },
+        "budget": { "type": "integer", "minimum": 1 },
+        "rejectedBy": {
+          "type": "array",
+          "items": { "enum": ["rubric", "critique", "human", "auditor"] },
+          "description": "One entry per rejected round, in order."
+        }
+      }
+    },
+    "escalation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["proposed", "toModel"],
+      "properties": {
+        "proposed": { "const": true },
+        "toModel": { "$ref": "#/$defs/text" },
+        "reason": { "$ref": "#/$defs/text" },
+        "approvedBy": { "$ref": "#/$defs/text", "description": "Empty until the user approves moving the item to the strong model." }
+      }
+    },
+    "verdict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["result", "sha", "patchId", "author", "verifier", "verifierModel"],
+      "properties": {
+        "result": { "enum": ["PASS", "ISSUES", "BLOCKED", "PENDING"] },
+        "sha": { "$ref": "#/$defs/sha" },
+        "patchId": { "type": "string", "pattern": "^[0-9a-f]{40,64}$" },
+        "author": { "$ref": "#/$defs/text" },
+        "verifier": { "$ref": "#/$defs/text", "description": "Never the author." },
+        "verifierModel": { "$ref": "#/$defs/text" },
+        "reusedFrom": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sha", "reason"],
+          "properties": {
+            "sha": { "$ref": "#/$defs/sha" },
+            "reason": { "enum": ["patch-id-equal", "tests-docs-lint-only"] }
+          }
+        }
+      }
+    },
+    "auditLanes": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/auditLane" }
+    },
+    "attention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reviewedBy", "flags"],
+      "properties": {
+        "reviewedBy": { "$ref": "#/$defs/text", "description": "Model of the reviewer; a different model family than the owner." },
+        "flags": { "type": "array", "items": { "$ref": "#/$defs/text" } }
+      }
+    },
+    "decisionLog": {
+      "type": "string",
+      "pattern": "\\.tsv$",
+      "description": "Path to an append-only TSV with columns ts, phase, decision, why, evidence, result."
+    },
+    "notVerified": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/text" },
+      "description": "Never empty: there is always something this item did not verify."
+    },
+    "notChanged": { "$ref": "#/$defs/listOrNone", "description": "What a reader might assume changed but did not." },
+    "uncertain": { "$ref": "#/$defs/listOrNone", "description": "What the owner or verifier is unsure about." },
+    "rollback": { "$ref": "#/$defs/text" },
+    "countersigns": { "type": "array", "items": { "$ref": "#/$defs/countersign" } },
+    "flaky": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["check", "runs"],
+        "properties": {
+          "check": { "$ref": "#/$defs/text" },
+          "runs": { "type": "array", "minItems": 2, "items": { "type": "integer" } }
+        }
+      },
+      "description": "Checks whose result changed between runs; such a check is never a clean PASS."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "profiles": {
+            "contains": {
+              "properties": { "kind": { "enum": ["bugfix", "security-fix", "test-authoring"] }, "skipped": { "const": false } },
+              "required": ["kind", "skipped"]
+            }
+          }
+        }
+      },
+      "then": { "required": ["redGreen"] }
+    },
+    {
+      "if": { "properties": { "proof": { "properties": { "changeType": { "const": "bugfix" } }, "required": ["changeType"] } }, "required": ["proof"] },
+      "then": { "required": ["redGreen"] }
+    },
+    {
+      "if": { "properties": { "state": { "enum": ["ready", "merge-ready", "merged"] } }, "required": ["state"] },
+      "then": {
+        "properties": {
+          "verdict": { "properties": { "result": { "const": "PASS" } } },
+          "auditLanes": { "items": { "properties": { "result": { "const": "PASS" } } } },
+          "flaky": { "maxItems": 0 },
+          "rung": { "not": { "const": "investigate" } }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "state": { "enum": ["ready", "merge-ready", "merged"] } }, "required": ["state"], "not": { "properties": { "path": { "const": "light" } }, "required": ["path"] } },
+      "then": { "required": ["critique"] }
+    },
+    {
+      "if": { "properties": { "path": { "const": "light" } }, "required": ["path"] },
+      "then": {
+        "required": ["review"],
+        "not": { "required": ["critique"] },
+        "properties": { "state": { "enum": ["draft", "merge-ready"] } }
+      }
+    },
+    {
+      "if": { "properties": { "path": { "const": "light" }, "state": { "const": "merge-ready" } }, "required": ["path", "state"] },
+      "then": {
+        "properties": {
+          "review": {
+            "properties": {
+              "verdict": { "const": "merge" },
+              "rounds": { "contains": { "properties": { "verdict": { "const": "merge" }, "findings": { "not": { "contains": { "properties": { "severity": { "const": "blocker" } }, "required": ["severity"] } } } } } }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "state": { "const": "merged" } }, "required": ["state"] },
+      "then": {
+        "properties": {
+          "grant": { "properties": { "queue": { "const": true } } },
+          "rung": { "enum": ["autopilot", "full"] },
+          "risk": { "properties": { "tier": { "const": "low" } } }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "text": { "type": "string", "minLength": 1 },
+    "sha": { "type": "string", "pattern": "^[0-9a-f]{7,64}$" },
+    "listOrNone": {
+      "oneOf": [
+        { "const": ["none"] },
+        { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1, "not": { "const": "none" } } }
+      ]
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "command", "exit"],
+      "properties": {
+        "name": { "$ref": "#/$defs/text" },
+        "command": { "$ref": "#/$defs/text" },
+        "cwd": { "$ref": "#/$defs/text" },
+        "exit": { "type": "integer" },
+        "log": { "$ref": "#/$defs/text" }
+      }
+    },
+    "proof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["changeType"],
+      "properties": {
+        "changeType": { "enum": ["ui", "backend", "performance", "bugfix", "refactor", "other"] },
+        "artifacts": { "type": "array", "items": { "$ref": "#/$defs/text" } },
+        "figures": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["metric", "before", "after"],
+            "properties": {
+              "metric": { "$ref": "#/$defs/text" },
+              "before": { "type": ["number", "string"] },
+              "after": { "type": ["number", "string"] },
+              "unit": { "type": "string" },
+              "command": { "$ref": "#/$defs/text" }
+            }
+          }
+        },
+        "note": { "$ref": "#/$defs/text" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "changeType": { "const": "ui" } } },
+          "then": { "required": ["artifacts"], "properties": { "artifacts": { "minItems": 1 } } }
+        },
+        {
+          "if": { "properties": { "changeType": { "enum": ["backend", "performance"] } } },
+          "then": { "required": ["figures"], "properties": { "figures": { "minItems": 1 } } }
+        },
+        {
+          "if": { "properties": { "changeType": { "const": "refactor" } } },
+          "then": { "required": ["artifacts"], "properties": { "artifacts": { "minItems": 1 } } }
+        },
+        {
+          "if": { "properties": { "changeType": { "const": "other" } } },
+          "then": { "required": ["note"] }
+        }
+      ],
+      "description": "Proof by change type: ui -> capture or recording; backend and performance -> before/after figures; bugfix -> the redGreen block; refactor -> unchanged-behaviour evidence; other -> a note saying what stands in for proof."
+    },
+    "profileResult": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["kind", "skipped"],
+      "properties": {
+        "kind": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "exemplarPairs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["exemplar", "proposal"],
+            "properties": { "exemplar": { "$ref": "#/$defs/text" }, "proposal": { "$ref": "#/$defs/text" } }
+          }
+        },
+        "approvedProposal": { "$ref": "#/$defs/text" },
+        "rubric": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pass", "failures"],
+          "properties": {
+            "pass": { "type": "boolean" },
+            "failures": { "type": "array", "items": { "$ref": "#/$defs/text" } }
+          }
+        },
+        "critique": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["model", "score", "notes"],
+          "properties": {
+            "model": { "$ref": "#/$defs/text" },
+            "score": { "type": "number", "minimum": 0, "maximum": 10, "description": "Lowest head score among this profile's categories in the last counted round of the card's critique." },
+            "notes": { "type": "string" }
+          }
+        },
+        "integrationDiff": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pass", "detail"],
+          "properties": { "pass": { "type": "boolean" }, "detail": { "type": "string" } }
+        },
+        "changeCallouts": {
+          "type": "array",
+          "description": "One entry per visible change, so a reviewer does not have to hunt for differences.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["target", "change", "before", "after"],
+            "properties": {
+              "target": { "$ref": "#/$defs/text", "description": "Component id or file:line." },
+              "change": { "$ref": "#/$defs/text" },
+              "before": { "$ref": "#/$defs/text", "description": "Path of the crop at base." },
+              "after": { "$ref": "#/$defs/text", "description": "Path of the crop at head." }
+            }
+          }
+        },
+        "skipped": { "type": "boolean" },
+        "skipReason": { "$ref": "#/$defs/text" }
+      },
+      "if": { "properties": { "skipped": { "const": true } } },
+      "then": { "required": ["skipReason"] },
+      "else": { "required": ["rubric", "critique"] }
+    },
+    "score": { "oneOf": [{ "type": "number", "minimum": 0, "maximum": 10 }, { "type": "null" }] },
+    "critiqueRound": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["round", "critic", "log", "diffStat", "scores", "gaming"],
+      "properties": {
+        "request": { "$ref": "#/$defs/text", "description": "Path to the stored critique request, required to substantiate none-in-repo exemplars." },
+        "round": { "type": "integer", "minimum": 1 },
+        "critic": { "$ref": "#/$defs/text", "description": "Model that wrote the reply, in a fresh session." },
+        "log": { "$ref": "#/$defs/text", "description": "Stored reply inside the repo, e.g. .mend/evidence/<item>/critique-r1.md." },
+        "diffStat": { "$ref": "#/$defs/text", "description": "git diff --shortstat base..head when the round ran." },
+        "brief": { "$ref": "#/$defs/text" },
+        "gaming": { "enum": ["yes", "no"] },
+        "void": { "type": "boolean" },
+        "voidReason": { "$ref": "#/$defs/text" },
+        "scores": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": { "pattern": "^[a-z][a-z0-9-]*\\.[a-z0-9-]+$" },
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["base", "head", "anchors"],
+            "properties": {
+              "base": { "$ref": "#/$defs/score" },
+              "head": { "$ref": "#/$defs/score" },
+              "anchors": { "type": "object", "additionalProperties": { "$ref": "#/$defs/score" } }
+            }
+          }
+        }
+      },
+      "if": { "properties": { "void": { "const": true } }, "required": ["void"] },
+      "then": { "required": ["voidReason"] }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "severity", "status", "round"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^F[1-9][0-9]*$" },
+        "severity": { "enum": ["blocker", "should", "nit"] },
+        "status": { "enum": ["open", "resolved", "declined", "disputed"] },
+        "round": { "type": "integer", "minimum": 1, "description": "Round that raised it." },
+        "reason": { "$ref": "#/$defs/text" }
+      },
+      "if": { "properties": { "status": { "enum": ["declined", "disputed"] } }, "required": ["status"] },
+      "then": { "required": ["reason"] }
+    },
+    "integrityFlag": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rule", "file", "line", "detail"],
+      "properties": {
+        "rule": { "$ref": "#/$defs/text" },
+        "file": { "$ref": "#/$defs/text" },
+        "line": { "type": "integer", "minimum": 0 },
+        "detail": { "type": "string" },
+        "severity": { "enum": ["block", "warn"] }
+      }
+    },
+    "flagRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rule", "file", "line"],
+      "properties": {
+        "rule": { "$ref": "#/$defs/text" },
+        "file": { "$ref": "#/$defs/text" },
+        "line": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "auditLane": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lane", "result", "sha", "method"],
+      "properties": {
+        "lane": { "$ref": "#/$defs/text" },
+        "result": { "enum": ["PASS", "ISSUES", "BLOCKED", "MISSING"] },
+        "sha": { "$ref": "#/$defs/sha" },
+        "method": { "$ref": "#/$defs/text", "description": "What the lane ran; for MISSING, why it did not run." },
+        "evidence": { "$ref": "#/$defs/text" }
+      }
+    },
+    "countersign": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "subject", "by", "reason", "at"],
+      "properties": {
+        "kind": { "enum": ["integrity-flag", "gate-loosening", "flaky-check", "escalation", "irreversible"] },
+        "subject": { "$ref": "#/$defs/text", "description": "For integrity-flag: '<rule> <file>:<line>'. For gate-loosening: which budget, allowlist or check. For irreversible: the path of the step that cannot be undone, such as a migration file." },
+        "by": { "$ref": "#/$defs/text", "description": "The human who countersigned." },
+        "reason": { "$ref": "#/$defs/text" },
+        "at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$"
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "schemaVersion": "1",
+      "item": "orders-page-size",
+      "problem": "The orders table always shows 25 rows, so people with many orders page through them one screen at a time.",
+      "goal": "Users can choose 25, 50 or 100 rows per page in the orders table, and the API honours the choice.",
+      "state": "merge-ready",
+      "rung": "draft",
+      "grant": { "queue": false, "rung": "autopilot" },
+      "risk": { "tier": "medium", "rule": "changes a shared API response used by two screens" },
+      "owner": { "model": "cheap-model-a" },
+      "branch": "mend/orders-page-size",
+      "baseSha": "1a2b3c4",
+      "headSha": "9f8e7d6",
+      "checks": [
+        { "name": "unit", "command": "pnpm test", "exit": 0 },
+        { "name": "types", "command": "pnpm typecheck", "exit": 0 },
+        { "name": "lint", "command": "pnpm lint", "exit": 0 },
+        { "name": "contract", "command": "node core/profiles/api-backend/checks/contract-diff.mjs --base 1a2b3c4 --head 9f8e7d6", "exit": 0 }
+      ],
+      "drivenPath": {
+        "steps": ["log in as the seeded test user", "open /orders", "choose 50 rows", "reload and confirm the choice persists", "request page 2"],
+        "artifacts": [".mend/evidence/orders-page-size/orders-50.png", ".mend/evidence/orders-page-size/page-2.json"]
+      },
+      "proof": {
+        "changeType": "ui",
+        "artifacts": [".mend/evidence/orders-page-size/orders-50.png", ".mend/evidence/orders-page-size/page-size.webm"],
+        "figures": [{ "metric": "GET /orders?limit=100 p50", "before": 140, "after": 146, "unit": "ms", "command": "node scripts/bench-orders.mjs" }]
+      },
+      "profiles": [
+        {
+          "kind": "api-backend",
+          "skipped": false,
+          "approvedProposal": ".mend/proposals/orders-page-size/contract.diff",
+          "rubric": { "pass": true, "failures": [] },
+          "critique": { "model": "strong-model", "score": 8, "notes": "Additive field with a default; no client breaks." },
+          "integrationDiff": { "pass": true, "detail": "1 additive change: optional query parameter limit (25|50|100, default 25)" }
+        },
+        {
+          "kind": "ui",
+          "skipped": false,
+          "exemplarPairs": [{ "exemplar": "docs/exemplars/table-controls.png", "proposal": ".mend/proposals/orders-page-size/preview.png" }],
+          "approvedProposal": ".mend/proposals/orders-page-size/preview.png",
+          "rubric": { "pass": true, "failures": [] },
+          "critique": { "model": "strong-model", "score": 8, "notes": "Control matches the exemplar; label follows the repo locale." },
+          "integrationDiff": { "pass": true, "detail": "Result matches the approved preview within the rubric tolerances." },
+          "changeCallouts": [
+            { "target": "orders-table-footer", "change": "rows-per-page selector added left of the pager", "before": ".mend/evidence/orders-page-size/footer-base.png", "after": ".mend/evidence/orders-page-size/footer-head.png" }
+          ]
+        }
+      ],
+      "critique": {
+        "threshold": 7,
+        "driftTolerance": 1,
+        "rounds": [
+          {
+            "round": 1,
+            "critic": "strong-model",
+            "log": ".mend/evidence/orders-page-size/critique-r1.md",
+            "diffStat": "4 files changed, 96 insertions(+), 7 deletions(-)",
+            "gaming": "no",
+            "scores": {
+              "api-backend.consumers": { "base": null, "head": 8, "anchors": { "table-controls": null } },
+              "ui.copy": { "base": 7, "head": 5, "anchors": { "table-controls": 8 } },
+              "ui.hierarchy": { "base": 7, "head": 8, "anchors": { "table-controls": 8 } }
+            }
+          },
+          {
+            "round": 2,
+            "critic": "strong-model",
+            "log": ".mend/evidence/orders-page-size/critique-r2.md",
+            "diffStat": "4 files changed, 89 insertions(+), 7 deletions(-)",
+            "gaming": "no",
+            "scores": {
+              "api-backend.consumers": { "base": null, "head": 8, "anchors": { "table-controls": null } },
+              "ui.copy": { "base": 7, "head": 8, "anchors": { "table-controls": 8 } },
+              "ui.hierarchy": { "base": 7, "head": 8, "anchors": { "table-controls": 8 } }
+            }
+          }
+        ],
+        "findings": [
+          { "id": "F1", "severity": "should", "status": "resolved", "round": 1 },
+          { "id": "F2", "severity": "nit", "status": "declined", "round": 1, "reason": "asks for a per-device setting; the goal names one saved choice per user" }
+        ]
+      },
+      "integrity": { "pass": true, "flags": [], "countersigned": [] },
+      "rounds": { "used": 2, "budget": 2, "rejectedBy": ["critique"] },
+      "verdict": {
+        "result": "PASS",
+        "sha": "9f8e7d6",
+        "patchId": "3c1d0b6e8f9a2b4c5d6e7f8091a2b3c4d5e6f708",
+        "author": "owner-1",
+        "verifier": "auditor-1",
+        "verifierModel": "cheap-model-b"
+      },
+      "auditLanes": [
+        { "lane": "checks", "result": "PASS", "sha": "9f8e7d6", "method": "reran the four commands at head" },
+        { "lane": "driven-path", "result": "PASS", "sha": "9f8e7d6", "method": "verification skill: Launch, Drive orders flow, Evidence" }
+      ],
+      "attention": { "reviewedBy": "strong-model", "flags": [] },
+      "decisionLog": ".mend/evidence/orders-page-size/decisions.tsv",
+      "notVerified": ["behaviour under production load", "browsers other than the one the verification skill drives"],
+      "notChanged": ["default page size stays 25", "export to CSV still exports every row"],
+      "uncertain": ["whether the saved choice should be per user or per device"],
+      "rollback": "revert the merge commit; the API parameter is optional so old clients keep working",
+      "countersigns": [],
+      "flaky": []
+    },
+    {
+      "schemaVersion": "1",
+      "item": "invoice-total-rounding",
+      "problem": "Invoice totals round half-down, so a total can differ by one cent from the sum of its line items.",
+      "goal": "Invoice totals round half-up to two decimals, matching the line items.",
+      "state": "merged",
+      "rung": "autopilot",
+      "grant": { "queue": true, "rung": "autopilot", "reference": ".mend/grants.json" },
+      "risk": { "tier": "low", "rule": "pure function inside one module, covered by tests" },
+      "owner": { "model": "cheap-model-a" },
+      "branch": "mend/invoice-total-rounding",
+      "baseSha": "4d5e6f7",
+      "headSha": "0a1b2c3",
+      "checks": [
+        { "name": "unit", "command": "pnpm test", "exit": 0 },
+        { "name": "integrity", "command": "node core/checks/integrity.mjs --base 4d5e6f7 --head 0a1b2c3 --item .mend/items/invoice-total-rounding.json", "exit": 1 }
+      ],
+      "drivenPath": {
+        "steps": ["run the regression command at base and at head through red-green"],
+        "artifacts": [".mend/evidence/invoice-total-rounding/red-green.log"]
+      },
+      "proof": { "changeType": "bugfix" },
+      "profiles": [
+        {
+          "kind": "bugfix",
+          "skipped": false,
+          "rubric": { "pass": true, "failures": [] },
+          "critique": { "model": "strong-model", "score": 9, "notes": "Fix is in the rounding helper, not special-cased for the test value." }
+        }
+      ],
+      "critique": {
+        "threshold": 7,
+        "driftTolerance": 1,
+        "rounds": [
+          {
+            "round": 1,
+            "critic": "strong-model",
+            "log": ".mend/evidence/invoice-total-rounding/critique-r1.md",
+            "diffStat": "2 files changed, 9 insertions(+), 3 deletions(-)",
+            "gaming": "no",
+            "scores": {
+              "bugfix.cause-not-symptom": { "base": null, "head": 9, "anchors": { "money-helpers": 9 } },
+              "bugfix.the-test-shows-the-bug": { "base": null, "head": 9, "anchors": { "money-helpers": 8 } }
+            }
+          }
+        ],
+        "findings": [
+          { "id": "F1", "severity": "nit", "status": "declined", "round": 1, "reason": "rename of the helper is outside the edit set; left for its own item" }
+        ]
+      },
+      "integrity": {
+        "pass": false,
+        "flags": [{ "rule": "test-edit", "file": "src/invoice.test.ts", "line": 18, "detail": "an existing test was modified", "severity": "block" }],
+        "countersigned": [{ "rule": "test-edit", "file": "src/invoice.test.ts", "line": 18 }]
+      },
+      "redGreen": { "command": "pnpm test -- invoice", "baseSha": "4d5e6f7", "baseExit": 1, "headSha": "0a1b2c3", "headExit": 0 },
+      "rounds": { "used": 1, "budget": 2, "rejectedBy": [] },
+      "verdict": {
+        "result": "PASS",
+        "sha": "0a1b2c3",
+        "patchId": "7e6d5c4b3a291807f6e5d4c3b2a1908f7e6d5c4b",
+        "author": "owner-2",
+        "verifier": "auditor-1",
+        "verifierModel": "cheap-model-b"
+      },
+      "auditLanes": [
+        { "lane": "checks", "result": "PASS", "sha": "0a1b2c3", "method": "reran unit tests and red-green at head" }
+      ],
+      "decisionLog": ".mend/evidence/invoice-total-rounding/decisions.tsv",
+      "notVerified": ["invoices in currencies with no minor unit"],
+      "notChanged": ["none"],
+      "uncertain": ["none"],
+      "rollback": "revert the merge commit",
+      "countersigns": [
+        {
+          "kind": "integrity-flag",
+          "subject": "test-edit src/invoice.test.ts:18",
+          "by": "operator",
+          "reason": "the old test asserted the bug (round half-down); the new expectation is the specified behaviour",
+          "at": "2026-11-03T18:20:00Z"
+        }
+      ],
+      "flaky": []
+    }
+  ]
+}

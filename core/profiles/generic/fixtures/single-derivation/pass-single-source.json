@@ -1,0 +1,20 @@
+{
+  "description": "The server computes the basket total once; the client only reads data.total.",
+  "files": [
+    {
+      "path": "server/basket.ts",
+      "base": "export function basketSummary(lines) {\n  return { lines };\n}\n",
+      "head": "export function basketSummary(lines) {\n  const total = lines.reduce((sum, line) => sum + line.price * line.count, 0);\n  return { lines, total };\n}\n"
+    },
+    {
+      "path": "web/BasketFooter.tsx",
+      "base": "export function BasketFooter({ data }) {\n  return null;\n}\n",
+      "head": "export function BasketFooter({ data }) {\n  const total = data.total;\n  return <span>{total}</span>;\n}\n"
+    },
+    {
+      "path": "server/basket.test.ts",
+      "base": null,
+      "head": "const total = lines.reduce((sum, line) => sum + line.price * line.count, 0);\nexpect(basketSummary(lines).total).toBe(total);\n"
+    }
+  ]
+}

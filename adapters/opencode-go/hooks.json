@@ -1,0 +1,12 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          { "type": "command", "command": ["python3", "-I", "./guard/mend_guard.py"], "timeout": 10 }
+        ]
+      }
+    ]
+  }
+}

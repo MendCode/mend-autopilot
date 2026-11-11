@@ -1,0 +1,25 @@
+{
+  "description": "One route is covered by a guard the router registers above it; another states it is public on purpose. Both test their error status.",
+  "files": [
+    {
+      "path": "server/routes/catalog.ts",
+      "base": "export const catalogRouter = Router();\ncatalogRouter.use(requireAuth);\n",
+      "head": "export const catalogRouter = Router();\ncatalogRouter.use(requireAuth);\n\ncatalogRouter.patch('/catalog/items/:sku', async (req, res) => {\n  const update = ItemUpdate.parse(req.body);\n  const item = await updateItem(req.params.sku, update);\n  if (!item) return res.sendStatus(404);\n  return res.json(item);\n});\n"
+    },
+    {
+      "path": "server/routes/health.ts",
+      "base": null,
+      "head": "export function mountHealth(api) {\n  api.get('/health', (_req, res) => {\n    // auth: public (load balancer probe)\n    if (!ready()) return res.sendStatus(503);\n    return res.json({ ok: true });\n  });\n}\n"
+    },
+    {
+      "path": "tests/catalog.test.ts",
+      "base": null,
+      "head": "test('patching an unknown item returns 404', async () => {\n  const response = await request(app).patch('/catalog/items/unknown-sku').send({ price: 3 });\n  expect(response.status).toBe(404);\n});\n"
+    },
+    {
+      "path": "tests/health.test.ts",
+      "base": null,
+      "head": "test('health reports 503 before startup finishes', async () => {\n  const response = await request(app).get('/health');\n  expect(response.status).toBe(503);\n});\n"
+    }
+  ]
+}

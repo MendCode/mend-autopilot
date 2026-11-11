@@ -1,0 +1,17 @@
+{
+  "description": "A Rails migration uses a change method with a reversible add_column, so it rolls back without a down method.",
+  "files": [
+    {
+      "path": "db/migrate/20260103090000_add_gift_note_to_orders.rb",
+      "base": null,
+      "head": "class AddGiftNoteToOrders < ActiveRecord::Migration[7.1]\n  def change\n    add_column :orders, :gift_note, :string\n  end\nend\n"
+    }
+  ],
+  "plan": { "tables": ["orders"], "steps": ["add gift_note"], "declaredLocks": [] },
+  "dryRun": {
+    "database": { "kind": "ephemeral", "url": "sqlite3:tmp/dry_run.sqlite3" },
+    "command": "bin/rails db:migrate",
+    "exit": 0,
+    "rowCounts": { "before": { "orders": 120 }, "after": { "orders": 120 } }
+  }
+}

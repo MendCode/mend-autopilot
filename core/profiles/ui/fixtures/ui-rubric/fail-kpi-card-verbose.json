@@ -1,0 +1,24 @@
+{
+  "description": "A KPI card in a Spanish-locale repo: English labels, a long explanatory footer and three numbers all set as heroes.",
+  "rules": { "locale": "es", "now": "2026-11-03T12:00:00Z" },
+  "snapshots": [
+    {
+      "id": "kpi-card-verbose",
+      "rect": { "x": 0, "y": 0, "width": 360, "height": 240 },
+      "overflow": false,
+      "texts": [
+        { "text": "Energy produced today", "fontPx": 14, "color": "#e8ecf2", "background": "#1a1d23", "clipped": false },
+        { "text": "This value shows the total energy that the plant produced since midnight and it is updated every few minutes from the meter readings", "fontPx": 12, "color": "#aab3c2", "background": "#1a1d23", "clipped": false },
+        { "text": "Compared with yesterday", "fontPx": 13, "color": "#aab3c2", "background": "#1a1d23", "clipped": false },
+        { "text": "Peak power", "fontPx": 12, "color": "#aab3c2", "background": "#1a1d23", "clipped": false }
+      ],
+      "numbers": [
+        { "text": "4,812 kWh", "fontPx": 64 },
+        { "text": "+12%", "fontPx": 48 },
+        { "text": "1,203 kW", "fontPx": 48 }
+      ],
+      "timestamps": []
+    }
+  ],
+  "expect": ["max-words", "hero-numbers", "locale"]
+}

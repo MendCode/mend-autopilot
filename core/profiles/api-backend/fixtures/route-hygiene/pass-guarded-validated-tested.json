@@ -1,0 +1,15 @@
+{
+  "description": "A new Express route parses its body with a schema, requires a user and has a test that posts an invalid order and expects 400.",
+  "files": [
+    {
+      "path": "server/routes/orders.ts",
+      "base": "import { Router } from 'express';\nimport { z } from 'zod';\nimport { requireUser } from '../auth';\n\nexport const ordersRouter = Router();\n",
+      "head": "import { Router } from 'express';\nimport { z } from 'zod';\nimport { requireUser } from '../auth';\n\nexport const ordersRouter = Router();\n\nconst NewOrder = z.object({ sku: z.string(), quantity: z.number().int().positive() });\n\nordersRouter.post('/orders', requireUser, async (req, res) => {\n  const parsed = NewOrder.safeParse(req.body);\n  if (!parsed.success) return res.status(400).json({ error: 'invalid order' });\n  const order = await createOrder({ userId: req.user.id, ...parsed.data });\n  return res.status(201).json(order);\n});\n"
+    },
+    {
+      "path": "tests/orders.test.ts",
+      "base": null,
+      "head": "import request from 'supertest';\nimport { app } from '../server/app';\n\ntest('rejects an order without a quantity', async () => {\n  const response = await request(app).post('/orders').send({ sku: 'A-1' });\n  expect(response.status).toBe(400);\n});\n"
+    }
+  ]
+}

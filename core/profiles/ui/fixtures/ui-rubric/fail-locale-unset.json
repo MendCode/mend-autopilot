@@ -1,0 +1,14 @@
+{
+  "description": "The repo locale was never recorded; the rubric refuses to guess a default language.",
+  "rules": { "now": "2026-11-03T12:00:00Z" },
+  "snapshots": [
+    {
+      "id": "tile-flow",
+      "overflow": false,
+      "texts": [{ "text": "Caudal", "fontPx": 13, "color": "#e8ecf2", "background": "#22262e", "clipped": false }],
+      "numbers": [{ "text": "38 l/s", "fontPx": 32 }],
+      "timestamps": []
+    }
+  ],
+  "expect": ["locale"]
+}

@@ -1,0 +1,18 @@
+{
+  "description": "The redeem endpoint requires an idempotency key; the invite endpoint has no local bound and the card's uncertain field explains why.",
+  "files": [
+    {
+      "path": "server/routes/rewards.ts",
+      "base": "export const rewardsRouter = Router();\n",
+      "head": "export const rewardsRouter = Router();\n\nrewardsRouter.post('/rewards/redeem', requireUser, async (req, res) => {\n  const key = req.get('Idempotency-Key');\n  if (!key) return res.status(400).json({ error: 'missing key' });\n  const { code } = RedeemBody.parse(req.body);\n  await creditOnce({ userId: req.user.id, key, points: await pointsFor(code) });\n  return res.status(204).end();\n});\n"
+    },
+    {
+      "path": "server/routes/invites.ts",
+      "base": "export const invitesRouter = Router();\n",
+      "head": "export const invitesRouter = Router();\n\ninvitesRouter.post('/invites/send', requireUser, async (req, res) => {\n  const { address } = InviteBody.parse(req.body);\n  await mailer.invite({ from: req.user.id, to: address });\n  return res.status(202).end();\n});\n"
+    }
+  ],
+  "card": {
+    "uncertain": ["POST /invites/send has no local limit: the mail provider already caps invites per sender per day; confirm the cap is enabled in each environment"]
+  }
+}

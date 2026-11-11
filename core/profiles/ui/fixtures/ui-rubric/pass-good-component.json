@@ -1,0 +1,21 @@
+{
+  "description": "The same KPI done well: short labels in the repo locale, one hero number, readable contrast, a fresh timestamp.",
+  "rules": { "locale": "es", "now": "2026-11-03T12:00:00Z" },
+  "snapshots": [
+    {
+      "id": "kpi-card",
+      "rect": { "x": 0, "y": 0, "width": 360, "height": 200 },
+      "overflow": false,
+      "texts": [
+        { "text": "Energía de hoy", "fontPx": 14, "color": "#e8ecf2", "background": "#1a1d23", "clipped": false },
+        { "text": "vs. ayer", "fontPx": 13, "color": "#aab3c2", "background": "#1a1d23", "clipped": false },
+        { "text": "Actualizado hace 3 min", "fontPx": 12, "color": "#aab3c2", "background": "#1a1d23", "clipped": false }
+      ],
+      "numbers": [
+        { "text": "4.812 kWh", "fontPx": 64 },
+        { "text": "+12 %", "fontPx": 16 }
+      ],
+      "timestamps": [{ "value": "2026-11-03T11:57:00Z", "freshnessWindowMs": 900000, "staleMarker": null }]
+    }
+  ]
+}

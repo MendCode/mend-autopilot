@@ -1,0 +1,12 @@
+{
+  "description": "The root cause describes the symptom only and names no file:line.",
+  "item": { "id": "cart-rounding", "rootCause": "Totals were off by a cent for some carts." },
+  "files": [
+    {
+      "path": "src/cart/total.ts",
+      "base": "export function cartTotal(lines) {\n  return lines.reduce((sum, line) => sum + Math.round(line.price * line.qty * 100) / 100, 0);\n}\n",
+      "head": "export function cartTotal(lines) {\n  const cents = lines.reduce((sum, line) => sum + line.price * line.qty * 100, 0);\n  return Math.round(cents) / 100;\n}\n"
+    }
+  ],
+  "expect": ["root-cause-missing"]
+}

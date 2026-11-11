@@ -1,0 +1,35 @@
+{
+  "description": "An isolated three-category contract: round 2 clears every category, keeps anchors stable and resolves the should finding; production coverage is derived from installed lenses.",
+  "contract": { "categories": ["generic.scope", "ui.hierarchy", "ui.typography"], "anchors": ["settings-panel", "billing-card"] },
+  "card": {
+    "state": "ready",
+    "profiles": [
+      { "kind": "generic", "skipped": false, "critique": { "model": "strong-model", "score": 8, "notes": "Scope matches the item." } },
+      { "kind": "ui", "skipped": false, "critique": { "model": "strong-model", "score": 8, "notes": "Hierarchy fixed in round 2." } }
+    ],
+    "critique": {
+      "threshold": 7,
+      "driftTolerance": 1,
+      "rounds": [
+        { "round": 1, "critic": "strong-model", "log": ".mend/evidence/fern-panel/critique-r1.md", "diffStat": "2 files changed", "gaming": "no", "scores": {
+          "generic.scope": { "base": null, "head": 8, "anchors": { "settings-panel": 8, "billing-card": 8 } },
+          "ui.hierarchy": { "base": 6, "head": 5, "anchors": { "settings-panel": 8, "billing-card": 7 } },
+          "ui.typography": { "base": 6, "head": 7, "anchors": { "settings-panel": 7, "billing-card": 8 } }
+        } },
+        { "round": 2, "critic": "strong-model", "log": ".mend/evidence/fern-panel/critique-r2.md", "diffStat": "2 files changed", "gaming": "no", "scores": {
+          "generic.scope": { "base": null, "head": 8, "anchors": { "settings-panel": 8, "billing-card": 8 } },
+          "ui.hierarchy": { "base": 6, "head": 8, "anchors": { "settings-panel": 8, "billing-card": 7.5 } },
+          "ui.typography": { "base": 6, "head": 8, "anchors": { "settings-panel": 7.5, "billing-card": 8 } }
+        } }
+      ],
+      "findings": [
+        { "id": "F1", "severity": "should", "status": "resolved", "round": 1 },
+        { "id": "F2", "severity": "nit", "status": "declined", "round": 1, "reason": "the phrase is the repo's existing button copy, changed in a separate item" }
+      ]
+    }
+  },
+  "logs": {
+    ".mend/evidence/fern-panel/critique-r1.md": "scores:\n| category | base | head | settings-panel | billing-card |\n|---|---|---|---|---|\n| generic.scope | n/a | 8 | 8 | 8 |\n| ui.hierarchy | 6 | 5 | 8 | 7 |\n| ui.typography | 6 | 7 | 7 | 8 |\nvs: generic.scope base=n/a settings-panel=same billing-card=same - Only the requested panel changed.\nvs: ui.hierarchy base=worse settings-panel=worse billing-card=worse - The title competes with the total unlike both references.\nvs: ui.typography base=better settings-panel=same billing-card=worse - Labels are clearer than base but denser than the billing card.\ngaming: no - tests and quality configuration unchanged\nfindings:\n- F1 [should] src/panel.tsx:14: the title and total compete -> lower the title weight\n- F2 [nit] src/panel.tsx:30: the helper repeats the button -> remove it\n",
+    ".mend/evidence/fern-panel/critique-r2.md": "scores:\n| category | base | head | settings-panel | billing-card |\n|---|---|---|---|---|\n| generic.scope | n/a | 8 | 8 | 8 |\n| ui.hierarchy | 6 | 8 | 8 | 7.5 |\n| ui.typography | 6 | 8 | 7.5 | 8 |\nvs: generic.scope base=n/a settings-panel=same billing-card=same - Only the requested panel changed.\nvs: ui.hierarchy base=better settings-panel=same billing-card=same - The total is now the single focal point as in both references.\nvs: ui.typography base=better settings-panel=same billing-card=same - Labels now match reference density and improve readability.\ngaming: no - same checks as before\nresolved: F1\nfindings: none\n"
+  }
+}

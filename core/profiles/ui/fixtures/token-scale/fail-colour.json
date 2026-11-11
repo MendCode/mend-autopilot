@@ -1,0 +1,15 @@
+{
+  "description": "Both foreground and background colours must belong to their base property scales.",
+  "base": { "components": [], "page": { "elements": [
+    { "fontSize": "16px", "fontWeight": "400", "borderRadius": "4px", "color": "rgb(20, 30, 40)", "backgroundColor": "rgb(255, 255, 255)" }
+  ] } },
+  "head": {
+    "components": [{ "id": "notice", "elements": [
+      { "fontSize": "16px", "fontWeight": "400", "borderRadius": "4px", "color": "rgb(220, 20, 40)", "backgroundColor": "rgba(200, 180, 40, 0.5)" }
+    ] }],
+    "page": { "elements": [
+      { "fontSize": "16px", "fontWeight": "400", "borderRadius": "4px", "color": "rgb(220, 20, 40)", "backgroundColor": "rgba(200, 180, 40, 0.5)" }
+    ] }
+  },
+  "expect": ["off-scale"]
+}

@@ -1,0 +1,18 @@
+{
+  "description": "The dry run was pointed at the shared staging database instead of a throwaway local copy.",
+  "files": [
+    {
+      "path": "db/migrations/20260109030000_add_order_notes.sql",
+      "base": null,
+      "head": "-- migrate:up\nALTER TABLE orders ADD COLUMN notes text;\n\n-- migrate:down\nALTER TABLE orders DROP COLUMN notes;\n"
+    }
+  ],
+  "plan": { "tables": ["orders"], "steps": ["add notes"], "declaredLocks": [] },
+  "dryRun": {
+    "database": { "kind": "shared", "url": "postgres://app@db.staging.example.com:5432/app" },
+    "command": "pnpm db:migrate",
+    "exit": 0,
+    "rowCounts": { "before": { "orders": 120 }, "after": { "orders": 120 } }
+  },
+  "expect": ["dry-run-not-ephemeral"]
+}

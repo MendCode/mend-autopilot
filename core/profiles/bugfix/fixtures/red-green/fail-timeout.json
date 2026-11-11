@@ -1,0 +1,6 @@
+{
+  "description": "The command hit the timeout at base; a timeout is a non-zero exit but proves nothing about the bug.",
+  "item": { "id": "search-hang", "regressionCommand": "go test ./search -run TestQueryTimeout" },
+  "outcome": { "baseExit": 124, "headExit": 0, "timedOut": true },
+  "expect": ["red-green-timeout"]
+}

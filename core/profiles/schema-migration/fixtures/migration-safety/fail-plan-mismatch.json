@@ -1,0 +1,18 @@
+{
+  "description": "The approved plan covered orders and refunds; the migration changes orders and customers instead.",
+  "files": [
+    {
+      "path": "db/migrations/20260107050000_refund_totals.sql",
+      "base": null,
+      "head": "-- migrate:up\nALTER TABLE orders ADD COLUMN refund_total numeric;\nALTER TABLE customers ADD COLUMN refund_count integer;\n\n-- migrate:down\nALTER TABLE customers DROP COLUMN refund_count;\nALTER TABLE orders DROP COLUMN refund_total;\n"
+    }
+  ],
+  "plan": { "tables": ["orders", "refunds"], "steps": ["add refund totals"], "declaredLocks": [] },
+  "dryRun": {
+    "database": { "kind": "ephemeral" },
+    "command": "pnpm db:migrate",
+    "exit": 0,
+    "rowCounts": { "before": { "orders": 120, "customers": 30 }, "after": { "orders": 120, "customers": 30 } }
+  },
+  "expect": ["plan-mismatch"]
+}

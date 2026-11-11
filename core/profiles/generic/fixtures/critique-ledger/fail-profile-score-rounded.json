@@ -1,0 +1,27 @@
+{
+  "description": "The profile summary says 8, but the lowest ui category in the last round is 7.5.",
+  "card": {
+    "state": "draft",
+    "profiles": [{ "kind": "ui", "skipped": false, "critique": { "model": "strong-model", "score": 8, "notes": "" } }],
+    "critique": {
+      "rounds": [
+        {
+          "round": 1,
+          "critic": "strong-model",
+          "log": ".mend/evidence/fern-panel/critique-r1.md",
+          "diffStat": "2 files changed, 48 insertions(+)",
+          "gaming": "no",
+          "scores": {
+            "ui.hierarchy": { "base": null, "head": 8, "anchors": { "panel-a": 8 } },
+            "ui.copy": { "base": null, "head": 7.5, "anchors": { "panel-a": 8 } }
+          }
+        }
+      ],
+      "findings": []
+    }
+  },
+  "logs": {
+    ".mend/evidence/fern-panel/critique-r1.md": "| category | base | head | panel-a |\n|---|---|---|---|\n| ui.hierarchy | n/a | 8 | 8 |\n| ui.copy | n/a | 7.5 | 8 |\n\nvs: ui.hierarchy base=n/a panel-a=same - The new panel has one focal point.\nvs: ui.copy base=n/a panel-a=same - The new labels name each action.\ngaming: no - selector unchanged\n"
+  },
+  "expect": ["score-unbacked"]
+}

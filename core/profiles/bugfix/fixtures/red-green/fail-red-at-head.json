@@ -1,0 +1,6 @@
+{
+  "description": "The regression test still fails after the change: the fix does not fix it.",
+  "item": { "id": "cart-rounding", "regressionCommand": "pnpm vitest run tests/cart/total.test.ts" },
+  "outcome": { "baseExit": 1, "headExit": 1 },
+  "expect": ["not-green-at-head"]
+}

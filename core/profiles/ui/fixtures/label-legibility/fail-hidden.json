@@ -1,0 +1,1 @@
+{"description":"An axis hides overlapping labels.","files":[{"path":"src/chart.ts","base":null,"head":"const axis = { hideOverlap: true };\n"}],"expect":["label-hidden-overlap"]}

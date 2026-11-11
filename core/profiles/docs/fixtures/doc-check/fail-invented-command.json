@@ -1,0 +1,15 @@
+{
+  "description": "The page tells readers to run a deploy script and a make target that the repo does not have.",
+  "item": { "id": "usage-count" },
+  "config": { "locale": "en" },
+  "files": [
+    { "path": "package.json", "base": "{\"name\":\"tally\",\"scripts\":{\"build\":\"node build.mjs\"}}\n", "head": "{\"name\":\"tally\",\"scripts\":{\"build\":\"node build.mjs\"}}\n" },
+    { "path": "Makefile", "base": "build:\n\tnode build.mjs\n", "head": "build:\n\tnode build.mjs\n" },
+    {
+      "path": "docs/usage.md",
+      "base": "# Usage\n\nCount the lines in a file.\n",
+      "head": "# Usage\n\nCount the lines in a file.\n\n```sh\npnpm run build && pnpm run deploy\nmake release\n```\n"
+    }
+  ],
+  "expect": ["invented-command"]
+}

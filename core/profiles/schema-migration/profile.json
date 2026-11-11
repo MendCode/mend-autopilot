@@ -1,0 +1,28 @@
+{
+  "kind": "schema-migration",
+  "description": "Changes to a database schema or its stored data: new tables and columns, indexes, constraints, renames, drops and backfills. The plan is approved before any migration is written, and migrations only ever run against a throwaway local database.",
+  "matchHints": {
+    "paths": ["**/migrations/**", "**/migrate/**", "**/alembic/versions/**", "**/schema.prisma", "**/models.py", "**/*.entity.ts", "db/schema.rb"],
+    "intents": ["migration", "schema", "column", "table", "index", "constraint", "backfill", "rename", "drop"]
+  },
+  "riskFloor": "high",
+  "exemplars": {
+    "what": "Earlier migrations in the same repo that use the same tool and the same rollback style, ideally one that changed a large table; cite the path and what to copy (naming, down section, lock handling).",
+    "min": 1,
+    "max": 2
+  },
+  "proposalArtifact": {
+    "name": "migration-plan",
+    "inputs": [{ "path": "migration-plan.json" }],
+    "what": "migration-plan.json in the item's evidence folder: the tables touched, the ordered steps (expand, backfill, switch code, contract), each lock the steps take with its risk name, and the expected row-count change per table."
+  },
+  "frozenBaseline": "The approved migration plan: its tables, steps, declared locks and expected row-count changes.",
+  "humanApproval": "high-risk",
+  "rubric": ["migration-safety", "compatibility"],
+  "integrationDiff": null,
+  "critiqueLens": "critique-lens.md",
+  "roundBudget": 2,
+  "fileCap": 4,
+  "quantityApplies": false,
+  "cardFields": ["approvedProposal", "dryRun", "rollback"]
+}

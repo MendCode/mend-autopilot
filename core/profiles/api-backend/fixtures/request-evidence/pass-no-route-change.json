@@ -1,0 +1,10 @@
+{
+  "description": "The item only changes a pricing helper, so no request evidence is required.",
+  "files": [
+    {
+      "path": "server/pricing.ts",
+      "base": "export const taxRate = 0.07;\n",
+      "head": "export const taxRate = 0.07;\nexport const roundCents = (value: number) => Math.round(value * 100) / 100;\n"
+    }
+  ]
+}

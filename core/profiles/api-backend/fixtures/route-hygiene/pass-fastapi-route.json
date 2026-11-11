@@ -1,0 +1,15 @@
+{
+  "description": "A FastAPI route takes a typed path parameter, depends on the current user and has a test for its 404.",
+  "files": [
+    {
+      "path": "app/routers/invoices.py",
+      "base": "from fastapi import APIRouter, Depends, HTTPException\n\nrouter = APIRouter()\n",
+      "head": "from fastapi import APIRouter, Depends, HTTPException\n\nrouter = APIRouter()\n\n\n@router.get(\"/invoices/{invoice_id}\")\nasync def read_invoice(invoice_id: int, user: User = Depends(get_current_user)):\n    invoice = await find_invoice(invoice_id, owner_id=user.id)\n    if invoice is None:\n        raise HTTPException(status_code=404, detail=\"invoice not found\")\n    return invoice\n"
+    },
+    {
+      "path": "tests/test_invoices.py",
+      "base": null,
+      "head": "def test_missing_invoice_returns_404(client):\n    response = client.get(\"/invoices/999\")\n    assert response.status_code == 404\n"
+    }
+  ]
+}

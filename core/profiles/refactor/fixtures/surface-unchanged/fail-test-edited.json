@@ -1,0 +1,21 @@
+{
+  "description": "Alongside the refactor, a test's expected value is changed; the test and the code moved together, so equal results prove nothing.",
+  "item": { "id": "cart-cents-helper", "surfaceChanges": ["src/cart/cents.ts#*"] },
+  "files": [
+    {
+      "path": "src/cart/cents.ts",
+      "base": null,
+      "head": "export function toCents(amount) {\n  return Math.floor(amount * 100);\n}\n"
+    },
+    {
+      "path": "src/cart/total.test.ts",
+      "base": "test('rounds half cents up', () => {\n  expect(cartTotal([{ price: 0.335, qty: 1 }])).toBe(0.34);\n});\n",
+      "head": "test('rounds half cents up', () => {\n  expect(cartTotal([{ price: 0.335, qty: 1 }])).toBe(0.33);\n});\n"
+    }
+  ],
+  "testResults": {
+    "base": { "passed": 42, "failed": 0, "skipped": 0 },
+    "head": { "passed": 42, "failed": 0, "skipped": 0 }
+  },
+  "expect": ["test-edited"]
+}

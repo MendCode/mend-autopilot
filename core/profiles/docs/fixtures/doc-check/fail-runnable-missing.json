@@ -1,0 +1,14 @@
+{
+  "description": "A block is marked runnable but no run of it was recorded; a run of another block does not count.",
+  "item": { "id": "usage-count" },
+  "config": { "locale": "en" },
+  "files": [
+    {
+      "path": "docs/usage.md",
+      "base": "# Usage\n\nCount the lines in a file.\n",
+      "head": "# Usage\n\nCount the lines in a file.\n\n```sh runnable\ntally notes.txt\n```\n"
+    }
+  ],
+  "runResults": { "runs": [{ "path": "docs/install.md", "line": 5, "exitCode": 0 }] },
+  "expect": ["runnable-missing"]
+}

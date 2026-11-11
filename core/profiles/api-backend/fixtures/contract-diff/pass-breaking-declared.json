@@ -1,0 +1,30 @@
+{
+  "description": "The same removal of total, declared by the item as an allowed breaking change of GET /orders.",
+  "item": { "breaking": ["GET /orders"] },
+  "openapi": {
+    "base": {
+      "openapi": "3.1.0",
+      "paths": {
+        "/orders": {
+          "get": {
+            "responses": {
+              "200": { "content": { "application/json": { "schema": { "type": "object", "properties": { "items": { "type": "array" }, "total": { "type": "integer" } } } } } }
+            }
+          }
+        }
+      }
+    },
+    "head": {
+      "openapi": "3.1.0",
+      "paths": {
+        "/orders": {
+          "get": {
+            "responses": {
+              "200": { "content": { "application/json": { "schema": { "type": "object", "properties": { "items": { "type": "array" } } } } } }
+            }
+          }
+        }
+      }
+    }
+  }
+}

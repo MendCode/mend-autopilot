@@ -1,0 +1,12 @@
+{
+  "description": "The migration and plan are fine, but nobody ran it before asking for review.",
+  "files": [
+    {
+      "path": "db/migrations/20260108040000_add_order_notes.sql",
+      "base": null,
+      "head": "-- migrate:up\nALTER TABLE orders ADD COLUMN notes text;\n\n-- migrate:down\nALTER TABLE orders DROP COLUMN notes;\n"
+    }
+  ],
+  "plan": { "tables": ["orders"], "steps": ["add notes"], "declaredLocks": [] },
+  "expect": ["dry-run-missing"]
+}

@@ -1,0 +1,6 @@
+{
+  "description": "The base worktree could not be created, so neither side ran; the check is BLOCKED, not passed.",
+  "item": { "id": "cart-rounding", "regressionCommand": "pnpm vitest run tests/cart/total.test.ts" },
+  "outcome": { "blocked": true, "reason": "git worktree add failed for base: invalid reference" },
+  "expect": ["red-green-blocked"]
+}

@@ -1,0 +1,1 @@
+{"description":"A category label is manually truncated.","files":[{"path":"src/chart.ts","base":null,"head":"const label = name.slice(0, 12) + '…';\n"}],"expect":["label-sliced"]}

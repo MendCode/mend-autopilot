@@ -1,0 +1,14 @@
+{
+  "description": "The page cites a --watch flag that the tool's recorded help does not list.",
+  "item": { "id": "usage-count" },
+  "config": { "locale": "en" },
+  "files": [
+    {
+      "path": "docs/usage.md",
+      "base": "# Usage\n\nCount the lines in a file.\n",
+      "head": "# Usage\n\nCount the lines in a file. To recount on every save, run `tally --watch notes.txt`.\n"
+    }
+  ],
+  "cliHelp": { "tools": { "tally": "Usage: tally [options] <file>\n  --format <fmt>  output format: text or json\n  -q, --quiet     print nothing but errors\n" } },
+  "expect": ["invented-flag"]
+}

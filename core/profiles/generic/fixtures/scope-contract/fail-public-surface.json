@@ -1,0 +1,9 @@
+{
+  "description": "A copy fix also renames a field in the public API description, which nobody asked for.",
+  "item": { "id": "label-copy" },
+  "files": [
+    { "path": "src/labels.ts", "base": "export const saveLabel = 'Save';\n", "head": "export const saveLabel = 'Save changes';\n" },
+    { "path": "api/openapi.yaml", "base": "components:\n  schemas:\n    Garden:\n      properties:\n        plotSize: { type: integer }\n", "head": "components:\n  schemas:\n    Garden:\n      properties:\n        plotArea: { type: integer }\n" }
+  ],
+  "expect": ["public-surface"]
+}

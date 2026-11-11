@@ -1,0 +1,11 @@
+{
+  "description": "The repo has no OpenAPI file and the owner recorded no surface from a repo command, so the check is BLOCKED rather than passing.",
+  "files": [
+    {
+      "path": "server/routes/orders.ts",
+      "base": "export const ordersRouter = Router();\n",
+      "head": "export const ordersRouter = Router();\nordersRouter.get('/orders/export', requireUser, exportOrders);\n"
+    }
+  ],
+  "expect": ["surface-unknown"]
+}

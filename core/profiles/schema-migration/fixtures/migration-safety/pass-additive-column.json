@@ -1,0 +1,17 @@
+{
+  "description": "A dbmate migration adds a nullable column with a working down step; the plan lists the table and the dry run on a local throwaway database kept row counts.",
+  "files": [
+    {
+      "path": "db/migrations/20260101120000_add_order_notes.sql",
+      "base": null,
+      "head": "-- migrate:up\nALTER TABLE orders ADD COLUMN notes text;\n\n-- migrate:down\nALTER TABLE orders DROP COLUMN notes;\n"
+    }
+  ],
+  "plan": { "tables": ["orders"], "steps": ["add nullable notes column"], "declaredLocks": [] },
+  "dryRun": {
+    "database": { "kind": "ephemeral", "url": "postgres://postgres@localhost:55432/dry_run" },
+    "command": "pnpm db:migrate",
+    "exit": 0,
+    "rowCounts": { "before": { "orders": 120 }, "after": { "orders": 120 } }
+  }
+}

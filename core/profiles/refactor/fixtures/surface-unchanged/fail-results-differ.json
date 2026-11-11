@@ -1,0 +1,16 @@
+{
+  "description": "After the refactor one test that passed is now skipped; the totals look close, but the results are not identical.",
+  "item": { "id": "orders-naming" },
+  "files": [
+    {
+      "path": "src/orders/list.ts",
+      "base": "export function listOrders(rows) {\n  const r = rows.filter((row) => !row.archived);\n  return r;\n}\n",
+      "head": "export function listOrders(rows) {\n  const active = rows.filter((row) => !row.archived);\n  return active;\n}\n"
+    }
+  ],
+  "testResults": {
+    "base": { "passed": 30, "failed": 0, "skipped": 0 },
+    "head": { "passed": 29, "failed": 0, "skipped": 1 }
+  },
+  "expect": ["test-results-differ"]
+}

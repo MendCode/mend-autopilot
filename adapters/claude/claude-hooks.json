@@ -1,0 +1,13 @@
+{
+  "description": "mend-autopilot guard: blocks destructive or out-of-scope tool calls, only inside repositories that have a .mend/ folder",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          { "type": "command", "command": "python3 -I \"${CLAUDE_PLUGIN_ROOT}/guard/mend_guard.py\" --mend-only", "timeout": 10 }
+        ]
+      }
+    ]
+  }
+}

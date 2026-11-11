@@ -1,0 +1,16 @@
+{
+  "description": "formatTotal is folded into cartTotal and disappears from the module's exports without being declared, so any caller outside the diff breaks.",
+  "item": { "id": "cart-format-inline" },
+  "files": [
+    {
+      "path": "src/cart/total.ts",
+      "base": "export function cartTotal(lines) {\n  return lines.reduce((sum, line) => sum + line.price * line.qty, 0);\n}\n\nexport function formatTotal(total) {\n  return total.toFixed(2);\n}\n",
+      "head": "export function cartTotal(lines) {\n  return lines.reduce((sum, line) => sum + line.price * line.qty, 0);\n}\n"
+    }
+  ],
+  "testResults": {
+    "base": { "passed": 42, "failed": 0, "skipped": 0 },
+    "head": { "passed": 42, "failed": 0, "skipped": 0 }
+  },
+  "expect": ["export-changed"]
+}

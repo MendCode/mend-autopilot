@@ -1,0 +1,35 @@
+{
+  "description": "orders-pagination: optional page and pageSize query parameters are added and the response shape is kept, so every change is additive.",
+  "openapi": {
+    "base": {
+      "openapi": "3.1.0",
+      "paths": {
+        "/orders": {
+          "get": {
+            "responses": {
+              "200": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OrderList" } } } }
+            }
+          }
+        }
+      },
+      "components": { "schemas": { "OrderList": { "type": "object", "properties": { "items": { "type": "array" }, "total": { "type": "integer" } } } } }
+    },
+    "head": {
+      "openapi": "3.1.0",
+      "paths": {
+        "/orders": {
+          "get": {
+            "parameters": [
+              { "name": "page", "in": "query", "required": false, "schema": { "type": "integer" } },
+              { "name": "pageSize", "in": "query", "schema": { "type": "integer" } }
+            ],
+            "responses": {
+              "200": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OrderList" } } } }
+            }
+          }
+        }
+      },
+      "components": { "schemas": { "OrderList": { "type": "object", "properties": { "items": { "type": "array" }, "total": { "type": "integer" } } } } }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "description": "The repo caps new prose at 20 words per page and the change adds more; words inside code do not count.",
+  "item": { "id": "usage-count" },
+  "config": { "locale": "en", "wordBudget": 20 },
+  "files": [
+    {
+      "path": "docs/usage.md",
+      "base": "# Usage\n\nCount the lines in a file.\n",
+      "head": "# Usage\n\nCount the lines in a file.\n\nThe counter reads the whole file before it prints anything, so a very large file takes a moment. Empty lines are counted unless you pass a filter. Lines that end without a newline still count once.\n\n```sh\ntally notes.txt\n```\n"
+    }
+  ],
+  "expect": ["word-budget"]
+}

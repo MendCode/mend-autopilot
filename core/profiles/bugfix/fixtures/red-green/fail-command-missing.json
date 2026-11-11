@@ -1,0 +1,7 @@
+{
+  "description": "A bugfix with no regression command on the item or the card: nothing shows the bug existed.",
+  "item": { "id": "cart-rounding" },
+  "card": {},
+  "outcome": null,
+  "expect": ["regression-command-missing"]
+}

@@ -1,0 +1,16 @@
+{
+  "description": "A fix was pushed after the audit; the verdict and the lane still name the previous commit.",
+  "headSha": "5d6e7f8",
+  "card": {
+    "headSha": "5d6e7f8",
+    "checks": [{ "name": "unit", "command": "pnpm test", "exit": 0, "log": ".mend/evidence/fern-sort/unit.log" }],
+    "verdict": { "result": "PASS", "sha": "0a1b2c3" },
+    "auditLanes": [{ "lane": "behaviour", "result": "PASS", "sha": "0a1b2c3", "method": "reran unit" }],
+    "integrity": { "pass": true, "flags": [], "countersigned": [] },
+    "countersigns": []
+  },
+  "logs": {
+    ".mend/evidence/fern-sort/unit.log": "$ pnpm test\nexit: 0\n"
+  },
+  "expect": ["verdict-sha", "lane-sha"]
+}

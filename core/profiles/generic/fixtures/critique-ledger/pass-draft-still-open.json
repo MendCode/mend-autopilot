@@ -1,0 +1,23 @@
+{
+  "description": "A draft card may carry a low score and an open should finding, as long as both match the stored reply.",
+  "card": {
+    "state": "draft",
+    "profiles": [{ "kind": "generic", "skipped": false, "critique": { "model": "strong-model", "score": 5, "notes": "Rejected round." } }],
+    "critique": {
+      "rounds": [
+        {
+          "round": 1,
+          "critic": "strong-model",
+          "log": ".mend/evidence/slate-export/critique-r1.md",
+          "diffStat": "1 file changed, 12 insertions(+)",
+          "gaming": "no",
+          "scores": { "generic.scope": { "base": null, "head": 5, "anchors": { "panel-a": null } } }
+        }
+      ],
+      "findings": [{ "id": "F1", "severity": "should", "status": "open", "round": 1 }]
+    }
+  },
+  "logs": {
+    ".mend/evidence/slate-export/critique-r1.md": "| category | base | head | panel-a |\n|---|---|---|---|\n| generic.scope | n/a | 5 | n/a |\n\nvs: generic.scope base=n/a panel-a=n/a - The new export omits per-account files.\ngaming: no - looked at the test diff and the export command\nfindings:\n- F1 [should] src/export.ts:8: exports one file when the item asks for one per account -> loop over accounts\nbrief: none\n"
+  }
+}

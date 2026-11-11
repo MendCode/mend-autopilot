@@ -1,0 +1,17 @@
+{
+  "description": "The repo's verification skill has no throwaway database, so the dry run records it as unavailable; the check is BLOCKED rather than migrating a shared database.",
+  "files": [
+    {
+      "path": "db/migrations/20260109090000_add_order_channel.sql",
+      "base": null,
+      "head": "-- migrate:up\nALTER TABLE orders ADD COLUMN channel text;\n\n-- migrate:down\nALTER TABLE orders DROP COLUMN channel;\n"
+    }
+  ],
+  "plan": { "tables": ["orders"], "steps": ["add nullable channel column"], "declaredLocks": [] },
+  "dryRun": {
+    "database": { "kind": "unavailable" },
+    "command": "pnpm db:migrate",
+    "exit": null
+  },
+  "expect": ["ephemeral-database-unavailable"]
+}

@@ -1,0 +1,14 @@
+{
+  "description": "The new order route was called on the local service, once with a bad body and once with a good one.",
+  "files": [
+    {
+      "path": "server/routes/orders.ts",
+      "base": "export const ordersRouter = Router();\n",
+      "head": "export const ordersRouter = Router();\n\nordersRouter.post('/orders', requireUser, async (req, res) => {\n  const parsed = NewOrder.safeParse(req.body);\n  if (!parsed.success) return res.status(400).json({ error: 'invalid order' });\n  return res.status(201).json(await createOrder({ userId: req.user.id, ...parsed.data }));\n});\n"
+    }
+  ],
+  "requests": [
+    { "method": "POST", "url": "http://localhost:4100/orders", "status": 400, "response": { "error": "invalid order" } },
+    { "method": "POST", "url": "http://127.0.0.1:4100/orders", "status": 201 }
+  ]
+}

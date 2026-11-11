@@ -1,0 +1,22 @@
+{
+  "description": "The diff loosens the test's expected value and refreshes a snapshot; no code outside tests changed, so the defect is still there.",
+  "item": { "id": "cart-rounding", "rootCause": "src/cart/total.ts:2 rounds each line before summing." },
+  "files": [
+    {
+      "path": "src/cart/total.ts",
+      "base": "export function cartTotal(lines) {\n  return lines.reduce((sum, line) => sum + Math.round(line.price * line.qty * 100) / 100, 0);\n}\n",
+      "head": "export function cartTotal(lines) {\n  return lines.reduce((sum, line) => sum + Math.round(line.price * line.qty * 100) / 100, 0);\n}\n"
+    },
+    {
+      "path": "tests/cart/total.test.ts",
+      "base": "test('three items at 0.335 total 1.01', () => {\n  expect(cartTotal([{ price: 0.335, qty: 3 }])).toBe(1.01);\n});\n",
+      "head": "test('three items at 0.335 total about 1.01', () => {\n  expect(cartTotal([{ price: 0.335, qty: 3 }])).toBeCloseTo(1.01, 1);\n});\n"
+    },
+    {
+      "path": "tests/cart/__snapshots__/receipt.test.ts.snap",
+      "base": "exports[`receipt 1`] = `\"Total 1.01\"`;\n",
+      "head": "exports[`receipt 1`] = `\"Total 1.00\"`;\n"
+    }
+  ],
+  "expect": ["fix-only-tests"]
+}

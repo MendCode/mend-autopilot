@@ -1,0 +1,1 @@
+{"description":"An intentional exception includes a reason.","files":[{"path":"src/chart.ts","base":null,"head":"const axis = { hideOverlap: true }; // mend-allow label-legibility: Full labels are available in the table\n"}],"expect":[]}

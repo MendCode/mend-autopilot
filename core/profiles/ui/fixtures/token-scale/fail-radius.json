@@ -1,0 +1,15 @@
+{
+  "description": "A synthetic panel introduces an unshared radius.",
+  "base": { "components": [], "page": { "elements": [
+    { "fontSize": "16px", "fontWeight": "400", "borderRadius": "4px", "color": "rgb(20, 30, 40)", "backgroundColor": "rgb(255, 255, 255)" }
+  ] } },
+  "head": {
+    "components": [{ "id": "panel", "elements": [
+      { "fontSize": "16px", "fontWeight": "400", "borderRadius": "11px", "color": "rgb(20, 30, 40)", "backgroundColor": "rgb(255, 255, 255)" }
+    ] }],
+    "page": { "elements": [
+      { "fontSize": "16px", "fontWeight": "400", "borderRadius": "11px", "color": "rgb(20, 30, 40)", "backgroundColor": "rgb(255, 255, 255)" }
+    ] }
+  },
+  "expect": ["off-scale"]
+}

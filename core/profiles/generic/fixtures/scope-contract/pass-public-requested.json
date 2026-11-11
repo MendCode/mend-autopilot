@@ -1,0 +1,7 @@
+{
+  "description": "The item explicitly asks for the API field rename, so the public change is in scope.",
+  "item": { "id": "rename-plot-size", "publicChangeRequested": true },
+  "files": [
+    { "path": "api/openapi.yaml", "base": "components:\n  schemas:\n    Garden:\n      properties:\n        plotSize: { type: integer }\n", "head": "components:\n  schemas:\n    Garden:\n      properties:\n        plotArea: { type: integer }\n" }
+  ]
+}

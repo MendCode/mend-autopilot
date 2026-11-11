@@ -1,0 +1,23 @@
+{
+  "description": "The migration drops legacy_email while application code still reads it as legacyEmail; a deploy would break between the migration and the code release.",
+  "files": [
+    {
+      "path": "db/migrations/20260105070000_drop_legacy_email.sql",
+      "base": null,
+      "head": "-- migrate:up\nALTER TABLE customers DROP COLUMN legacy_email;\n\n-- migrate:down\nALTER TABLE customers ADD COLUMN legacy_email text;\n"
+    },
+    {
+      "path": "server/customers.ts",
+      "base": "export function contactAddress(customer) {\n  return customer.legacyEmail ?? customer.email;\n}\n",
+      "head": "export function contactAddress(customer) {\n  return customer.legacyEmail ?? customer.email;\n}\n"
+    }
+  ],
+  "plan": { "tables": ["customers"], "steps": ["drop legacy_email"], "declaredLocks": [] },
+  "dryRun": {
+    "database": { "kind": "ephemeral" },
+    "command": "pnpm db:migrate",
+    "exit": 0,
+    "rowCounts": { "before": { "customers": 30 }, "after": { "customers": 30 } }
+  },
+  "expect": ["expand-contract"]
+}

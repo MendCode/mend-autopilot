@@ -1,0 +1,19 @@
+{
+  "description": "The card claims the tests exited 0, but the log shows the run failed; a second check has no log at all.",
+  "headSha": "0a1b2c3",
+  "card": {
+    "headSha": "0a1b2c3",
+    "checks": [
+      { "name": "unit", "command": "pnpm test", "exit": 0, "log": ".mend/evidence/fern-sort/unit.log" },
+      { "name": "lint", "command": "pnpm lint", "exit": 0 }
+    ],
+    "verdict": { "result": "PASS", "sha": "0a1b2c3" },
+    "auditLanes": [{ "lane": "behaviour", "result": "PASS", "sha": "0a1b2c3", "method": "reran unit" }],
+    "integrity": { "pass": true, "flags": [], "countersigned": [] },
+    "countersigns": []
+  },
+  "logs": {
+    ".mend/evidence/fern-sort/unit.log": "$ pnpm test\n\n  11 passing (230ms)\n  1 failing\n\nexit: 1\n"
+  },
+  "expect": ["check-exit-mismatch", "check-log-missing"]
+}

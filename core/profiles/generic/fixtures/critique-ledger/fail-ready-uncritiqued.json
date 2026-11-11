@@ -1,0 +1,9 @@
+{
+  "description": "A ready card with an applied profile and no critique rounds at all.",
+  "card": {
+    "state": "ready",
+    "profiles": [{ "kind": "generic", "skipped": false, "critique": { "model": "strong-model", "score": 9, "notes": "Looks good." } }]
+  },
+  "logs": {},
+  "expect": ["critique-missing"]
+}

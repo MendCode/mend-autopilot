@@ -1,0 +1,7 @@
+{
+  "description": "The measured command goes red then green, but the card names a broader command than the one that ran, so the card's claim is not what was measured.",
+  "item": { "id": "cart-rounding", "regressionCommand": "pnpm vitest run tests/cart/total.test.ts" },
+  "card": { "redGreen": { "command": "pnpm test", "baseExit": 1, "headExit": 0 } },
+  "outcome": { "baseExit": 1, "headExit": 0 },
+  "expect": ["card-red-green-mismatch"]
+}

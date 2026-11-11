@@ -1,0 +1,28 @@
+{
+  "kind": "api-backend",
+  "description": "Server endpoints and the logic behind them: routes, handlers, request validation, auth decisions, error responses and the public API surface. A change to the surface is proposed as a contract and approved before integration.",
+  "matchHints": {
+    "paths": ["**/routes/**", "**/routers/**", "**/api/**", "**/controllers/**", "**/handlers/**", "**/openapi*.json", "**/server/**"],
+    "intents": ["endpoint", "route", "api", "handler", "webhook", "backend", "auth", "pagination"]
+  },
+  "riskFloor": "medium",
+  "exemplars": {
+    "what": "Existing routes in the same service that already validate input, guard access and test their errors the way this one should; cite each path and what to copy from it (validator, guard, error shape, test style).",
+    "min": 1,
+    "max": 3
+  },
+  "proposalArtifact": {
+    "name": "contract",
+    "inputs": [{ "path": "contract.json" }],
+    "what": "The surface change written as operations and changes (for example \"GET /orders: optional parameter query:page added\"), each marked additive or breaking, saved as contract.json in the item's evidence folder."
+  },
+  "frozenBaseline": "The approved contract: its list of operation changes, nothing more and nothing less.",
+  "humanApproval": "high-risk",
+  "rubric": ["route-hygiene", "cross-account", "repeat-abuse", "request-evidence"],
+  "integrationDiff": "contract-diff",
+  "critiqueLens": "critique-lens.md",
+  "roundBudget": 2,
+  "fileCap": 6,
+  "quantityApplies": false,
+  "cardFields": ["approvedProposal", "integrationDiff", "requests"]
+}

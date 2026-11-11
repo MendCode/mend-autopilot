@@ -1,0 +1,28 @@
+{
+  "description": "A ready card whose last round has one category under the threshold, one head below its base, the gaming answer yes and a should finding still open.",
+  "card": {
+    "state": "ready",
+    "profiles": [{ "kind": "ui", "skipped": false, "critique": { "model": "strong-model", "score": 6, "notes": "" } }],
+    "critique": {
+      "threshold": 7,
+      "rounds": [
+        {
+          "round": 1,
+          "critic": "strong-model",
+          "log": ".mend/evidence/fern-panel/critique-r1.md",
+          "diffStat": "2 files changed, 48 insertions(+)",
+          "gaming": "yes",
+          "scores": {
+            "ui.hierarchy": { "base": null, "head": 6, "anchors": { "panel-a": 8 } },
+            "ui.copy": { "base": 9, "head": 8, "anchors": { "panel-a": 8 } }
+          }
+        }
+      ],
+      "findings": [{ "id": "F1", "severity": "should", "status": "open", "round": 1 }]
+    }
+  },
+  "logs": {
+    ".mend/evidence/fern-panel/critique-r1.md": "| category | base | head | panel-a |\n|---|---|---|---|\n| ui.hierarchy | n/a | 6 | 8 |\n| ui.copy | 9 | 8 | 8 |\n\nvs: ui.hierarchy base=n/a panel-a=same - The new layout hides the stale marker.\nvs: ui.copy base=worse panel-a=same - The base showed the stale label beside its value.\ngaming: yes - the stale marker moved under a collapsed section the snapshot does not open\nfindings:\n- F1 [should] src/panel.tsx:40: stale marker hidden until the section is expanded -> show it beside the value\n"
+  },
+  "expect": ["below-threshold", "below-base", "gaming", "finding-open", "critique-missing", "critique-coverage"]
+}

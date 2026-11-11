@@ -1,0 +1,11 @@
+{
+  "description": "mend-autopilot on OpenCode Go with Gemini Carbon: deepseek-v4.1-flash (Go) leads, owns and audits; gemini-4-carbon (OpenCode Zen, pay per use) only plans, advises and critiques.",
+  "version": "1",
+  "roles": {
+    "main": { "model": "opencode-go/deepseek-v4.1-flash" },
+    "subagent": { "model": "opencode-go/deepseek-v4.1-flash" },
+    "workflow": { "model": "opencode-go/deepseek-v4.1-flash" },
+    "plan": { "model": "opencode/gemini-4-carbon" },
+    "advisor": { "model": "opencode/gemini-4-carbon" }
+  }
+}

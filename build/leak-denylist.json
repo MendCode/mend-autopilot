@@ -1,0 +1,9 @@
+{
+  "words": [],
+  "patterns": [
+    "/Users/[^/\\s]+",
+    "/home/[^/\\s]+",
+    "[A-Za-z]:\\\\Users\\\\",
+    "\\.claude/projects/"
+  ]
+}

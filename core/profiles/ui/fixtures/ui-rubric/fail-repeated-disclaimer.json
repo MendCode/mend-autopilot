@@ -1,0 +1,37 @@
+{
+  "description": "Three tiles repeat the same disclaimer instead of saying it once for the panel.",
+  "rules": { "locale": "es", "now": "2026-11-03T12:00:00Z" },
+  "snapshots": [
+    {
+      "id": "tile-flow",
+      "overflow": false,
+      "texts": [
+        { "text": "Caudal", "fontPx": 13, "color": "#e8ecf2", "background": "#22262e", "clipped": false },
+        { "text": "Datos sujetos a revisión", "fontPx": 11, "color": "#aab3c2", "background": "#22262e", "clipped": false }
+      ],
+      "numbers": [{ "text": "38 l/s", "fontPx": 32 }],
+      "timestamps": []
+    },
+    {
+      "id": "tile-pressure",
+      "overflow": false,
+      "texts": [
+        { "text": "Presión", "fontPx": 13, "color": "#e8ecf2", "background": "#22262e", "clipped": false },
+        { "text": "Datos sujetos a revisión", "fontPx": 11, "color": "#aab3c2", "background": "#22262e", "clipped": false }
+      ],
+      "numbers": [{ "text": "2,4 bar", "fontPx": 32 }],
+      "timestamps": []
+    },
+    {
+      "id": "tile-level",
+      "overflow": false,
+      "texts": [
+        { "text": "Nivel", "fontPx": 13, "color": "#e8ecf2", "background": "#22262e", "clipped": false },
+        { "text": "Datos sujetos a revisión", "fontPx": 11, "color": "#aab3c2", "background": "#22262e", "clipped": false }
+      ],
+      "numbers": [{ "text": "71 %", "fontPx": 32 }],
+      "timestamps": []
+    }
+  ],
+  "expect": ["repeated-phrase"]
+}

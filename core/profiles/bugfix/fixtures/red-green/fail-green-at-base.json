@@ -1,0 +1,6 @@
+{
+  "description": "The new test passes even without the fix, so it does not reproduce the reported bug.",
+  "item": { "id": "cart-rounding", "regressionCommand": "pnpm vitest run tests/cart/total.test.ts" },
+  "outcome": { "baseExit": 0, "headExit": 0 },
+  "expect": ["not-red-at-base"]
+}

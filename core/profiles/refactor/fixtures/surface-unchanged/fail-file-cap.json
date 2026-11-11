@@ -1,0 +1,17 @@
+{
+  "description": "Three files change where the repo set a cap of two; a pure move does not count, the edits do.",
+  "item": { "id": "orders-naming" },
+  "config": { "fileCap": 2 },
+  "files": [
+    { "path": "src/orders/list.ts", "base": "const r = 1;\n", "head": "const active = 1;\n" },
+    { "path": "src/orders/detail.ts", "base": "const d = 1;\n", "head": "const order = 1;\n" },
+    { "path": "src/orders/export.ts", "base": "const e = 1;\n", "head": "const rows = 1;\n" },
+    { "path": "src/orders/old/names.ts", "base": "const n = 1;\n", "head": null },
+    { "path": "src/orders/names.ts", "base": null, "head": "const n = 1;\n" }
+  ],
+  "testResults": {
+    "base": { "passed": 30, "failed": 0, "skipped": 0 },
+    "head": { "passed": 30, "failed": 0, "skipped": 0 }
+  },
+  "expect": ["file-cap"]
+}

@@ -1,0 +1,28 @@
+{
+  "description": "The approved contract adds only the page parameter; the integration also adds pageSize.",
+  "proposal": {
+    "approved": true,
+    "changes": [{ "operation": "GET /orders", "change": "optional parameter query:page added" }]
+  },
+  "openapi": {
+    "base": {
+      "openapi": "3.1.0",
+      "paths": { "/orders": { "get": { "responses": { "200": { "description": "ok" } } } } }
+    },
+    "head": {
+      "openapi": "3.1.0",
+      "paths": {
+        "/orders": {
+          "get": {
+            "parameters": [
+              { "name": "page", "in": "query" },
+              { "name": "pageSize", "in": "query" }
+            ],
+            "responses": { "200": { "description": "ok" } }
+          }
+        }
+      }
+    }
+  },
+  "expect": ["contract-unapproved-change"]
+}

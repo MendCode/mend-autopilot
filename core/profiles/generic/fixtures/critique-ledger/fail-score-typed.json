@@ -1,0 +1,24 @@
+{
+  "description": "The card says head 8 and gaming no; the stored reply says head 6 and gaming yes.",
+  "card": {
+    "state": "draft",
+    "profiles": [{ "kind": "generic", "skipped": false, "critique": { "model": "strong-model", "score": 8, "notes": "" } }],
+    "critique": {
+      "rounds": [
+        {
+          "round": 1,
+          "critic": "strong-model",
+          "log": ".mend/evidence/slate-export/critique-r1.md",
+          "diffStat": "1 file changed, 12 insertions(+)",
+          "gaming": "no",
+          "scores": { "generic.scope": { "base": null, "head": 8, "anchors": { "panel-a": null } } }
+        }
+      ],
+      "findings": []
+    }
+  },
+  "logs": {
+    ".mend/evidence/slate-export/critique-r1.md": "| category | base | head | panel-a |\n|---|---|---|---|\n| generic.scope | n/a | 6 | n/a |\n\nvs: generic.scope base=n/a panel-a=n/a - The new export delivers fewer files than requested.\ngaming: yes - the expected file count in the test was lowered from 3 to 1\nfindings: none\n"
+  },
+  "expect": ["score-unbacked"]
+}

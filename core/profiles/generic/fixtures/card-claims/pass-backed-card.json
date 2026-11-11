@@ -1,0 +1,28 @@
+{
+  "description": "Each check has a log with its command and exit, every SHA is the head and the one integrity flag is countersigned.",
+  "headSha": "0a1b2c3",
+  "card": {
+    "headSha": "0a1b2c3",
+    "checks": [
+      { "name": "unit", "command": "pnpm test", "exit": 0, "log": ".mend/evidence/fern-sort/unit.log" },
+      { "name": "integrity", "command": "node checks/integrity.mjs --base 9f8e7d6 --head 0a1b2c3", "exit": 1, "log": ".mend/evidence/fern-sort/integrity.log" }
+    ],
+    "verdict": { "result": "PASS", "sha": "0a1b2c3" },
+    "auditLanes": [{ "lane": "behaviour", "result": "PASS", "sha": "0a1b2c3", "method": "reran unit and drove the sort" }],
+    "integrity": {
+      "pass": false,
+      "flags": [
+        { "rule": "test-edit", "file": "src/sort.test.ts", "line": 12, "detail": "existing test modified", "severity": "block" },
+        { "rule": "test-literal-in-source", "file": "src/sort.ts", "line": 4, "detail": "literal also in a test", "severity": "warn" }
+      ],
+      "countersigned": [{ "rule": "test-edit", "file": "src/sort.test.ts", "line": 12 }]
+    },
+    "countersigns": [
+      { "kind": "integrity-flag", "subject": "test-edit src/sort.test.ts:12", "by": "operator", "reason": "old expectation encoded the reported bug", "at": "2026-11-03T10:00:00Z" }
+    ]
+  },
+  "logs": {
+    ".mend/evidence/fern-sort/unit.log": "$ pnpm test\n\n  12 passing (240ms)\n\nexit: 0\n",
+    ".mend/evidence/fern-sort/integrity.log": "$ node checks/integrity.mjs --base 9f8e7d6 --head 0a1b2c3\ntest-edit src/sort.test.ts:12 existing test modified\nexit: 1\n"
+  }
+}
