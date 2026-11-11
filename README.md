@@ -1,15 +1,50 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.svg">
-  <img alt="mend-autopilot: small pull requests from cheap models, with the evidence to merge them" src="docs/assets/banner-light.svg" width="100%">
-</picture>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.svg">
+    <img src="docs/assets/logo-light.svg" alt="MendCode" width="160">
+  </picture>
+</p>
 
-Cheap models write plausible code fast. The hard part is knowing which of their pull requests you can merge. mend-autopilot is a set of [MendCode](https://github.com/MendCode/MendCode) packages that splits the work so you don't have to take a model's word for it:
+<h1 align="center">mend-autopilot</h1>
 
-- a **strong model** writes the spec and reviews the result, and never implements;
-- a **cheap model** does the work, one small item at a time, in its own git worktree;
-- **programs**, not models, decide what counts as verified: the checks, the scope, a regression test that must fail before the change and pass after it, and a scan for weakened tests and secrets.
+<p align="center"><sub>Cheap models write. A strong model checks. Programs decide.</sub></p>
 
-Every pull request comes with an evidence card that records all of it. You read the card and decide whether to merge. Nothing is pushed or merged for you.
+<h3 align="center">1,500+ pull requests a month from cheap models, at the quality of an expensive one.</h3>
+
+<p align="center">About 50 a day. The cheap model writes every line of code; the expensive model only writes the spec, reviews the result and audits it; programs, not models, decide what passed. Every pull request arrives with the evidence to merge it.</p>
+
+<p align="center">
+  <a href="https://github.com/MendCode/MendCode"><img src="https://img.shields.io/badge/for-MendCode-3F8F83" alt="For MendCode"></a>
+  <a href="#status"><img src="https://img.shields.io/badge/status-v0.1-9FB08E" alt="Status: v0.1"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-9FB08E" alt="License: MIT"></a>
+</p>
+
+<p align="center">
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#does-it-work">Does it work?</a> ·
+  <a href="#quick-start">Quick start</a> ·
+  <a href="#packages">Packages</a> ·
+  <a href="#the-evidence-card">Evidence card</a> ·
+  <a href="docs/development.md">Development</a>
+</p>
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/overview-dark.svg">
+    <img src="docs/assets/overview-light.svg" alt="Items you write go to cheap owners, each in its own worktree and one to four at once, and come back as evidence cards: four merge-ready, one draft because its fix rounds were spent, one stopped by the guard." width="100%">
+  </picture>
+</p>
+
+## Why
+
+A cheap model can write a plausible pull request in minutes. Fifty of them a day is easy to produce and impossible to review by hand, and "the model says the tests pass" is not evidence. Running the expensive model on everything fixes the quality and burns the subscription by lunch.
+
+mend-autopilot spends each model where it is worth the most:
+
+- **The cheap model does the volume.** One small item at a time, in its own git worktree, a few owners in parallel.
+- **The expensive model does the judgment.** It turns each item into a spec, reviews the result, and audits it in a separate session. It never writes the code.
+- **Programs do the verifying.** The checks, the scope, a regression test that must fail before the change and pass after it, and a scan for weakened tests and secrets all run as code, not as a model's opinion.
+- **You decide.** Each pull request carries an evidence card that says what passed and what nobody checked. Nothing is pushed or merged for you.
 
 ## How it works
 
@@ -19,49 +54,37 @@ Every pull request comes with an evidence card that records all of it. You read 
 </picture>
 
 1. **You write an item.** One observable outcome, the files the model may touch, the commands that prove it works and, for a bug, a regression test.
-2. **`mend-lite` builds and reviews it.** The strong model turns the item into a spec, the cheap model implements and commits, and the workflow runs the checks, the scope check and the integrity scan itself. The strong model then reviews; a blocking finding sends the work back for one fix round.
+2. **`mend-lite` builds and reviews it.** The strong model writes the spec, the cheap model implements and commits, and the workflow runs the checks, the scope check and the integrity scan itself. The strong model then reviews; a blocking finding sends the work back for one fix round.
 3. **`mend-lite-pr` proves it.** On a clean checkout of the reviewed commit it runs the checks again and the red-green test, and an auditor in a separate session drives the change the way a user would. The result is the evidence card.
-4. **You decide.** The best state an item can reach is `merge-ready`. If anything fails, the item stops with the reason (`blocked`, or `draft` when its rounds are spent) instead of guessing.
+4. **You approve the merge.** The best state an item can reach is `merge-ready`. If anything fails, the item stops with its reason (`blocked`, or `draft` when its rounds are spent) instead of guessing.
 
-UI work, refactors and migrations use the full path, `mend-quality` and `mend-pr`: work profiles with executable rubrics, critique rounds against reference examples and human approval where a profile requires it.
+UI work, refactors and migrations take the full path, `mend-quality` and `mend-pr`: work profiles with executable rubrics, critique rounds against reference examples, and human approval where a profile requires it.
 
-## What you get with each pull request
+## Does it work?
 
-An excerpt of a real card, for a bug fix in a copy of the Next.js tutorial dashboard:
+Pilot results on a ChatGPT plan, with gpt-6.1-terra as the cheap model and gpt-6-astra as the strong one. The samples are small; read them as a first signal, not a benchmark.
 
-```json
-{
-  "item": "pagination-bounds",
-  "state": "merge-ready",
-  "risk": { "tier": "medium", "rule": "shared module path: app/lib/utils.ts" },
-  "owner": { "model": "gpt-6.1-terra" },
-  "checks": [{ "command": "sh .mendcode/skills/verify-acme-dashboard/scripts/check.sh", "exit": 0 }],
-  "redGreen": { "command": "bun test tests/pagination.test.ts", "baseExit": 1, "headExit": 0 },
-  "integrity": { "pass": true, "flags": [] },
-  "review": { "critic": "gpt-6-astra", "verdict": "merge" },
-  "verdict": { "result": "PASS", "verifierModel": "gpt-6-astra" },
-  "notVerified": ["Browser rendering and invoice-query clamping were not exercised"],
-  "rollback": "revert the merge commit"
-}
-```
+| What was compared | Result |
+|---|---|
+| Code changes: cheap owner with strong review vs strong model alone | Accepted on **9 of 10** items vs 6 of 9. The cheap owner used **a third to half** of the strong model's input tokens. |
+| Six tasks with hidden tests | Strong alone, cheap alone and cheap with mend-autopilot each passed 5 of 6; the cheap model with the kit used **about a third** of the strong model's output tokens. |
+| Light path on two test repositories | **8 of 8** results accepted by a person, each with its regression test failing before and passing after. |
+| UI screens, blind votes | From scratch, the strong model alone still won. With the strong model's written direction, the cheap model's screens scored the same as the strong model's in the latest round. |
 
-`notVerified` matters as much as the passes: the card says what nobody checked. The full format is in [`evidence-card.md`](core/skills/mend-ship/evidence-card.md), with a JSON schema that every card is validated against.
+The 1,500-a-month figure is what the design is built for: several cheap owners at once, the strong model only at three short steps per item, and programs for everything that can be checked. It has not yet been measured at that volume.
 
-## Packages
+## The evidence card
 
-One package per subscription. Each installs and works on its own.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/card-dark.svg">
+  <img alt="An evidence card from the pilot: pagination-bounds, merge-ready. Checks exit 0; the regression test failed at base and passes at head; integrity found nothing; the strong model reviewed once and would merge; the auditor passed after driving 7 steps in its own session; browser rendering was not verified, and the card says so." src="docs/assets/card-light.svg" width="100%">
+</picture>
 
-| Package | Subscription | Cheap model | Strong model | State |
-|---|---|---|---|---|
-| `mend-autopilot-codex` | ChatGPT | gpt-6-luna or gpt-6.1-terra | gpt-6-astra | Used end to end |
-| `mend-autopilot-claude` | Claude Pro or Max | claude-haiku or claude-sonnet | claude-opus | Configured, not yet run live |
-| `mend-autopilot-opencode-go` | OpenCode Go | deepseek-v4.1-flash | gemini-4-carbon or gemini-4-argon | Configured, not yet run live |
-
-Each package ships recipes that set MendCode's model roles for your plan; applying one is always your step. The adapters' `MAPPING.md` files ([Codex](adapters/codex/MAPPING.md), [Claude](adapters/claude/MAPPING.md), [OpenCode Go](adapters/opencode-go/MAPPING.md)) list the recipes, the workflow arguments and what has not been verified on that harness.
+A real card from the pilot, shortened. The JSON behind it records the commands and their exit codes, both commits of the red-green run, the reviewer's findings by round, the auditor's method per lane, the risk rule that applied and how to roll back. `notVerified` matters as much as the passes: the card says what nobody checked. Every card is validated against a [JSON schema](core/skills/mend-ship/evidence-card.schema.json); the fields are described in [`evidence-card.md`](core/skills/mend-ship/evidence-card.md).
 
 ## Quick start
 
-You need MendCode, Node 20+, Python 3.9+ and git.
+You need [MendCode](https://github.com/MendCode/MendCode), Node 20+, Python 3.9+ and git.
 
 ```sh
 git clone https://github.com/MendCode/mend-autopilot && cd mend-autopilot
@@ -87,17 +110,17 @@ In the repository you want to work on, ignore `.mend/` in git and add a verifica
 }
 ```
 
-and run the two workflows:
+Run the two workflows:
 
 ```text
 /workflows run mend-lite repo=/abs/path/to/project item=.mend/items/pagination-bounds.json pkg=<package dir> critic=gpt-6-astra model=gpt-6.1-terra
 /workflows run mend-lite-pr repo=/abs/path/to/project item=.mend/items/pagination-bounds.json pkg=<package dir> auditor=gpt-6-astra
 ```
 
-`<package dir>` is the `dir` that `mendcode package list --json` prints. The full item format is in [`mend-mode`](core/skills/mend-mode/SKILL.md) §5.
+`<package dir>` is the `dir` that `mendcode package list --json` prints. The full item format is in [`mend-mode`](core/skills/mend-mode/SKILL.md) §5. To run several items, start one run per item, up to the number of owners your grant allows.
 
 <details>
-<summary><b>Claude</b></summary>
+<summary><b>On a Claude subscription</b></summary>
 
 Sessions on Claude models run on the Claude Code engine, which loads Claude Code's skills and hooks, not MendCode's. The Claude package is also a Claude Code plugin that brings the skills, `/mend-setup` and the guard:
 
@@ -113,11 +136,23 @@ The plugin's guard acts only inside repositories that have a `.mend/` folder, so
 </details>
 
 <details>
-<summary><b>OpenCode Go</b></summary>
+<summary><b>On OpenCode Go</b></summary>
 
 Install `mend-autopilot-opencode-go` and log in to MendCode's native `opencode-go` provider (and `opencode`, OpenCode Zen, for Gemini Carbon). `/mend-setup` prints the exact lines and checks that your account can reach each model. The OpenCode ACP agent cannot be used: MendCode workflows refuse ACP agents and the guard does not run there. See the [OpenCode Go mapping](adapters/opencode-go/MAPPING.md).
 
 </details>
+
+## Packages
+
+One package per subscription. Each installs and works on its own.
+
+| Package | Subscription | Cheap model | Strong model | State |
+|---|---|---|---|---|
+| `mend-autopilot-codex` | ChatGPT | gpt-6-luna or gpt-6.1-terra | gpt-6-astra | Used end to end |
+| `mend-autopilot-claude` | Claude Pro or Max | claude-haiku or claude-sonnet | claude-opus | Configured, not yet run live |
+| `mend-autopilot-opencode-go` | OpenCode Go | deepseek-v4.1-flash | gemini-4-carbon or gemini-4-argon | Configured, not yet run live |
+
+Each package ships recipes that set MendCode's model roles for your plan; applying one is always your step. The adapters' `MAPPING.md` files ([Codex](adapters/codex/MAPPING.md), [Claude](adapters/claude/MAPPING.md), [OpenCode Go](adapters/opencode-go/MAPPING.md)) list the recipes, the workflow arguments and what has not been verified on that harness.
 
 ## Safety
 

@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 64 64" role="img" aria-label="mend-autopilot logo">
-  <rect x="2.00" y="2.00" width="60.00" height="60.00" rx="15.00" fill="#FFFFFF" stroke="#16181D" stroke-width="2.50"/>
-  <path d="M 13.00 33.00 L 26.00 46.00" stroke="#D9480F" stroke-width="5.50" stroke-linecap="round" stroke-dasharray="4.00 5.00" fill="none"/>
-  <path d="M 26.00 46.00 L 51.00 19.00" stroke="#16181D" stroke-width="6.00" stroke-linecap="round" fill="none"/>
-</svg>

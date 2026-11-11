@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="560" viewBox="0 0 1280 560" role="img" aria-label="Items you write go to cheap owners, each in its own worktree and one to four at once, and come back as evidence cards: four merge-ready, one draft because its fix rounds were spent, one stopped by the guard.">
+  <rect x="1" y="1" width="1278" height="558" rx="12" fill="#0A0A0A" stroke="#3A3F3C" stroke-width="1.5"/>
+  <path d="M 1 13 Q 1 1 13 1 H 1267 Q 1279 1 1279 13 V 40 H 1 Z" fill="#141414"/>
+  <path d="M 1 40 H 1279" stroke="#3A3F3C" stroke-width="1"/>
+  <circle cx="22" cy="21" r="6" fill="#3A3A3A"/><circle cx="42" cy="21" r="6" fill="#3A3A3A"/><circle cx="62" cy="21" r="6" fill="#3A3A3A"/>
+  <text x="640" y="26" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="14" text-anchor="middle" fill="#8A8A8A">mend-autopilot: the queue</text>
+  <text x="48" y="86" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="18" font-weight="700" fill="#FAFAFA">Items you write</text>
+  <text x="48" y="110" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="14" fill="#8A8A8A">.mend/items/&lt;id&gt;.json</text>
+  <text x="452" y="86" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="18" font-weight="700" fill="#FAFAFA">Cheap owners</text>
+  <text x="452" y="110" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="14" fill="#8A8A8A">one worktree each, 1 to 4 at once</text>
+  <text x="872" y="86" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="18" font-weight="700" fill="#FAFAFA">Evidence cards</text>
+  <text x="872" y="110" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="14" fill="#8A8A8A">what passed, what was not checked</text>
+  <rect x="48" y="140" width="340" height="40" rx="8" fill="#121212" stroke="#262626"/>
+  <text x="66" y="166" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" fill="#D4D4D4">pagination-bounds</text>
+  <path d="M 396 160 H 440" stroke="#606060" stroke-width="1.5" stroke-dasharray="3 5"/>
+  <rect x="452" y="140" width="360" height="40" rx="8" fill="#121212" stroke="#262626"/>
+  <text x="470" y="166" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" fill="#D4D4D4">mend/pagination-bounds</text>
+  <path d="M 820 160 H 862" stroke="#606060" stroke-width="1.5" stroke-dasharray="3 5"/>
+  <rect x="872" y="140" width="360" height="40" rx="8" fill="#121212" stroke="#5FB3A6"/>
+  <circle cx="893" cy="160" r="5" fill="#5FB3A6"/>
+  <text x="908" y="166" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" font-weight="700" fill="#5FB3A6">merge-ready</text>
+  <rect x="48" y="192" width="340" height="40" rx="8" fill="#121212" stroke="#262626"/>
+  <text x="66" y="218" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" fill="#D4D4D4">revenue-axis-empty</text>
+  <path d="M 396 212 H 440" stroke="#606060" stroke-width="1.5" stroke-dasharray="3 5"/>
+  <rect x="452" y="192" width="360" height="40" rx="8" fill="#121212" stroke="#262626"/>
+  <text x="470" y="218" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" fill="#D4D4D4">mend/revenue-axis-empty</text>
+  <path d="M 820 212 H 862" stroke="#606060" stroke-width="1.5" stroke-dasharray="3 5"/>
+  <rect x="872" y="192" width="360" height="40" rx="8" fill="#121212" stroke="#5FB3A6"/>
+  <circle cx="893" cy="212" r="5" fill="#5FB3A6"/>
+  <text x="908" y="218" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" font-weight="700" fill="#5FB3A6">merge-ready</text>
+  <rect x="48" y="244" width="340" height="40" rx="8" fill="#121212" stroke="#262626"/>
+  <text x="66" y="270" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" fill="#D4D4D4">search-wildcards</text>
+  <path d="M 396 264 H 440" stroke="#606060" stroke-width="1.5" stroke-dasharray="3 5"/>
+  <rect x="452" y="244" width="360" height="40" rx="8" fill="#121212" stroke="#262626"/>
+  <text x="470" y="270" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" fill="#D4D4D4">mend/search-wildcards</text>
+  <path d="M 820 264 H 862" stroke="#606060" stroke-width="1.5" stroke-dasharray="3 5"/>
+  <rect x="872" y="244" width="360" height="40" rx="8" fill="#121212" stroke="#5FB3A6"/>
+  <circle cx="893" cy="264" r="5" fill="#5FB3A6"/>
+  <text x="908" y="270" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" font-weight="700" fill="#5FB3A6">merge-ready</text>
+  <rect x="48" y="296" width="340" height="40" rx="8" fill="#121212" stroke="#262626"/>
+  <text x="66" y="322" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" fill="#D4D4D4">status-filter</text>
+  <path d="M 396 316 H 440" stroke="#606060" stroke-width="1.5" stroke-dasharray="3 5"/>
+  <rect x="452" y="296" width="360" height="40" rx="8" fill="#121212" stroke="#262626"/>
+  <text x="470" y="322" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" fill="#D4D4D4">mend/status-filter</text>
+  <path d="M 820 316 H 862" stroke="#606060" stroke-width="1.5" stroke-dasharray="3 5"/>
+  <rect x="872" y="296" width="360" height="40" rx="8" fill="#121212" stroke="#5FB3A6"/>
+  <circle cx="893" cy="316" r="5" fill="#5FB3A6"/>
+  <text x="908" y="322" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" font-weight="700" fill="#5FB3A6">merge-ready</text>
+  <rect x="48" y="348" width="340" height="40" rx="8" fill="#121212" stroke="#262626"/>
+  <text x="66" y="374" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" fill="#D4D4D4">csv-export-header</text>
+  <path d="M 396 368 H 440" stroke="#606060" stroke-width="1.5" stroke-dasharray="3 5"/>
+  <rect x="452" y="348" width="360" height="40" rx="8" fill="#121212" stroke="#262626"/>
+  <text x="470" y="374" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" fill="#8A8A8A">fix rounds spent</text>
+  <path d="M 820 368 H 862" stroke="#606060" stroke-width="1.5" stroke-dasharray="3 5"/>
+  <rect x="872" y="348" width="360" height="40" rx="8" fill="#121212" stroke="#262626"/>
+  <circle cx="893" cy="368" r="5" fill="#E0A450"/>
+  <text x="908" y="374" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" fill="#E0A450">draft</text>
+  <rect x="48" y="400" width="340" height="40" rx="8" fill="#121212" stroke="#262626"/>
+  <text x="66" y="426" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" fill="#D4D4D4">login-rate-limit</text>
+  <path d="M 396 420 H 440" stroke="#606060" stroke-width="1.5" stroke-dasharray="3 5"/>
+  <rect x="452" y="400" width="360" height="40" rx="8" fill="#121212" stroke="#262626"/>
+  <text x="470" y="426" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" fill="#8A8A8A">stopped by the guard</text>
+  <path d="M 820 420 H 862" stroke="#606060" stroke-width="1.5" stroke-dasharray="3 5"/>
+  <rect x="872" y="400" width="360" height="40" rx="8" fill="#121212" stroke="#262626"/>
+  <circle cx="893" cy="420" r="5" fill="#8A8A8A"/>
+  <text x="908" y="426" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" fill="#8A8A8A">blocked</text>
+  <text x="48" y="494" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" fill="#D4D4D4">The strong model writes each spec, reviews each result and audits each card. It never writes the code.</text>
+  <text x="48" y="520" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" fill="#8A8A8A">An item that cannot be proven stops with its reason. Nothing is pushed or merged for you.</text>
+</svg>

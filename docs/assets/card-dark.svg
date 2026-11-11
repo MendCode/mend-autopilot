@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="440" viewBox="0 0 1280 440" role="img" aria-label="An evidence card from the pilot: pagination-bounds, merge-ready. Checks exit 0; the regression test failed at base and passes at head; integrity found nothing; the strong model reviewed once and would merge; the auditor passed after driving 7 steps in its own session; browser rendering was not verified, and the card says so.">
+  <rect x="1" y="1" width="1278" height="438" rx="12" fill="#0A0A0A" stroke="#3A3F3C" stroke-width="1.5"/>
+  <path d="M 1 13 Q 1 1 13 1 H 1267 Q 1279 1 1279 13 V 40 H 1 Z" fill="#141414"/>
+  <path d="M 1 40 H 1279" stroke="#3A3F3C" stroke-width="1"/>
+  <circle cx="22" cy="21" r="6" fill="#3A3A3A"/><circle cx="42" cy="21" r="6" fill="#3A3A3A"/><circle cx="62" cy="21" r="6" fill="#3A3A3A"/>
+  <text x="640" y="26" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="14" text-anchor="middle" fill="#8A8A8A">.mend/evidence/pagination-bounds.json</text>
+  <text x="48" y="88" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="22" font-weight="700" fill="#FAFAFA">pagination-bounds</text>
+  <text x="48" y="116" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="14" fill="#8A8A8A">bugfix · risk medium · owner gpt-6.1-terra · critic and auditor gpt-6-astra</text>
+  <rect x="1070" y="68" width="162" height="36" rx="18" fill="none" stroke="#5FB3A6" stroke-width="1.75"/>
+  <text x="1151" y="92" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" font-weight="700" text-anchor="middle" fill="#5FB3A6">merge-ready</text>
+  <path d="M 48 140 H 1232" stroke="#262626"/>
+  <circle cx="58" cy="175" r="5" fill="#5FB3A6" stroke="#5FB3A6" stroke-width="1.75"/>
+  <text x="78" y="180" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="16" fill="#FAFAFA">checks</text>
+  <text x="250" y="180" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="16" fill="#8A8A8A">repository check (types and tests)</text>
+  <text x="1232" y="180" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="16" text-anchor="end" fill="#FAFAFA">exit 0</text>
+  <circle cx="58" cy="217" r="5" fill="#5FB3A6" stroke="#5FB3A6" stroke-width="1.75"/>
+  <text x="78" y="222" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="16" fill="#FAFAFA">red-green</text>
+  <text x="250" y="222" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="16" fill="#8A8A8A">bun test tests/pagination.test.ts</text>
+  <text x="1232" y="222" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="16" text-anchor="end" fill="#FAFAFA">base exit 1, head exit 0</text>
+  <circle cx="58" cy="259" r="5" fill="#5FB3A6" stroke="#5FB3A6" stroke-width="1.75"/>
+  <text x="78" y="264" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="16" fill="#FAFAFA">integrity</text>
+  <text x="250" y="264" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="16" fill="#8A8A8A">weakened tests, secrets, scope</text>
+  <text x="1232" y="264" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="16" text-anchor="end" fill="#FAFAFA">nothing flagged</text>
+  <circle cx="58" cy="301" r="5" fill="#5FB3A6" stroke="#5FB3A6" stroke-width="1.75"/>
+  <text x="78" y="306" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="16" fill="#FAFAFA">review</text>
+  <text x="250" y="306" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="16" fill="#8A8A8A">strong model, 1 round</text>
+  <text x="1232" y="306" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="16" text-anchor="end" fill="#FAFAFA">merge</text>
+  <circle cx="58" cy="343" r="5" fill="#5FB3A6" stroke="#5FB3A6" stroke-width="1.75"/>
+  <text x="78" y="348" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="16" fill="#FAFAFA">auditor</text>
+  <text x="250" y="348" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="16" fill="#8A8A8A">own session, 7 steps driven</text>
+  <text x="1232" y="348" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="16" text-anchor="end" fill="#FAFAFA">PASS</text>
+  <circle cx="58" cy="385" r="5" fill="none" stroke="#E0A450" stroke-width="1.75"/>
+  <text x="78" y="390" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="16" fill="#FAFAFA">not verified</text>
+  <text x="250" y="390" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="16" fill="#8A8A8A">browser rendering of the invoices page</text>
+  <text x="1232" y="390" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="16" text-anchor="end" fill="#E0A450">said on the card</text>
+</svg>
