@@ -63,3 +63,15 @@ test('relative repos, no commands and multi-line commands are refused', () => {
   assert.throws(() => runSetup({ repo: '/tmp', commands: [] }), SetupError);
   assert.throws(() => runSetup({ repo: '/tmp', commands: ['true\nrm -rf /'] }), SetupError);
 });
+
+test('in a linked worktree the ignore rule goes where git reads it, so .mend/ is really ignored there', (t) => {
+  const dir = repo();
+  const linked = `${dir}-linked`;
+  t.after(() => { rmSync(dir, { recursive: true, force: true }); rmSync(linked, { recursive: true, force: true }); });
+  execFileSync('git', ['worktree', 'add', '-q', '-b', 'side', linked], { cwd: dir, stdio: 'ignore' });
+  const result = runSetup({ repo: linked, commands: ['true'] });
+  assert.equal(result.result, 'PASS');
+  assert.equal(spawnSync('git', ['check-ignore', '-q', '.mend/worktrees/probe'], { cwd: linked }).status, 0);
+  assert.equal(status(linked), '');
+  assert.match(readFileSync(path.join(dir, '.git/info/exclude'), 'utf8'), /^\.mend\/$/m);
+});

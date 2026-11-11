@@ -33,7 +33,8 @@ export function ignoreMend(repo, extra = []) {
   const wanted = [['.mend/', '.mend/worktrees/probe'], ...extra.map((dir) => [dir, `${dir}probe`])].filter(([, probe]) => !ignored(probe));
   const mendWasIgnored = !wanted.some(([line]) => line === '.mend/');
   if (!wanted.length) return 'already ignored';
-  const exclude = path.join(git(repo, ['rev-parse', '--absolute-git-dir']), 'info', 'exclude');
+  // A linked worktree's own git dir has no say: git reads info/exclude only from the common dir.
+  const exclude = path.join(path.resolve(repo, git(repo, ['rev-parse', '--git-common-dir'])), 'info', 'exclude');
   mkdirSync(path.dirname(exclude), { recursive: true });
   const current = existsSync(exclude) ? readFileSync(exclude, 'utf8') : '';
   appendFileSync(exclude, `${current && !current.endsWith('\n') ? '\n' : ''}# mend-autopilot: items, worktrees, evidence and the verification skill\n${wanted.map(([line]) => line).join('\n')}\n`);

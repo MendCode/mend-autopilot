@@ -15,7 +15,7 @@ This file is `<pkg>/skills/mend-autopilot/SKILL.md`; `<pkg>` is two folders up. 
 
 ## 2. Prepare the repository (always first)
 
-Do this before reading the code for the change or judging its risk. The repository root is `git rev-parse --show-toplevel`. It is ready when `.mend/evidence/verify.json` has `"result": "PASS"` and its `sha` is an ancestor of `HEAD`. Otherwise:
+Do this before reading the code for the change or judging its risk. Work on the repository this session is open in: the root is `git rev-parse --show-toplevel` run in the session's directory. Never clone it, copy it or add a worktree of your own to work in: every item already gets its own worktree under `.mend/worktrees/`, branched from the last commit, so the user's checkout, its branch and its uncommitted changes are never touched. The workflow's agents open in this session's directory; a repository outside it makes them stop and ask the user for every file they read. If the session is not inside a git repository, stop and ask the user to open MendCode in the repository's folder. It is ready when `.mend/evidence/verify.json` has `"result": "PASS"` and its `sha` is an ancestor of `HEAD`. Otherwise:
 
 1. Find the commands that prove the repository works, from what it already has: `package.json` scripts (`typecheck`, `lint`, `test`), a `Makefile`, `pyproject.toml`, `Cargo.toml`, `go.mod`, the CI workflow. Prefer the commands CI runs. Each must run without a browser, a login or a production service.
 2. Run `node <pkg>/checks/setup-light.mjs --repo <root> --command "<cmd>" [--command "<cmd>" ...]`. It ignores `.mend/` through `.git/info/exclude` (no tracked file changes), writes the verification skill, runs every command and records the result.
