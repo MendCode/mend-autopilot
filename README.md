@@ -22,6 +22,7 @@
 <p align="center">
   <a href="#how-it-works">How it works</a> ·
   <a href="#does-it-work">Does it work?</a> ·
+  <a href="#install-with-your-ai-assistant">Install with AI</a> ·
   <a href="#quick-start">Quick start</a> ·
   <a href="#packages">Packages</a> ·
   <a href="#the-evidence-card">Evidence card</a> ·
@@ -83,6 +84,18 @@ The 1,500-a-month figure is what the design is built for: several cheap owners a
 A real card from the pilot, shortened. The JSON behind it records the commands and their exit codes, both commits of the red-green run, the reviewer's findings by round, the auditor's method per lane, the risk rule that applied and how to roll back. `notVerified` matters as much as the passes: the card says what nobody checked. Every card is validated against a [JSON schema](core/skills/mend-ship/evidence-card.schema.json); the fields are described in [`evidence-card.md`](core/skills/mend-ship/evidence-card.md).
 
 ## Quick start
+
+### Install with your AI assistant
+
+Paste this into MendCode, Claude Code, Codex or any coding agent:
+
+```text
+Fetch https://raw.githubusercontent.com/MendCode/mend-autopilot/main/install.md and follow it.
+```
+
+It checks the requirements, picks the package for your subscription, builds and installs it, and prepares your project, asking before each step that changes something. It never touches your models, permissions or tier.
+
+### Install by hand
 
 You need [MendCode](https://github.com/MendCode/MendCode), Node 20+, Python 3.9+ and git.
 

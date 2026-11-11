@@ -25,7 +25,7 @@ while [ $# -gt 0 ]; do
 done
 
 # Paths that no test reads: changing only these cannot break a test.
-DOCS_ONLY='^(README\.md|LICENSE|NOTICE|\.gitignore|docs/.*|adapters/[^/]+/MAPPING\.md|scripts/render-assets\.mjs)$'
+DOCS_ONLY='^(README\.md|install\.md|LICENSE|NOTICE|\.gitignore|docs/.*|adapters/[^/]+/MAPPING\.md|scripts/render-assets\.mjs)$'
 
 if [ "$mode" = auto ]; then
   changed=$( { git diff --name-only "$since" --; git ls-files --others --exclude-standard; } | sort -u)
