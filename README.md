@@ -167,6 +167,14 @@ One package per subscription. Each installs and works on its own.
 
 Each package ships recipes that set MendCode's model roles for your plan; applying one is always your step. The adapters' `MAPPING.md` files ([Codex](adapters/codex/MAPPING.md), [Claude](adapters/claude/MAPPING.md), [OpenCode Go](adapters/opencode-go/MAPPING.md)) list the recipes, the workflow arguments and what has not been verified on that harness.
 
+## Your own instructions
+
+mend-autopilot adds skills, commands, workflows and a guard. It sets no prompt, look, model or tier, so it runs next to the profiles and instructions you already use instead of replacing them.
+
+- **They reach every agent.** The owner, critic and auditor of a workflow are ordinary MendCode sessions, so each one gets what your sessions get: the project's `AGENTS.md`, the `APPEND_SYSTEM.md` of your profiles or of `.mendcode/`, your skills and your memory. On a Claude model, Claude Code adds your `CLAUDE.md`.
+- **Keep them compatible.** A rule like "never start sub-agents" or "ask before every edit" also binds the owner and can stop an item. Rules about style, naming or tests are what work best.
+- **Per project:** the verification skill holds the commands that prove the project works; each item's `editSet`, `checks` and `acceptance` narrow one task; a work profile under `core/profiles/` adds a rubric that a program checks.
+
 ## Safety
 
 A pre-tool guard runs before every tool call and blocks the destructive or out-of-scope ones: database drops, `rm -r` outside the worktree, force pushes, reading secret files, dependency additions nobody granted, and commands that reach a host you marked as production. It is a seatbelt, not a sandbox. Installing a package never changes models, permissions, trust or tiers; those stay yours. See [safety setup](core/docs/safety-setup.md).
