@@ -2,6 +2,6 @@
   "name": "mend-autopilot",
   "version": "0.1.0",
   "description": "Verified small-PR autopilot for MendCode on a Claude subscription: the mend-autopilot skills, the /mend-setup check and a guard that acts only in repositories with a .mend/ folder",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "hooks": "./claude-hooks.json"
 }

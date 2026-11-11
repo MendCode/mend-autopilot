@@ -38,43 +38,61 @@ ${body}
 `;
 }
 
-/** The queue: many small items, a few cheap owners at once, one card each. */
+/** The queue: every item is a row of steps colored by who does them, so the split is visible at a glance. */
 function overview(t) {
-  const W = 1280, H = 560;
+  const W = 1280, H = 640;
+  const who = {
+    cheap: { label: 'cheap model', fill: t.sage, ink: t.window },
+    strong: { label: 'strong model', fill: 'none', stroke: t.teal, ink: t.teal },
+    program: { label: 'programs', fill: 'none', stroke: t.faint, ink: t.muted },
+  };
+  const steps = [['spec', 'strong'], ['writes the code', 'cheap'], ['checks', 'program'], ['review', 'strong'], ['audit', 'strong']];
+  const widths = [96, 236, 112, 104, 96];
   const items = [
-    ['pagination-bounds', 'merge-ready'],
-    ['revenue-axis-empty', 'merge-ready'],
-    ['search-wildcards', 'merge-ready'],
-    ['status-filter', 'merge-ready'],
-    ['csv-export-header', 'draft'],
-    ['login-rate-limit', 'blocked'],
+    ['pagination-bounds', 5, 'merge-ready'],
+    ['revenue-axis-empty', 5, 'merge-ready'],
+    ['search-wildcards', 5, 'merge-ready'],
+    ['status-filter', 5, 'merge-ready'],
+    ['csv-export-header', 4, 'draft', 'review asked twice'],
+    ['login-rate-limit', 3, 'blocked', 'guard refused a command'],
   ];
-  const color = { 'merge-ready': t.teal, draft: t.amber, blocked: t.muted };
-  const rowY = (index) => 166 + index * 52;
-  const columns = [
-    { x: 48, title: 'Items you write', note: '.mend/items/<id>.json' },
-    { x: 452, title: 'Cheap owners', note: 'one worktree each, 1 to 4 at once' },
-    { x: 872, title: 'Evidence cards', note: 'what passed, what was not checked' },
-  ];
-  const head = columns.map(({ x, title, note }) => `${text(x, 86, title, { size: 18, fill: t.ink, weight: 700 })}
-  ${text(x, 110, note, { size: 14, fill: t.muted })}`).join('\n  ');
-  const rows = items.map(([id, state], index) => {
-    const y = rowY(index);
-    const owner = index < 4 ? `mend/${id}` : index === 4 ? 'fix rounds spent' : 'stopped by the guard';
-    return `<rect x="48" y="${y - 26}" width="340" height="40" rx="8" fill="${t.panel}" stroke="${t.rule}"/>
-  ${text(66, y, id, { fill: t.text })}
-  <path d="M 396 ${y - 6} H 440" stroke="${t.faint}" stroke-width="1.5" stroke-dasharray="3 5"/>
-  <rect x="452" y="${y - 26}" width="360" height="40" rx="8" fill="${t.panel}" stroke="${t.rule}"/>
-  ${text(470, y, owner, { fill: index < 4 ? t.text : t.muted })}
-  <path d="M 820 ${y - 6} H 862" stroke="${t.faint}" stroke-width="1.5" stroke-dasharray="3 5"/>
-  <rect x="872" y="${y - 26}" width="360" height="40" rx="8" fill="${t.panel}" stroke="${state === 'merge-ready' ? t.teal : t.rule}"/>
-  <circle cx="893" cy="${y - 6}" r="5" fill="${color[state]}"/>
-  ${text(908, y, state, { fill: color[state], weight: state === 'merge-ready' ? 700 : undefined })}`;
+  const nameX = 48, stepX = 292, gap = 8, resultX = 1012;
+  const rowY = (index) => 214 + index * 56;
+  const chip = (x, y, w, kind, label, faded) => {
+    const k = who[kind];
+    const stroke = k.stroke ? ` stroke="${k.stroke}" stroke-width="1.5"` : '';
+    return `<g${faded ? ' opacity="0.28"' : ''}><rect x="${x}" y="${y - 25}" width="${w}" height="36" rx="7" fill="${k.fill}"${stroke}/>${text(x + w / 2, y - 2, label, { size: 14, fill: k.ink, anchor: 'middle', weight: kind === 'cheap' ? 700 : undefined })}</g>`;
+  };
+  const legend = Object.entries(who).map(([kind, k], index) => {
+    const x = 48 + index * 420;
+    const description = { cheap: 'writes all the code, several items at once', strong: 'reads: spec, review, audit', program: 'run the checks, decide what passed' }[kind];
+    return `<rect x="${x}" y="70" width="22" height="22" rx="5" fill="${k.fill}"${k.stroke ? ` stroke="${k.stroke}" stroke-width="1.5"` : ''}/>
+  ${text(x + 34, 87, k.label, { size: 16, fill: t.ink, weight: 700 })}
+  ${text(x + 34, 110, description, { size: 13, fill: t.muted })}`;
   }).join('\n  ');
-  const foot = `${text(48, H - 66, 'The strong model writes each spec, reviews each result and audits each card. It never writes the code.', { size: 15, fill: t.text })}
-  ${text(48, H - 40, 'An item that cannot be proven stops with its reason. Nothing is pushed or merged for you.', { size: 15, fill: t.muted })}`;
-  return windowFrame(t, W, H, 'mend-autopilot: the queue', `  ${head}\n  ${rows}\n  ${foot}`,
-    'Items you write go to cheap owners, each in its own worktree and one to four at once, and come back as evidence cards: four merge-ready, one draft because its fix rounds were spent, one stopped by the guard.');
+  const headers = `${text(nameX, 168, 'item', { size: 13, fill: t.faint })}
+  ${text(stepX, 168, 'steps, left to right', { size: 13, fill: t.faint })}
+  ${text(resultX, 168, 'evidence card', { size: 13, fill: t.faint })}`;
+  const rows = items.map(([id, reached, state, why], index) => {
+    const y = rowY(index);
+    let x = stepX;
+    const chips = steps.map(([label, kind], step) => {
+      const out = chip(x, y, widths[step], kind, label, step >= reached);
+      x += widths[step] + gap;
+      return out;
+    }).join('');
+    const color = { 'merge-ready': t.teal, draft: t.amber, blocked: t.muted }[state];
+    const result = `<circle cx="${resultX + 6}" cy="${y - 7}" r="6" fill="${state === 'merge-ready' ? color : 'none'}" stroke="${color}" stroke-width="1.75"/>
+  ${text(resultX + 22, y - 2, state, { size: 15, fill: color, weight: state === 'merge-ready' ? 700 : undefined })}${why ? `\n  ${text(resultX + 22, y + 16, why, { size: 12, fill: t.muted })}` : ''}`;
+    return `${text(nameX, y - 2, id, { size: 15, fill: t.text })}
+  ${chips}
+  ${result}`;
+  }).join('\n  ');
+  const foot = `<path d="M 48 ${H - 92} H ${W - 48}" stroke="${t.rule}"/>
+  ${text(48, H - 60, 'Most of the work is the wide green step, and the cheap model does all of it. The strong model only reads.', { size: 15, fill: t.text })}
+  ${text(48, H - 34, 'An item that cannot be proven stops at that step with its reason. Nothing is pushed or merged for you.', { size: 15, fill: t.muted })}`;
+  return windowFrame(t, W, H, 'mend-autopilot: who does what', `  ${legend}\n  ${headers}\n  ${rows}\n  ${foot}`,
+    'Six items, each a row of steps: spec by the strong model, the code by the cheap model, checks by programs, then review and audit by the strong model. Four reach merge-ready; one stops at review as a draft after two review rounds; one is blocked at the checks because the guard refused a command.');
 }
 
 /** One item through mend-lite and mend-lite-pr, in four lanes. */

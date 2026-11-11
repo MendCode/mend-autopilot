@@ -16,7 +16,7 @@
 <p align="center">
   <a href="https://github.com/MendCode/MendCode"><img src="https://img.shields.io/badge/for-MendCode-3F8F83" alt="For MendCode"></a>
   <a href="#status"><img src="https://img.shields.io/badge/status-v0.1-9FB08E" alt="Status: v0.1"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-9FB08E" alt="License: MIT"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-9FB08E" alt="License: Apache-2.0"></a>
 </p>
 
 <p align="center">
@@ -31,7 +31,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/overview-dark.svg">
-    <img src="docs/assets/overview-light.svg" alt="Items you write go to cheap owners, each in its own worktree and one to four at once, and come back as evidence cards: four merge-ready, one draft because its fix rounds were spent, one stopped by the guard." width="100%">
+    <img src="docs/assets/overview-light.svg" alt="Six items, each a row of steps: spec by the strong model, the code by the cheap model, checks by programs, then review and audit by the strong model. Four reach merge-ready; one stops at review as a draft; one is blocked at the checks because the guard refused a command." width="100%">
   </picture>
 </p>
 
@@ -177,4 +177,4 @@ v0.1. The Codex package has been used end to end on test repositories. The Claud
 
 ## License
 
-[MIT](LICENSE)
+[Apache-2.0](LICENSE). The MendCode name and logo are not covered by the license; see [NOTICE](NOTICE).

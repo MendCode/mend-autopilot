@@ -9,7 +9,7 @@ core/                  shared source: skills, playbooks, guard, checks, workflow
 adapters/<harness>/    per-harness manifest, recipes, setup command, hook wiring, MAPPING.md
 build.mjs              assembles dist/mend-autopilot-<harness>/ from core + one adapter
 build/                 build configuration (not shipped)
-scripts/verify.sh      the full local test suite
+scripts/verify.sh      local verification (full or quick)
 scripts/render-assets.mjs  the README images in docs/assets/
 docs/                  documentation
 dist/                  generated packages (git-ignored)
@@ -34,7 +34,8 @@ Requires Node 20+ (or Bun), Python 3.9+ and git. There are no dependencies.
 ```sh
 node build.mjs codex          # or claude, opencode-go, all
 node build.mjs all --check    # compare dist/ with the sources; writes nothing
-scripts/verify.sh             # guard tests, all Node tests, profiles, build, package check
+scripts/verify.sh             # full suite when code changed, quick (build, images, packages) when only docs did
+scripts/verify.sh --full      # always the full suite; --quick, --dry-run and --since REV also exist
 node scripts/render-assets.mjs           # rewrite docs/assets/ from the templates
 node scripts/render-assets.mjs --check   # exit 1 if an image differs from its template
 ```
