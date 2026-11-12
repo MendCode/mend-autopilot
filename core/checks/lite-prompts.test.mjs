@@ -100,3 +100,14 @@ test('the owner is told it writes the change itself, and a round after an empty 
   assert.doesNotMatch(second, /previous commit was reviewed/);
   assert.match(second, /whole spec is still yours to implement/);
 });
+
+test('the planner looks for existing tests that pin what the item changes and reports the undeclared ones', () => {
+  const prompt = buildPrompt('spec', { ...data });
+  assert.match(prompt, /Search the existing tests for any that pin what this item changes/);
+  assert.match(prompt, /not in the item's testChanges: each one goes in "editSetMissing"/);
+});
+
+test('the owner knows a one-tree note about earlier rounds of its own item is not someone else working', () => {
+  const prompt = buildPrompt('owner', { ...data, round: 1, feedback: null });
+  assert.match(prompt, /names «workflow · mend · …» sessions for this item is about those ended rounds: nobody else is working here/);
+});
