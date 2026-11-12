@@ -66,6 +66,12 @@ test('a run that fails in its first seconds is reported as not started, with its
   assert.match(result.reason, /full tier/);
 });
 
+test('a draft resumes with more owner rounds through --fix-rounds, bounded to three', () => {
+  assert.equal(workflowArgs({ repo: '/repo', item: '.mend/items/low.json', pkg: '/pkg', fixRounds: '2', readJson }).fixRounds, 2);
+  assert.ok(!('fixRounds' in workflowArgs({ repo: '/repo', item: '.mend/items/low.json', pkg: '/pkg', readJson })));
+  assert.throws(() => workflowArgs({ repo: '/repo', item: '.mend/items/low.json', pkg: '/pkg', fixRounds: 4, readJson }), StartError);
+});
+
 test('named models win, publish no is passed on, and bad paths are refused', () => {
   const args = workflowArgs({ repo: '/repo', item: '.mend/items/low.json', pkg: '/pkg', models: { model: 'claude-haiku' }, publish: 'no', readJson });
   assert.equal(args.model, 'claude-haiku');

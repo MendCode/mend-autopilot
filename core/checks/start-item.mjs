@@ -3,7 +3,9 @@
 // The user's request is the approval for low and medium items; a high-risk item starts only after the user said
 // yes to it (--approved). This is the start path for the lead: a workflow_script call shows a card that MendCode
 // drops as soon as the lead's turn ends, so an unattended start through it never runs.
-// usage: start-item.mjs --repo <abs path> --item .mend/items/<id>.json --pkg <abs path> [--approved] [--publish no]
+// usage: start-item.mjs --repo <abs path> --item .mend/items/<id>.json --pkg <abs path> [--approved] [--publish no] [--fix-rounds N]
+// Running it again on an item that stopped as a draft resumes its worktree: --fix-rounds N allows owner rounds
+// after the first up to N in total (default 1, at most 3), so the next round starts from the reviewer's last findings.
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
@@ -28,7 +30,7 @@ function defaultRunner(command, args, cwd) {
 }
 
 /** The workflow arguments: repo, item and package, plus the models from <pkg>/autopilot.json unless the caller named others. */
-export function workflowArgs({ repo, item, pkg, models = {}, publish, readJson = (file) => JSON.parse(readFileSync(file, 'utf8')) }) {
+export function workflowArgs({ repo, item, pkg, models = {}, publish, fixRounds, readJson = (file) => JSON.parse(readFileSync(file, 'utf8')) }) {
   if (typeof repo !== 'string' || !path.isAbsolute(repo)) throw new StartError('--repo must be an absolute path');
   if (typeof pkg !== 'string' || !path.isAbsolute(pkg)) throw new StartError('--pkg must be an absolute path');
   if (typeof item !== 'string' || !ITEM_PATH.test(item)) throw new StartError('--item must be .mend/items/<id>.json');
@@ -40,6 +42,11 @@ export function workflowArgs({ repo, item, pkg, models = {}, publish, readJson =
   }
   if (!args.critic || !args.model || !args.auditor) throw new StartError('autopilot.json must name critic, model and auditor');
   if (publish === 'no') args.publish = 'no';
+  if (fixRounds !== undefined) {
+    const rounds = Number(fixRounds);
+    if (!Number.isInteger(rounds) || rounds < 0 || rounds > 3) throw new StartError('--fix-rounds must be 0 to 3');
+    args.fixRounds = rounds;
+  }
   return args;
 }
 
@@ -47,8 +54,8 @@ export function workflowArgs({ repo, item, pkg, models = {}, publish, readJson =
  * Returns { started: true, workflowId } or { started: false, reason }. A high-risk item without `approved`
  * is not started: the lead asks the user once and runs this again with --approved.
  */
-export function startItem({ repo, item, pkg, approved = false, models, publish, readJson, settleLooks = 8, pause = defaultPause }, run = defaultRunner) {
-  const args = workflowArgs({ repo, item, pkg, models, publish, readJson });
+export function startItem({ repo, item, pkg, approved = false, models, publish, fixRounds, readJson, settleLooks = 8, pause = defaultPause }, run = defaultRunner) {
+  const args = workflowArgs({ repo, item, pkg, models, publish, fixRounds, readJson });
   const itemFile = path.join(repo, item);
   const record = (readJson ?? ((file) => JSON.parse(readFileSync(file, 'utf8'))))(itemFile);
   if (record?.risk === 'high' && !approved) return { started: false, item, reason: 'high risk: ask the user once, then start it with --approved' };
@@ -84,6 +91,7 @@ function parseArgs(argv) {
     else if (flag === '--item') options.item = value;
     else if (flag === '--pkg') options.pkg = value;
     else if (flag === '--publish') options.publish = value;
+    else if (flag === '--fix-rounds') options.fixRounds = value;
     else if (MODEL_KEYS.includes(flag.slice(2))) options.models[flag.slice(2)] = value;
     else throw new StartError(`unknown argument ${flag}`);
   }
