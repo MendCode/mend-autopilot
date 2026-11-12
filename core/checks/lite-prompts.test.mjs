@@ -90,3 +90,13 @@ test('CLI returns JSON and rejects malformed or unknown requests', () => {
   }
   assert.match(error, /LITE-PROMPTS/);
 });
+
+test('the owner is told it writes the change itself, and a round after an empty one does not claim a reviewed commit', () => {
+  const first = buildPrompt('owner', { ...data, round: 1, feedback: null });
+  assert.match(first, /you write this change yourself, now, in this worktree, and nobody else will/);
+  assert.match(first, /do not load the mend-autopilot or mend-quality skills/);
+  assert.match(first, /explicit authorization to edit the editSet, run any command the work needs/);
+  const second = buildPrompt('owner', { ...data, round: 2, feedback: 'The workflow found problems at your head:\n- nothing was committed: no change was made, so the whole spec is still yours to implement, starting now' });
+  assert.doesNotMatch(second, /previous commit was reviewed/);
+  assert.match(second, /whole spec is still yours to implement/);
+});

@@ -189,6 +189,8 @@ const auditRun = await agent(
     "Rerun every item check yourself at head. Then drive the changed behaviour end to end yourself (run the code path, a request, or the test that exercises it) and list each step you drove in drivenSteps, in order.",
     "Return lanes named exactly checks and driven-path, with the concrete method for each. If you could not drive the behaviour, mark driven-path MISSING or BLOCKED, never PASS.",
     "Report PASS only if every acceptance line is met at this head and every check you ran exits 0. ISSUES names each problem with file:line. BLOCKED names what you could not run.",
+    "Judge the change, not your own tooling. A driver or script you wrote that fails because of itself (a missing import alias, a browser you lack, an assertion of yours that contradicts the spec) is not a problem of the change: repair it or drive the path another way, judge from the run that works, and put the failed attempts in attention, not in ISSUES. The item checks above are different: one that exits non-zero is always ISSUES.",
+    "When an acceptance line is visual (how something looks or moves on screen) and you cannot look at the rendered result, drive the code that produces it (state, render or layout functions, pixel buffers) and judge from that; list the look you could not see in notVerified for the human. A visual check you could not do is never by itself ISSUES or BLOCKED, and you always return the report instead of stopping.",
   ].join("\n"),
   {
     label: "audit " + item.id,
@@ -254,6 +256,7 @@ const notVerified = [...new Set([
   "Profile rubrics and scored critique did not run (light path): " + kinds.join(", "),
   ...audit.notVerified.map(String),
   ...(Array.isArray(audit.attention) ? audit.attention.map((flag) => "Auditor attention: " + String(flag)) : []),
+  ...flags.filter((flag) => flag.rule === "test-edit" && flag.severity === "warn").map((flag) => "Existing test changed as the item declares; read it before merging: " + flag.file + " (" + flag.detail + ")"),
   ...review.rounds.flatMap((round) => round.findings.filter((finding) => finding.severity === "nit").map((finding) => "Reviewer nit left for the human: " + finding.file + ": " + finding.issue)),
 ])]
 const decisionLog = evidenceDir + "/decisions.tsv"
@@ -323,4 +326,10 @@ if (!allChecksPass) reasons.push("a check exited non-zero")
 if (!auditPass) reasons.push("the auditor reported " + audit.result + (drivenSteps.length ? "" : " and drove nothing"))
 if (!card.integrity.pass) reasons.push("integrity flags block delivery")
 if (schemaFailures.length) reasons.push("card schema validation failed")
-return stopHere(card.state, reasons.length ? reasons.join("; ") : "checks, integrity and the auditor pass at " + head + "; a human approves the merge", { card: cardPath, verdict: card.verdict, risk: card.risk, cardFailures: schemaFailures })
+// What the auditor found goes back to the owner as one more round (mend.js), so a fixable finding does not end the item.
+const auditFindings = auditPass ? null : [
+  ...audit.lanes.filter((lane) => lane.result !== "PASS").map((lane) => lane.lane + " " + lane.result + ": " + String(lane.method)),
+  ...checks.filter((entry) => entry.exit !== 0).map((entry) => "check exited " + entry.exit + ": " + entry.command),
+  ...(Array.isArray(audit.attention) ? audit.attention.map(String) : []),
+].join("\n").slice(0, 6000)
+return stopHere(card.state, reasons.length ? reasons.join("; ") : "checks, integrity and the auditor pass at " + head + "; a human approves the merge", { card: cardPath, verdict: card.verdict, risk: card.risk, cardFailures: schemaFailures, ...(auditFindings && card.integrity.pass ? { auditFindings } : {}) })

@@ -3123,3 +3123,44 @@ describe('mend-lite-pr', () => {
     assert.ok(review && validateSchema(CARD_SCHEMA, noReview).some((error) => /missing review/.test(error.message)));
   });
 });
+
+describe('mend (one run per item)', () => {
+  const MERGE = { verdict: 'merge', summary: 'Meets the item and the spec.', findings: [] };
+  const PASS = { result: 'PASS', lanes: [{ lane: 'checks', result: 'PASS', method: 'reran test -f src/total.js at head' }, { lane: 'driven-path', result: 'PASS', method: 'imported total and called it' }], drivenSteps: ['total(2, 3) printed 5'], notVerified: ['callers outside this repository'] };
+  const ISSUES = { ...PASS, result: 'ISSUES', lanes: [PASS.lanes[0], { lane: 'driven-path', result: 'ISSUES', method: 'total(-1, 1) is wrong at src/total.js:1' }] };
+
+  test('an auditor finding goes back to the owner for one round, then a fresh review and audit make the item merge-ready', async () => {
+    const setup = await makeRepo();
+    const { api, calls } = harness({ ...setup, owner: ownerSteps([FIXED, { files: { 'src/total.js': 'export const total = (a, b) => b + a;\n' } }]), critic: () => MERGE });
+    const agent = api.agent;
+    let audits = 0;
+    api.agent = async (prompt, options = {}) => {
+      if (!String(options.label).startsWith('audit')) return agent(prompt, options);
+      calls.agents.push({ label: options.label, prompt });
+      audits += 1;
+      return { value: audits === 1 ? ISSUES : PASS, text: 'audit', taskId: `audit-task-${audits}` };
+    };
+    const result = await runWorkflow('mend', { item: setup.itemPath, pkg: PKG, critic: CRITIC, model: 'cheap-test-model', fixRounds: 0, publish: 'no' }, api);
+    assert.equal(result.state, 'merge-ready', result.reason);
+    const owners = calls.agents.filter((call) => String(call.label).startsWith('owner'));
+    assert.equal(owners.length, 2, 'one more owner round after the audit, though fixRounds is 0');
+    assert.match(owners[1].prompt, /total\(-1, 1\) is wrong at src\/total\.js:1/, 'the second owner round starts from the audit finding');
+    assert.equal(calls.agents.filter((call) => String(call.label).startsWith('critique')).length, 2, 'the new head is reviewed again');
+    assert.equal(audits, 2);
+  });
+
+  test('an auditor that keeps finding problems ends the item as a draft after the audit rounds, never in a loop', async () => {
+    const setup = await makeRepo();
+    const { api, calls } = harness({ ...setup, owner: ownerSteps([FIXED, { files: { 'src/total.js': 'export const total = (a, b) => b + a;\n' } }, { files: { 'src/total.js': 'export const total = (a, b) => a + b + 0 * 0;\n' } }]), critic: () => MERGE, auditor: ISSUES });
+    const result = await runWorkflow('mend', { item: setup.itemPath, pkg: PKG, critic: CRITIC, model: 'cheap-test-model', fixRounds: 0, publish: 'no' }, api);
+    assert.equal(result.state, 'draft');
+    assert.match(result.reason, /auditor reported ISSUES/);
+    assert.equal(calls.agents.filter((call) => String(call.label).startsWith('owner')).length, 2, 'auditRounds defaults to one');
+  });
+
+  test('the auditor is told to judge the change, not its own harness, and never to stop over a look it cannot see', () => {
+    const source = readFileSync(path.join(WORKFLOWS, 'mend.js'), 'utf8');
+    assert.match(source, /Judge the change, not your own tooling/);
+    assert.match(source, /never by itself ISSUES or BLOCKED/);
+  });
+});

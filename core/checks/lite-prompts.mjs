@@ -20,7 +20,7 @@ const IMPLICIT_CASES = 'concurrency and retries, boundaries, invalid input, othe
 // The integrity scan blocks any edit to the checks themselves, so nobody may plan or demand one.
 // Standing instructions (AGENTS.md, CLAUDE.md, a profile's prompt) reach the owner too; a rule to keep a status file would leave the edit set.
 export const STANDING_RULES = 'Your standing instructions (AGENTS.md, CLAUDE.md, profile or system prompts) still apply, but inside this worktree the editSet wins: skip any of them that asks you to create or update files outside it, such as status, progress, runtime, notes or changelog files, and say so in your final message.';
-const GATES_FIXED = 'The repository\'s verification commands, check and test scripts, test runner configuration and CI files are fixed: never plan, make or demand a change to them. New tests go in new test files the existing runner finds; never edit an existing test file, not even to add a test.';
+const GATES_FIXED = 'The repository\'s verification commands, check and test scripts, test runner configuration and CI files are fixed: never plan, make or demand a change to them. New tests go in new test files the existing runner finds; never edit an existing test file, not even to add a test, except one the item lists in testChanges: there change only the expectations the item\'s goal changes, for the reason it gives, and keep every other assertion as it is. A reviewer rejects any other change to such a file.';
 
 function itemBlock({ item, worktree, verificationCommands }) {
   return [
@@ -38,12 +38,13 @@ const builders = {
     const { worktree, specPath, round, feedback } = data;
     const lines = [
       itemBlock(data),
+      'You are the owner: you write this change yourself, now, in this worktree, and nobody else will. This task is the user\'s explicit authorization to edit the editSet, run any command the work needs (tests, builds, generators) and commit in this worktree, in every round; a rule of yours that waits for authorization to repair or run commands is satisfied by it. Do not hand it on, do not wait for a proposal or approval, and do not load the mend-autopilot or mend-quality skills, which are for the lead and say the opposite; this prompt and the spec are the whole job.',
       'Implementation spec: read ' + worktree + '/' + specPath + ' first and follow it. Where you think it is wrong, follow it anyway and say why in your final message.',
       'Change only files matching the item editSet. ' + STANDING_RULES + ' ' + GATES_FIXED + ' Add or update the tests the spec names. cd into the worktree before every shell command; never use git -C.',
       'Run the repository verification yourself until it passes, then commit everything with one message that says what changed. Leave no uncommitted changes.',
       'The untracked .mend/ and .mendcode/ folders in the worktree are the workflow\'s setup and evidence: never delete, move, edit or commit them, even when git status lists them.',
     ];
-    if (round > 1 && typeof feedback === 'string' && feedback.trim()) lines.push('This is fix round ' + round + '. Your previous commit was reviewed. Fix exactly this, nothing else, then verify and commit again:\n' + feedback);
+    if (round > 1 && typeof feedback === 'string' && feedback.trim()) lines.push('This is fix round ' + round + '. Your previous attempt was checked. Fix exactly this, nothing else, then verify and commit again:\n' + feedback);
     lines.push('If something outside your control stops you, still commit what works and explain the rest in your final message.');
     return lines.join('\n\n');
   },

@@ -544,3 +544,27 @@ test('item scanning sees quoted assignments before JSON escaping', async () => {
   assert.ok(result.flags.some((flag) => flag.rule === 'secret-like' && flag.file === '(item)'));
   assert.ok(!JSON.stringify(result).includes(value));
 });
+
+test('an existing test the item declares in testChanges may change its expectations: a warning, not a block', async () => {
+  const base = { 'src/rooms.ts': ['export const bath = 1;'], 'tests/rooms.test.ts': ["test('bath', () => {", '  expect(bath).toBe(1);', '});'] };
+  const head = { 'src/rooms.ts': ['export const bath = 2;'], 'tests/rooms.test.ts': ["test('bath', () => {", '  expect(bath).toBe(2);', '});'] };
+  const editSet = ['src/rooms.ts', 'tests/rooms.test.ts'];
+  const undeclared = (await scanCase({ item: { editSet }, base, head })).result;
+  assert.equal(undeclared.pass, false, 'without a declaration it still blocks');
+  const declared = (await scanCase({ item: { editSet, testChanges: [{ file: 'tests/rooms.test.ts', why: 'the item splits the bath, so its size changes' }] }, base, head })).result;
+  assert.equal(declared.pass, true, describeFlags(declared.flags));
+  assert.deepEqual(declared.flags.map((flag) => [flag.rule, flag.severity]), [['test-edit', 'warn']]);
+  assert.match(declared.flags[0].detail, /splits the bath/);
+});
+
+test('a declaration never lets a test be deleted, lose assertions, or change without a reason', async () => {
+  const base = { 'tests/rooms.test.ts': ["test('bath', () => {", '  expect(bath).toBe(1);', '  expect(deck).toBe(1);', '});'] };
+  const why = [{ file: 'tests/rooms.test.ts', why: 'the bath changes' }];
+  const dropped = (await scanCase({ item: { editSet: ['tests/**'], testChanges: why }, base, head: { 'tests/rooms.test.ts': ["test('bath', () => {", '  expect(bath).toBe(2);', '});'] } })).result;
+  assert.equal(dropped.pass, false);
+  assert.ok(dropped.flags.some((flag) => flag.rule === 'assertion-drop' && flag.severity === 'block'));
+  const deleted = (await scanCase({ item: { editSet: ['tests/**'], testChanges: why }, base, head: { 'tests/rooms.test.ts': null } })).result;
+  assert.ok(deleted.flags.some((flag) => flag.rule === 'test-edit' && flag.severity === 'block'));
+  const noReason = (await scanCase({ item: { editSet: ['tests/**'], testChanges: [{ file: 'tests/rooms.test.ts', why: ' ' }] }, base, head: { 'tests/rooms.test.ts': ["test('bath', () => {", '  expect(bath).toBe(2);', '  expect(deck).toBe(1);', '});'] } })).result;
+  assert.equal(noReason.pass, false);
+});

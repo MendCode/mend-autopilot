@@ -5,6 +5,8 @@ description: Turns a request to change code into small pull requests that a chea
 
 # mend-autopilot
 
+**Inside a mend workflow, this file is not for you.** If your task names a `[workflow "mend"]` task (owner, spec, critique or audit), stop reading and do that task as its prompt says: an owner writes and commits the change itself in its worktree. Everything below is for the lead in the user's session.
+
 The user asked for a change. Do not write it yourself: turn it into work items and start the `mend` workflow for each one. A cheap model implements, a strong model specs and reviews, programs and an auditor prove it, and the workflow pushes the branch and opens the pull request. The user only reads your short plan, answers if an item is high risk, and later merges.
 
 Do the whole thing in this turn, in the order below, without asking. The only reasons to stop are the ones a step names; anything else is yours to decide. Report in the user's language, in plain words: what will become a pull request, and what you need from them.
@@ -46,6 +48,7 @@ Write each as `.mend/items/<id>.json` (`id`: lowercase words with hyphens):
 
 - `editSet`: every file the change and its tests need, and nothing else. Too narrow stops the item as a draft; too wide weakens the review.
 - **Tests go in a new file** named after the item, next to the existing tests and matching their naming so the runner finds it (`login-email-case.test.ts` beside `login.test.ts`). Never put an existing test file in `editSet`: the integrity scan blocks every change to one, even an added test, so a weaker test can never slip in.
+- **An existing test the change must contradict** (it pins the very behaviour the item changes, often a test from an earlier item): put it in `editSet` and declare it in `"testChanges": [{"file": "<path>", "why": "<what the item changes that this test pins>"}]`. Only those files may change, only their affected expectations, never fewer assertions; deleting or renaming a test still blocks, and the card tells the user to read the change. When a planner's draft names an existing test file it needs, this is the way to widen the item.
 - `regression`: for a bug, the command that runs only that new test file; it must fail before the change and pass after it. The owner writes that test. Leave it out for features and docs.
 - `profiles`: `bugfix`, `api-backend`, `ui`, `refactor`, `docs` or `generic`.
 - `risk`: `high` only when the change edits sign-in or session code, permission checks, payment processing (charging or refunding money), a database migration, or deletes data or files, or changes a public API other code depends on. Fixing how amounts, totals, prices or dates are calculated is not high risk by itself; neither is a bug fix with a regression test. `medium` for code many modules share; otherwise `low`. The workflow also judges risk from the paths that actually change; yours only decides whether to ask.
@@ -76,6 +79,7 @@ After starting, say in a few lines: the items and their workflow ids, that they 
 
 - `merge-ready` with a pull request link: ready to merge.
 - `draft` with a link: opened as a draft; say its reason in plain words.
+  When the independent auditor found problems, the run already gave the owner one more round from those findings and audited again; a draft after that needs the user or a narrower item. A look on screen the auditor could not see is listed under not verified for the user, not a reason for a draft.
 - `blocked`: nothing was pushed; say why and what would unblock it.
 - `published: false`: the branch stayed local; say why (no remote, GitHub CLI not logged in, the item had no commits).
 

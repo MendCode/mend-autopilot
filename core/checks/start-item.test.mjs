@@ -31,7 +31,8 @@ test('a low-risk item starts at once through the CLI, already approved, with the
   assert.ok(calls.slice(1).every((call) => call.args[1] === 'show'), 'after the start it only looks at the run');
   assert.equal(command, 'mendcode');
   assert.equal(cwd, '/repo');
-  assert.deepEqual(args.slice(0, 5), ['workflow', 'run', '/pkg/workflows/mend.js', '--dir', '/repo']);
+  assert.deepEqual(args.slice(0, 3), ['workflow', 'run', '/pkg/workflows/mend.js']);
+  assert.ok(calls.every((call) => !call.args.includes('--dir') && call.cwd === '/repo'), 'the repository is the working directory; --dir would start a second daemon with its data in the repository');
   assert.ok(args.includes('--yes'), 'the start needs no card');
   assert.deepEqual(JSON.parse(args[args.indexOf('--args') + 1]), { repo: '/repo', item: '.mend/items/low.json', pkg: '/pkg', critic: 'claude-opus', model: 'claude-sonnet', auditor: 'claude-opus', engine: 'claude' });
 });
@@ -83,6 +84,7 @@ test('named models win, publish no is passed on, and bad paths are refused', () 
 test('the skill starts items with start-item, not with a workflow_script card that dies with the turn', () => {
   const skill = readFileSync(path.join(here, '../skills/mend-autopilot/SKILL.md'), 'utf8');
   assert.match(skill, /checks\/start-item\.mjs/);
+  assert.ok(skill.indexOf('this file is not for you') < skill.indexOf('## 1.'), 'an owner that loads it is turned away before any lead instruction');
   assert.doesNotMatch(skill, /approve every start/i);
   assert.doesNotMatch(skill, /call the `workflow_script` tool/);
 });

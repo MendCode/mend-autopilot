@@ -1,6 +1,6 @@
 ---
 name: mend-quality
-description: Quality playbook for a mend-autopilot work item - exemplars, proposal, profile rubric, integrity check, strong-model critique, integration diff and the quality part of the evidence card. Load only when you own, critique or audit an item that has profiles assigned, or when you add or change a profile.
+description: Quality playbook for a mend-autopilot work item - exemplars, proposal, profile rubric, integrity check, strong-model critique, integration diff and the quality part of the evidence card. Load only when you own, critique or audit an item in the mend-quality workflow, or when you add or change a profile. Not for the `mend` or mend-lite workflow: there the owner implements the spec in its prompt directly.
 ---
 
 # mend-quality

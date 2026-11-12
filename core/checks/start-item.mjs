@@ -60,14 +60,16 @@ export function startItem({ repo, item, pkg, approved = false, models, publish, 
   const record = (readJson ?? ((file) => JSON.parse(readFileSync(file, 'utf8'))))(itemFile);
   if (record?.risk === 'high' && !approved) return { started: false, item, reason: 'high risk: ask the user once, then start it with --approved' };
   // By path, not by name: a package's saved scripts resolve by name only in projects where the package is active.
-  const started = run('mendcode', ['workflow', 'run', path.join(pkg, 'workflows', 'mend.js'), '--dir', repo, '--args', JSON.stringify(args), '--permission', 'full', '--yes', '--json'], repo);
+  // The repository is the working directory, never --dir: --dir names MendCode's data directory, and a
+  // data directory that is not the user's starts a second daemon whose runs the user never sees.
+  const started = run('mendcode', ['workflow', 'run', path.join(pkg, 'workflows', 'mend.js'), '--args', JSON.stringify(args), '--permission', 'full', '--yes', '--json'], repo);
   if (!started.ok) return { started: false, item, reason: `mendcode refused the start: ${(started.stderr || started.stdout).slice(-400)}` };
   const workflowId = parseLines(started.stdout).map((line) => line?.data?.workflow?.workflowId).find(Boolean);
   if (!workflowId) return { started: false, item, reason: `mendcode answered without a workflow id: ${started.stdout.slice(-400)}` };
   // A run that cannot start (an engine this tier refuses, a bad argument) fails within its first seconds.
   for (let look = 0; look < settleLooks; look += 1) {
     pause(SETTLE_STEP_MS);
-    const shown = run('mendcode', ['workflow', 'show', workflowId, '--dir', repo, '--json'], repo);
+    const shown = run('mendcode', ['workflow', 'show', workflowId, '--json'], repo);
     const workflow = shown.ok ? parseLines(shown.stdout).map((line) => line?.data?.workflow).find(Boolean) : undefined;
     if (workflow && ['failed', 'blocked', 'stopped'].includes(workflow.state)) return { started: false, item, workflowId, reason: `the run ${workflow.state} at once: ${String(workflow.reason ?? '').slice(0, 400)}` };
   }

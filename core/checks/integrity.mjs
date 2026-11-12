@@ -534,7 +534,10 @@ export function normalizeItem(item) {
   const profiles = source.profiles ?? [];
   const grants = source.grants ?? {};
   const dependencies = grants.dependencies ?? [];
+  // An existing test the item must change on purpose (its behaviour is what the item changes), with the reason.
+  const testChanges = Array.isArray(source.testChanges) ? source.testChanges.filter((entry) => typeof entry?.file === 'string' && typeof entry?.why === 'string' && entry.why.trim()) : [];
   return {
+    testChanges: new Map(testChanges.map((entry) => [entry.file, entry.why.trim()])),
     id: source.id ?? null,
     editSet: Array.isArray(editSet) ? editSet.map(String) : [],
     profiles: Array.isArray(profiles) ? profiles.map(String) : [],
@@ -881,7 +884,11 @@ export async function scanDiff({ repo, baseSha, headSha, item, config, lookup = 
 
     if (kind === 'test') {
       if (file.status !== 'added' && (!scope.profiles.includes('test-authoring') || removed.length > 0 || file.binary || file.status !== 'modified' || !additiveTestAssertions(added, ecosystem, (await showFile(repo, base, file.oldPath)) ?? ''))) {
-        flag({ rule: 'test-edit', file: file.path, line: first.line, detail: `existing test ${file.status}${where}` });
+        // Declared by the item and only modified: a warning the card carries to the human. Deleting or renaming
+        // a test, and dropping assertions (assertion-drop below), still block.
+        const declared = file.status === 'modified' ? scope.testChanges.get(file.path) : undefined;
+        if (declared) flag({ rule: 'test-edit', file: file.path, line: first.line, detail: `existing test modified as the item declares: ${declared}${where}`, severity: 'warn' });
+        else flag({ rule: 'test-edit', file: file.path, line: first.line, detail: `existing test ${file.status}${where}` });
       }
       if (ecosystem) {
         const markers = [...ECOSYSTEMS[ecosystem].skipMarkers, ...settings.patterns['skip-marker']];

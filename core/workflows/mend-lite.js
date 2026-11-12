@@ -19,6 +19,7 @@ export const meta = {
 //   planner    optional strong model for the spec only
 //   model      the cheap owner's model; engine optional, as in mend-quality
 //   fixRounds  owner rounds after the first, default 1, at most 3
+//   auditFeedback  what the auditor found at the reviewed head; one more owner round starts from it
 // Profiles, proposals and lead captures belong to mend-quality; this path is for items a
 // cheap owner can finish from a written spec. The human approves the result before merge.
 
@@ -52,6 +53,7 @@ if (engine && engine.startsWith("acp")) throw new Error("[MEND-LITE]: workflows 
 if (engine && engine !== "native" && !workerModel) throw new Error("[MEND-LITE]: argument model is required with engine " + engine)
 const fixRounds = Number(args.fixRounds ?? 1)
 if (!Number.isInteger(fixRounds) || fixRounds < 0 || fixRounds > 3) throw new Error("[MEND-LITE]: fixRounds must be an integer from 0 to 3")
+const auditFeedback = trimmed(args.auditFeedback).slice(0, 6000)
 
 const placed = (options, model) => Object.assign({}, options, (model ?? workerModel) ? { model: model ?? workerModel } : {}, engine ? { engine } : {})
 // Planner and reviewer only read: no skills from the user's profiles, which pull them outside the item.
@@ -210,7 +212,7 @@ async function inspect(round) {
   const files = names.ok ? names.detail.trim().split("\n").filter(Boolean) : []
   const problems = []
   if (!/^[0-9a-f]{40}$/.test(head)) problems.push("could not read the head commit")
-  if (head === baseSha) problems.push("nothing was committed")
+  if (head === baseSha) problems.push("nothing was committed: no change was made, so the whole spec is still yours to implement, starting now")
   const leftover = status.ok ? workerChanges(status.detail) : "status could not be read"
   if (leftover) problems.push("uncommitted changes remain: " + leftover.slice(0, 400))
   const outside = files.filter((file) => !editSet.some((glob) => globRegExp(glob).test(file)))
@@ -255,14 +257,17 @@ phase("Build")
 
 // A rerun of a finished item returns its result instead of judging it again.
 const finished = state.rounds.at(-1)
-if (finished?.review?.verdict === "merge") {
+if (finished?.review?.verdict === "merge" && !auditFeedback) {
   const card = await readJson(evidencePath("lite-card.json"))
   if (card?.state === "reviewed" && card.head === finished.head) return stopHere("reviewed", "already reviewed at " + card.head + "; a human approves before the pull request", { head: card.head, baseSha, card: evidenceDir + "/lite-card.json", review: card.review, risk: card.risk, redGreen: card.redGreen })
 }
 
-let feedback = state.rounds.at(-1)?.feedback ?? null
+// An audit finding gets exactly one more round on top of the review rounds already spent.
+const auditRound = Boolean(auditFeedback) && finished?.review?.verdict === "merge"
+let feedback = auditRound ? "The reviewer approved your last head, but the independent auditor found problems there. Fix them, keep everything the review approved, and commit:\n" + auditFeedback : state.rounds.at(-1)?.feedback ?? null
 let lastReview = null
-for (let round = state.rounds.length + 1; round <= 1 + fixRounds; round += 1) {
+const lastAllowed = auditRound ? state.rounds.length + 1 : 1 + fixRounds
+for (let round = state.rounds.length + 1; round <= lastAllowed; round += 1) {
   let ownerNote = ""
   let ownerSession = ""
   try {
