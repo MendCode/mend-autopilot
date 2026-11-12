@@ -5,7 +5,7 @@ description: Turns a request to change code into small pull requests that a chea
 
 # mend-autopilot
 
-The user asked for a change. Do not write it yourself: turn it into work items and start the `mend` workflow for each one. A cheap model implements, a strong model specs and reviews, programs and an auditor prove it, and the workflow pushes the branch and opens the pull request. The user only reads your short plan, clicks the approval MendCode shows before a workflow starts, and later merges.
+The user asked for a change. Do not write it yourself: turn it into work items and start the `mend` workflow for each one. A cheap model implements, a strong model specs and reviews, programs and an auditor prove it, and the workflow pushes the branch and opens the pull request. The user only reads your short plan, answers if an item is high risk, and later merges.
 
 Do the whole thing in this turn, in the order below, without asking. The only reasons to stop are the ones a step names; anything else is yours to decide. Report in the user's language, in plain words: what will become a pull request, and what you need from them.
 
@@ -52,23 +52,25 @@ Write each as `.mend/items/<id>.json` (`id`: lowercase words with hyphens):
 
 ## 4. Stop only for high risk
 
-If any item is `high`, list those items in one short message and ask once whether to go ahead. Start the low and medium ones first, without waiting. Never ask about a `low` or `medium` item.
+The user's request is their approval for every `low` and `medium` item: start those at once, and never ask about them or send the user to approve them. If any item is `high`, list those items in one short message and ask once whether to go ahead; start a high item only after they say yes to it.
 
 ## 5. Start the workflows
 
-For each item, call the `workflow_script` tool (find it with `tool_search` if it is not loaded) with `name: "mend"` and these `args`:
+Start each item from your shell, one command per item:
 
-```json
-{ "repo": "<root>", "item": ".mend/items/<id>.json", "pkg": "<pkg>", "critic": "<critic>", "model": "<model>", "auditor": "<auditor>" }
+```bash
+node <pkg>/checks/start-item.mjs --repo <root> --item .mend/items/<id>.json --pkg <pkg>
 ```
 
-Add `"engine": "<engine>"` when `autopilot.json` sets one. Add `"publish": "no"` only when the user said not to push. MendCode asks the user to approve every start; that click is theirs.
+It reads the models from `<pkg>/autopilot.json`, starts the package's `mend` workflow (`<pkg>/workflows/mend.js`) through `mendcode workflow run`, and prints `{"started": true, "workflowId": "wfl_…"}`. Add `--approved` only for a high item the user said yes to, `--publish no` only when the user said not to push, and `--model <name>` (or `--critic`, `--auditor`) only when the user named other models. If it prints `"started": false`, tell the user its `reason` in plain words; do not retry it through another tool. It also watches the run for its first seconds, so a run that cannot start comes back as `"started": false`. If the reason says an agent on another engine needs the full tier, the package's models run on another engine (the Claude package) and MendCode's tier is not `full`: say that switching the tier is the user's choice, and that the ChatGPT package (`mend-autopilot-codex`), when installed, runs without it.
 
-Start items that touch different files together, up to the owners the user's plan allows (one on the smallest plans). Start an item that depends on another only after that one's pull request is merged.
+Do not start items with the `workflow_script` tool: its approval card lasts only while your turn runs, so when you reply the card is dropped and the item never starts.
+
+Start items that touch different files together, up to the owners the user's plan allows (one on the smallest plans). Start an item that depends on another only after that one is done.
 
 ## 6. Report
 
-After starting, say in a few lines: the items, that each ends as a pull request with its evidence card, that they can follow it in `/workflows`, and that nothing is merged for them. Do not poll. When the user asks how it went, read it with `workflow_status` and report each item's result:
+After starting, say in a few lines: the items and their workflow ids, that they are already running, that each ends as a pull request with its evidence card, that they can follow it in `/workflows`, and that nothing is merged for them. Never say an item waits for the user unless it is a high item you asked about. Do not poll. When the user asks how it went, read it with `workflow_status` and report each item's result:
 
 - `merge-ready` with a pull request link: ready to merge.
 - `draft` with a link: opened as a draft; say its reason in plain words.
