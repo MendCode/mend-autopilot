@@ -109,3 +109,12 @@ test('CLI returns JSON and rejects malformed or unknown requests', () => {
   }
   assert.match(error, /QUALITY-PROMPTS/);
 });
+
+test('the mend-quality planner names the design to follow and the critique counts concrete maintainability problems as should', async () => {
+  const { SPEC_REQUEST } = await import('./quality-prompts.mjs');
+  assert.match(SPEC_REQUEST, /existing helpers and patterns of those files to reuse \(by name\), where new code goes, and a short code sketch/);
+  const { readFileSync } = await import('node:fs');
+  const critique = readFileSync(new URL('../skills/mend-quality/critique-prompt.md', import.meta.url), 'utf8');
+  assert.match(critique, /`should`: a careful reviewer would send it back for this\. That includes, in code the change adds or touches, a maintainability problem/);
+  assert.match(critique, /Never raise one against what the spec explicitly asks for/);
+});

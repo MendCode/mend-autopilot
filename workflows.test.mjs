@@ -2150,6 +2150,13 @@ describe('mend-quality', () => {
 });
 
 describe('mend-pr', () => {
+  test('the quality-path auditor judges the change, not its own tooling, and looks at visual lines through screenshots it reads', () => {
+    const source = readFileSync(path.join(WORKFLOWS, 'mend-pr.js'), 'utf8');
+    assert.match(source, /Judge the change, not your own tooling/);
+    assert.match(source, /open the PNG with the read tool, which shows you the image/);
+    assert.match(source, /A look you still could not see goes in notVerified for the human, never by itself ISSUES or BLOCKED/);
+  });
+
   async function freezeFixtureQuality(setup) {
     const receiptPath = path.join(setup.repo, `.mend/approvals/${setup.itemId}.json`);
     const receipt = JSON.parse(await fs.readFile(receiptPath, 'utf8'));
@@ -3169,6 +3176,13 @@ describe('mend (one run per item)', () => {
     const source = readFileSync(path.join(WORKFLOWS, 'mend.js'), 'utf8');
     assert.match(source, /Judge the change, not your own tooling/);
     assert.match(source, /never by itself ISSUES or BLOCKED/);
+  });
+
+  test('the auditor looks at a visual acceptance line through a screenshot it reads, and lists the screenshot for the human', () => {
+    const source = readFileSync(path.join(WORKFLOWS, 'mend.js'), 'utf8');
+    assert.match(source, /render it to a PNG under " \+ evidenceDir \+ "\/screens\//);
+    assert.match(source, /open the PNG with the read tool, which shows you the image/);
+    assert.match(source, /list each screenshot path in drivenSteps/);
   });
 
   test('the auditor reports serious maintainability problems to the human as attention, not as ISSUES', () => {

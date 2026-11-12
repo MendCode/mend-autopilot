@@ -254,6 +254,8 @@ const auditRun = await agent(
     "Owner's account of what it drove and did not verify: " + JSON.stringify(quality.card ?? {}),
     "Return separate lanes named exactly checks and driven-path, with concrete methods and evidence for each. If the driven path is missing, incomplete or cannot be rerun, mark it MISSING or BLOCKED, never PASS.",
     "Report PASS only if every acceptance line is met at this head and every check you ran exits 0. ISSUES names each problem with file:line. BLOCKED names what you could not run.",
+    "Judge the change, not your own tooling: a driver or script of yours that fails because of itself is not a problem of the change; repair it or drive the path another way. An item check that exits non-zero is always ISSUES.",
+    "When an acceptance line is visual, look at it: render it to a PNG under " + evidenceDir + "/screens/ (the browser tool's screenshot on the local dev server when you have that tool, or a screenshot or render script the repository already has), open the PNG with the read tool, which shows you the image, take two or more shots apart in time for motion, and name each screenshot path in the driven-path lane. A look you still could not see goes in notVerified for the human, never by itself ISSUES or BLOCKED.",
   ].join("\n"),
   {
     label: "audit " + item.id,
