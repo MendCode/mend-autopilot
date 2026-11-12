@@ -111,3 +111,19 @@ test('the owner knows a one-tree note about earlier rounds of its own item is no
   const prompt = buildPrompt('owner', { ...data, round: 1, feedback: null });
   assert.match(prompt, /names «workflow · mend · …» sessions for this item is about those ended rounds: nobody else is working here/);
 });
+
+test('the planner names the design: functions to change, helpers and patterns to reuse, where new code goes and a sketch', () => {
+  const prompt = buildPrompt('spec', data);
+  for (const rule of ['Name the design too, so the owner does not improvise one', 'the functions and files to change inside the editSet', 'the existing helpers and patterns of those files to reuse (by name)', 'where new code goes', 'a short code sketch of the non-obvious part']) {
+    assert.ok(prompt.includes(rule), rule);
+  }
+});
+
+test('the reviewer blocks concrete maintainability problems, never what the spec asked for, and keeps taste a nit', () => {
+  const { dir, baseSha, head } = repoWithChange();
+  const prompt = buildPrompt('critique', { ...data, worktree: dir, diffPath: 'd.patch', baseSha, head, verification: [], round: 2 });
+  for (const rule of ['in code this change adds or touches, a maintainability problem a senior reviewer of this codebase would reject', 'duplicates an existing helper (name it)', 'a pattern the same file already uses ignored', 'where an extraction belongs', 'dead or leftover code', 'a needlessly complex mechanism where the spec or the file shows a simpler one', 'names the file and the concrete fix inside the editSet', 'never what the spec explicitly asks for', 'taste, a nit', 'review round 2']) {
+    assert.ok(prompt.includes(rule), rule);
+  }
+  assert.doesNotMatch(prompt, /Style preferences are nits/);
+});

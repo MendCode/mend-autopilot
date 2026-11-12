@@ -20,7 +20,10 @@ export function bodyOf(source, name) {
   return source.slice(end + 3).trim();
 }
 
-const indent = (text) => text.split('\n').map((line) => (line ? '  ' + line : line)).join('\n');
+// MendCode refuses a workflow script over 49152 bytes. The sources keep their comments; the composed
+// copy drops whole-line comments (the sources have no multi-line strings, so such a line is always a comment).
+export const MAX_BYTES = 49152;
+const indent = (text) => text.split('\n').filter((line) => !/^\s*\/\//.test(line)).map((line) => (line ? '  ' + line : line)).join('\n');
 
 export function compose({ lite, litePr }) {
   return `export const meta = {
@@ -88,6 +91,10 @@ return Object.assign({}, result, { published: outcome.published, pullRequest: ou
 
 const [lite, litePr] = await Promise.all(['mend-lite.js', 'mend-lite-pr.js'].map((name) => fs.readFile(path.join(DIR, name), 'utf8')));
 const output = compose({ lite, litePr });
+if (Buffer.byteLength(output) > MAX_BYTES) {
+  console.error(`compose-workflows: mend.js would be ${Buffer.byteLength(output)} bytes; MendCode refuses scripts over ${MAX_BYTES}`);
+  process.exit(1);
+}
 if (process.argv.includes('--check')) {
   const current = await fs.readFile(TARGET, 'utf8').catch(() => null);
   if (current !== output) {

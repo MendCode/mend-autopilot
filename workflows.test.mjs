@@ -3125,6 +3125,13 @@ describe('mend-lite-pr', () => {
 });
 
 describe('mend (one run per item)', () => {
+  test('the composed script stays under MendCode\'s 49152-byte limit with room to grow, and carries no whole-line comments of its sources', async () => {
+    const source = await fs.readFile(path.join(WORKFLOWS, 'mend.js'), 'utf8');
+    assert.ok(Buffer.byteLength(source) <= 49152 - 2048, `mend.js is ${Buffer.byteLength(source)} bytes`);
+    const body = source.slice(source.indexOf('async function mendLite('), source.indexOf('\nlet built = await mendLite('));
+    assert.deepEqual(body.split('\n').filter((line) => /^\s*\/\//.test(line)), [], 'source comments leaked into the composed script');
+  });
+
   const MERGE = { verdict: 'merge', summary: 'Meets the item and the spec.', findings: [] };
   const PASS = { result: 'PASS', lanes: [{ lane: 'checks', result: 'PASS', method: 'reran test -f src/total.js at head' }, { lane: 'driven-path', result: 'PASS', method: 'imported total and called it' }], drivenSteps: ['total(2, 3) printed 5'], notVerified: ['callers outside this repository'] };
   const ISSUES = { ...PASS, result: 'ISSUES', lanes: [PASS.lanes[0], { lane: 'driven-path', result: 'ISSUES', method: 'total(-1, 1) is wrong at src/total.js:1' }] };
@@ -3162,5 +3169,11 @@ describe('mend (one run per item)', () => {
     const source = readFileSync(path.join(WORKFLOWS, 'mend.js'), 'utf8');
     assert.match(source, /Judge the change, not your own tooling/);
     assert.match(source, /never by itself ISSUES or BLOCKED/);
+  });
+
+  test('the auditor reports serious maintainability problems to the human as attention, not as ISSUES', () => {
+    const source = readFileSync(path.join(WORKFLOWS, 'mend.js'), 'utf8');
+    assert.match(source, /serious maintainability problem the review let through in attention with file:line and the fix/);
+    assert.match(source, /they are not ISSUES unless they break an acceptance line/);
   });
 });

@@ -191,6 +191,7 @@ const auditRun = await agent(
     "Report PASS only if every acceptance line is met at this head and every check you ran exits 0. ISSUES names each problem with file:line. BLOCKED names what you could not run.",
     "Judge the change, not your own tooling. A driver or script you wrote that fails because of itself (a missing import alias, a browser you lack, an assertion of yours that contradicts the spec) is not a problem of the change: repair it or drive the path another way, judge from the run that works, and put the failed attempts in attention, not in ISSUES. The item checks above are different: one that exits non-zero is always ISSUES.",
     "When an acceptance line is visual (how something looks or moves on screen) and you cannot look at the rendered result, drive the code that produces it (state, render or layout functions, pixel buffers) and judge from that; list the look you could not see in notVerified for the human. A visual check you could not do is never by itself ISSUES or BLOCKED, and you always return the report instead of stopping.",
+    "Also read the diff as a maintainer would. Put each serious maintainability problem the review let through in attention with file:line and the fix: logic that duplicates an existing helper (name it), a pattern the same file uses ignored, a function grown much harder instead of extracted, dead or leftover code. These go to the human; they are not ISSUES unless they break an acceptance line.",
   ].join("\n"),
   {
     label: "audit " + item.id,

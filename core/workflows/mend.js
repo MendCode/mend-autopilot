@@ -22,17 +22,6 @@ export const meta = {
 // pull request, a draft one a draft pull request with its reason; a blocked item is never pushed.
 
 async function mendLite(args) {
-  // Arguments:
-  //   repo       absolute path of the user's repository (holds .mend/)
-  //   item       the work item JSON (.mend/items/<id>.json); needs id, goal and editSet
-  //   pkg        the installed mend-autopilot package folder; relative item/pkg resolve against repo
-  //   critic     strong model: writes the spec (unless planner is set) and reviews
-  //   planner    optional strong model for the spec only
-  //   model      the cheap owner's model; engine optional, as in mend-quality
-  //   fixRounds  owner rounds after the first, default 1, at most 3
-  //   auditFeedback  what the auditor found at the reviewed head; one more owner round starts from it
-  // Profiles, proposals and lead captures belong to mend-quality; this path is for items a
-  // cheap owner can finish from a written spec. The human approves the result before merge.
 
   const js = JSON.stringify
   const STR = { type: "string" }
@@ -67,8 +56,6 @@ async function mendLite(args) {
   const auditFeedback = trimmed(args.auditFeedback).slice(0, 6000)
 
   const placed = (options, model) => Object.assign({}, options, (model ?? workerModel) ? { model: model ?? workerModel } : {}, engine ? { engine } : {})
-  // Planner and reviewer only read: no skills from the user's profiles, which pull them outside the item.
-  // Only the native engine enforces an allowlist; other engines refuse the option.
   const READ_TOOLS = !engine || engine === "native" ? { allowedTools: ["read", "grep", "glob"] } : {}
   const reader = (options, model) => placed(Object.assign({ mode: "read" }, options, READ_TOOLS), model)
 
@@ -165,7 +152,6 @@ async function mendLite(args) {
     if (!added.ok) return stopWith("blocked", "git worktree add failed: " + added.detail.slice(-300))
   }
   const setup = await run(tool("dispatch.mjs", ["propagate", "--repo", repoRoot, "--item", itemPath, "--light", "yes"]))
-  // Untracked copies of the setup this workflow propagated are not the worker's leftovers.
   const setupPaths = new Set(Array.isArray(setup.json?.setup) ? setup.json.setup.map(String) : [])
   const workerChanges = (porcelain) => String(porcelain).split("\n").filter((line) => line.trim() && !(line.startsWith("?? ") && setupPaths.has(line.slice(3).trim()))).join("\n")
   if (!setup.ok || setup.json?.pass !== true) return stopHere("blocked", setup.json?.reason ?? "worktree setup failed")
@@ -184,21 +170,18 @@ async function mendLite(args) {
     } }, planner))
     spec = trimmed(reply?.spec)
     if (!spec) return stopHere("blocked", "the planner returned no spec")
-    // A too-narrow editSet is the lead's to widen; owner rounds cannot fix it.
     const missing = (Array.isArray(reply.editSetMissing) ? reply.editSetMissing : []).map(trimmed).filter((file) => file && !editSet.some((glob) => globRegExp(glob).test(file)))
     if (missing.length) {
       await writeText(worktree + "/" + evidenceDir + "/spec-draft.md", spec + "\n")
       return stopHere("draft", "the planner says the item needs files outside its editSet: " + missing.join(", ") + "; widen the editSet (or split the item) and rerun after removing this worktree", { editSetMissing: missing, spec: evidenceDir + "/spec-draft.md" })
     }
   }
-  // Markdown, not one long JSON line: readers cut long lines.
   await writeText(worktree + "/" + specPath, spec + "\n")
   const state = saved ?? { item: item.id, baseSha, planner, critic, spec, reviewPolicy: policyBinding, budget: 1 + fixRounds, rounds: [] }
   const saveState = () => writeJson(stateFile, state)
   await saveState()
 
   async function verify(round) {
-    // An owner may have removed the untracked setup; restore it so verification runs what was recorded.
     const restored = await run(tool("dispatch.mjs", ["propagate", "--repo", repoRoot, "--item", itemPath, "--light", "yes"]))
     if (!restored.ok || restored.json?.pass !== true) return { blocked: "could not restore the worktree setup before verification: " + (restored.json?.reason ?? restored.detail.slice(-300)) }
     const results = []
@@ -240,7 +223,6 @@ async function mendLite(args) {
       if (!scan.json) problems.push("the integrity scan did not report: " + scan.detail.slice(-300))
       else if (blocking.length) problems.push("integrity flags to remove (weakened or skipped tests, secrets, scope): " + js(blocking))
     }
-    // A declared regression must fail at base and pass at head, run by the workflow in clean checkouts.
     let redGreen = null
     if (regression && !problems.length) {
       const result = await run(tool("red-green.mjs", ["--base", baseSha, "--head", head, "--cmd", regression, "--repo", worktree, "--item", itemPath, ...regressionOptions, "--json"]))
@@ -250,8 +232,6 @@ async function mendLite(args) {
     return { head, files, verification: checked.results, integrity, redGreen, problems }
   }
   const regression = [item.regressionCommand, item.regression].map(trimmed).find(Boolean) ?? ""
-  // The same red-green options mend-pr passes: a setup the clean checkouts need (dependencies, a database),
-  // the base failure to expect, a keep command and a timeout.
   const regressionOptions = [
     ...(trimmed(item.regressionSetup) ? ["--setup", trimmed(item.regressionSetup)] : []),
     ...(trimmed(item.regressionKeep) ? ["--keep", trimmed(item.regressionKeep)] : []),
@@ -266,14 +246,12 @@ async function mendLite(args) {
 
   phase("Build")
 
-  // A rerun of a finished item returns its result instead of judging it again.
   const finished = state.rounds.at(-1)
   if (finished?.review?.verdict === "merge" && !auditFeedback) {
     const card = await readJson(evidencePath("lite-card.json"))
     if (card?.state === "reviewed" && card.head === finished.head) return stopHere("reviewed", "already reviewed at " + card.head + "; a human approves before the pull request", { head: card.head, baseSha, card: evidenceDir + "/lite-card.json", review: card.review, risk: card.risk, redGreen: card.redGreen })
   }
 
-  // An audit finding gets exactly one more round on top of the review rounds already spent.
   const auditRound = Boolean(auditFeedback) && finished?.review?.verdict === "merge"
   let feedback = auditRound ? "The reviewer approved your last head, but the independent auditor found problems there. Fix them, keep everything the review approved, and commit:\n" + auditFeedback : state.rounds.at(-1)?.feedback ?? null
   let lastReview = null
@@ -286,7 +264,6 @@ async function mendLite(args) {
       ownerNote = String(result?.text ?? "").slice(-1500)
       ownerSession = trimmed(result?.taskId)
     } catch (error) {
-      // An owner that stops early still leaves commits; the workflow judges what is there.
       ownerNote = "owner stopped: " + String(error?.message ?? error).slice(-600)
     }
     const inspected = await inspect(round)
@@ -302,7 +279,6 @@ async function mendLite(args) {
       } }, critic))
       const blockers = Array.isArray(review?.findings) ? review.findings.filter((finding) => finding?.severity === "blocker") : []
       if (!review || !Array.isArray(review.findings)) return stopHere("blocked", "the reviewer returned no valid review", { rounds: state.rounds })
-      // Only blockers send work back; nits ride along to the human.
       lastReview = { verdict: blockers.length ? "fix" : "merge", summary: trimmed(review.summary), findings: review.findings }
       entry.review = lastReview
       entry.diff = diffPath
@@ -330,14 +306,6 @@ async function mendLite(args) {
 }
 
 async function mendLitePr(args) {
-  // Arguments:
-  //   repo     absolute path of the user's repository (holds .mend/)
-  //   item     the work item JSON (.mend/items/<id>.json); mend-lite must have reviewed it
-  //   pkg      the installed mend-autopilot package folder; relative item/pkg resolve against repo
-  //   auditor  catalog id of the auditor's model; default: the strong reviewer mend-lite used
-  //   engine   optional, as in mend-lite
-  // The card says path "light": the strong review replaces profile rubrics and scored critique, and
-  // that gap is written into notVerified. The best state is merge-ready; a human approves the merge.
 
   const js = JSON.stringify
   const STR = { type: "string" }
@@ -433,8 +401,6 @@ async function mendLitePr(args) {
   const reviewPolicy = await run(tool("review-policy.mjs", [worktree, baseSha]))
   if (!reviewPolicy.ok || !Array.isArray(reviewPolicy.json?.pathspec)) return stopHere("blocked", "could not load the review exclusions: " + reviewPolicy.detail.slice(-300))
   const pathspec = reviewPolicy.json.pathspec
-  // The owner may have removed the untracked setup; restore it so the checks run what was recorded. Its
-  // untracked copies are this workflow's, not changes to the reviewed head.
   const restored = await run(tool("dispatch.mjs", ["propagate", "--repo", repoRoot, "--item", itemPath, "--light", "yes"]))
   if (!restored.ok || restored.json?.pass !== true) return stopHere("blocked", "could not restore the worktree setup: " + (restored.json?.reason ?? restored.detail.slice(-300)))
   const setupPaths = new Set(Array.isArray(restored.json.setup) ? restored.json.setup.map(String) : [])
@@ -509,12 +475,11 @@ async function mendLitePr(args) {
       "Report PASS only if every acceptance line is met at this head and every check you ran exits 0. ISSUES names each problem with file:line. BLOCKED names what you could not run.",
       "Judge the change, not your own tooling. A driver or script you wrote that fails because of itself (a missing import alias, a browser you lack, an assertion of yours that contradicts the spec) is not a problem of the change: repair it or drive the path another way, judge from the run that works, and put the failed attempts in attention, not in ISSUES. The item checks above are different: one that exits non-zero is always ISSUES.",
       "When an acceptance line is visual (how something looks or moves on screen) and you cannot look at the rendered result, drive the code that produces it (state, render or layout functions, pixel buffers) and judge from that; list the look you could not see in notVerified for the human. A visual check you could not do is never by itself ISSUES or BLOCKED, and you always return the report instead of stopping.",
+      "Also read the diff as a maintainer would. Put each serious maintainability problem the review let through in attention with file:line and the fix: logic that duplicates an existing helper (name it), a pattern the same file uses ignored, a function grown much harder instead of extracted, dead or leftover code. These go to the human; they are not ISSUES unless they break an acceptance line.",
     ].join("\n"),
     {
       label: "audit " + item.id,
       phase: "Audit",
-      // The host's read mode has no shell, and the auditor must rerun the checks; checkoutProblem() after
-      // the audit is what keeps it read-only.
       mode: "work",
       detail: true,
       ...(auditorModel ? { model: auditorModel } : {}),
@@ -532,12 +497,10 @@ async function mendLitePr(args) {
       },
     },
   ).catch((error) => {
-    // An auditor that ends blocked is a result to report, not a crash of the run.
     if (!/\) failed: blocked:/.test(String(error?.message))) throw error
     return { stopped: String(error.message).replace(/^.*?failed: blocked:\s*/s, "").slice(0, 600) }
   })
   if (auditRun?.stopped) return stopHere("blocked", "the auditor stopped before a verdict: " + auditRun.stopped)
-  // With detail, the host returns the schema-validated object as value and the agent's prose as text.
   const audit = auditRun?.value && typeof auditRun.value === "object" ? auditRun.value : jsonOutput(auditRun?.text)
   const auditorSession = trimmed(auditRun?.taskId)
   if (!audit || !Array.isArray(audit.lanes) || !Array.isArray(audit.notVerified)) return stopHere("blocked", "the auditor returned an invalid structured report")
@@ -617,7 +580,6 @@ async function mendLitePr(args) {
     flaky: [],
   }
 
-  // Workflow scripts cannot load modules: the secret scan and the schema run in card-check.mjs.
   const cardPath = worktree + "/.mend/evidence/" + item.id + ".json"
   async function cardCheck() {
     await writeText(cardPath, js(card, null, 2))
@@ -644,7 +606,6 @@ async function mendLitePr(args) {
   if (!auditPass) reasons.push("the auditor reported " + audit.result + (drivenSteps.length ? "" : " and drove nothing"))
   if (!card.integrity.pass) reasons.push("integrity flags block delivery")
   if (schemaFailures.length) reasons.push("card schema validation failed")
-  // What the auditor found goes back to the owner as one more round (mend.js), so a fixable finding does not end the item.
   const auditFindings = auditPass ? null : [
     ...audit.lanes.filter((lane) => lane.result !== "PASS").map((lane) => lane.lane + " " + lane.result + ": " + String(lane.method)),
     ...checks.filter((entry) => entry.exit !== 0).map((entry) => "check exited " + entry.exit + ": " + entry.command),
