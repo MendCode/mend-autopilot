@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 // Starts the package's own `mend` workflow for one item through the MendCode CLI and returns its workflow id.
 // The user's request is the approval for low and medium items; a high-risk item starts only after the user said
-// yes to it (--approved). This is the start path for the lead: a workflow_script call shows a card that MendCode
-// drops as soon as the lead's turn ends, so an unattended start through it never runs.
+// yes to it (--approved). From the user's own terminal it starts the run. Inside a MendCode session, where only the
+// user may start a workflow, it prints the workflow_script call to make; the user approves its card, and
+// --wait-since keeps the lead's turn (and so the card) alive until the run appears.
 // usage: start-item.mjs --repo <abs path> --item .mend/items/<id>.json --pkg <abs path> [--approved] [--publish no] [--fix-rounds N]
+//        start-item.mjs --repo <abs path> --item .mend/items/<id>.json --wait-since <since> [--wait-minutes 30]
 // Running it again on an item that stopped as a draft resumes its worktree: --fix-rounds N allows owner rounds
 // after the first up to N in total (default 1, at most 3), so the next round starts from the reviewer's last findings.
 import { execFileSync } from 'node:child_process';
@@ -23,7 +25,7 @@ const MODEL_KEYS = ['critic', 'model', 'auditor', 'engine'];
 
 function defaultRunner(command, args, cwd) {
   try {
-    return { ok: true, stdout: execFileSync(command, args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim(), stderr: '' };
+    return { ok: true, stdout: execFileSync(command, args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024 }).trim(), stderr: '' };
   } catch (error) {
     return { ok: false, stdout: String(error.stdout ?? '').trim(), stderr: String(error.stderr ?? error.message ?? '').trim() };
   }
@@ -54,11 +56,20 @@ export function workflowArgs({ repo, item, pkg, models = {}, publish, fixRounds,
  * Returns { started: true, workflowId } or { started: false, reason }. A high-risk item without `approved`
  * is not started: the lead asks the user once and runs this again with --approved.
  */
-export function startItem({ repo, item, pkg, approved = false, models, publish, fixRounds, readJson, settleLooks = 8, pause = defaultPause }, run = defaultRunner) {
+export function startItem({ repo, item, pkg, approved = false, models, publish, fixRounds, readJson, settleLooks = 8, pause = defaultPause, env = process.env, now = Date.now }, run = defaultRunner) {
   const args = workflowArgs({ repo, item, pkg, models, publish, fixRounds, readJson });
   const itemFile = path.join(repo, item);
   const record = (readJson ?? ((file) => JSON.parse(readFileSync(file, 'utf8'))))(itemFile);
   if (record?.risk === 'high' && !approved) return { started: false, item, reason: 'high risk: ask the user once, then start it with --approved' };
+  // MendCode lets only the user start a workflow: a session's own shell is refused, and the workflow_script tool
+  // shows the user a card. Inside a session the lead makes that call and then waits here (--wait-since) for the answer.
+  if (env[AGENT_SHELL_ENV]) {
+    return {
+      started: false, item, insideMendcode: true, since: now(),
+      call: { tool: 'workflow_script', name: 'mend', args },
+      reason: 'inside a MendCode session only the user can start a workflow: call workflow_script with this name and args, then run start-item again with --wait-since <since> in the same turn',
+    };
+  }
   // By path, not by name: a package's saved scripts resolve by name only in projects where the package is active.
   // The repository is the working directory, never --dir: --dir names MendCode's data directory, and a
   // data directory that is not the user's starts a second daemon whose runs the user never sees.
@@ -76,6 +87,31 @@ export function startItem({ repo, item, pkg, approved = false, models, publish, 
   return { started: true, item, workflowId };
 }
 
+/**
+ * Waits for the run the user approved on the workflow_script card: a `mend` workflow in this repository, started
+ * at or after `since`, whose tasks name this item. Returns { started: true, workflowId } or why it gave up.
+ */
+export function waitForStart({ repo, item, since, minutes = 30, pause = defaultPause, now = Date.now }, run = defaultRunner) {
+  if (!ITEM_PATH.test(String(item))) throw new StartError('--item must be .mend/items/<id>.json');
+  if (!Number.isFinite(Number(since))) throw new StartError('--wait-since needs the since value start-item printed');
+  const id = path.basename(item, '.json');
+  const deadline = now() + Math.max(1, Math.min(120, Number(minutes))) * 60_000;
+  const named = (task) => String(task?.label ?? task?.title ?? '').split(/\s+/).includes(id);
+  for (;;) {
+    const listed = run('mendcode', ['workflow', 'list', '--json'], repo);
+    const workflows = listed.ok ? parseLines(listed.stdout).map((line) => line?.data?.workflows).find(Array.isArray) ?? [] : [];
+    const found = workflows.find((workflow) => workflow.name === 'mend' && samePath(workflow.directory, repo) && Number(workflow.startedAt) >= Number(since) && (workflow.tasks ?? []).some(named));
+    if (found) return ['failed', 'blocked', 'stopped'].includes(found.state)
+      ? { started: false, item, workflowId: found.workflowId, reason: `the run ${found.state} at once: ${String(found.reason ?? '').slice(0, 400)}` }
+      : { started: true, item, workflowId: found.workflowId };
+    if (now() >= deadline) return { started: false, item, reason: `no run started within ${minutes} minutes: the user has not approved the workflow card, or declined it` };
+    pause(WAIT_STEP_MS);
+  }
+}
+
+const AGENT_SHELL_ENV = 'MENDCODE_AGENT_SHELL';
+const WAIT_STEP_MS = 10_000;
+const samePath = (a, b) => { try { return realpathSync(String(a)) === realpathSync(String(b)); } catch { return String(a) === String(b); } };
 const SETTLE_STEP_MS = 1000;
 const parseLines = (text) => text.split('\n').map((line) => { try { return JSON.parse(line); } catch { return undefined; } });
 const sleeper = new Int32Array(new SharedArrayBuffer(4));
@@ -94,6 +130,8 @@ function parseArgs(argv) {
     else if (flag === '--pkg') options.pkg = value;
     else if (flag === '--publish') options.publish = value;
     else if (flag === '--fix-rounds') options.fixRounds = value;
+    else if (flag === '--wait-since') options.since = value;
+    else if (flag === '--wait-minutes') options.minutes = value;
     else if (MODEL_KEYS.includes(flag.slice(2))) options.models[flag.slice(2)] = value;
     else throw new StartError(`unknown argument ${flag}`);
   }
@@ -103,7 +141,8 @@ function parseArgs(argv) {
 
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
-    const result = startItem(parseArgs(process.argv.slice(2)));
+    const options = parseArgs(process.argv.slice(2));
+    const result = options.since !== undefined ? waitForStart(options) : startItem(options);
     console.log(JSON.stringify(result));
     if (!result.started) process.exitCode = 1;
   } catch (error) {

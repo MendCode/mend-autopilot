@@ -55,7 +55,7 @@ Write each as `.mend/items/<id>.json` (`id`: lowercase words with hyphens):
 
 ## 4. Stop only for high risk
 
-The user's request is their approval for every `low` and `medium` item: start those at once, and never ask about them or send the user to approve them. If any item is `high`, list those items in one short message and ask once whether to go ahead; start a high item only after they say yes to it.
+The user's request is their approval for every `low` and `medium` item: start those at once, and never ask about them (inside MendCode the only step left to the user is MendCode's own start card, §5). If any item is `high`, list those items in one short message and ask once whether to go ahead; start a high item only after they say yes to it.
 
 ## 5. Start the workflows
 
@@ -65,17 +65,23 @@ Start each item from your shell, one command per item:
 node <pkg>/checks/start-item.mjs --repo <root> --item .mend/items/<id>.json --pkg <pkg>
 ```
 
+**Inside a MendCode session** it answers `"insideMendcode": true` with a `call` and a `since`, because MendCode lets only the user start a workflow. Then, for each item:
+
+1. Call the `workflow_script` tool (find it with `tool_search`) with exactly the `name` and `args` of that `call`. MendCode shows the user an approval card for it.
+2. Tell the user in one line that the card for that item is on their screen and that approving it starts the run.
+3. In the same turn, run `node <pkg>/checks/start-item.mjs --repo <root> --item .mend/items/<id>.json --wait-since <since>`. It waits up to 30 minutes until the run appears and prints `{"started": true, "workflowId": …}`. Do not end your turn before it returns: the card is dropped when your turn ends. If it answers `"started": false`, say its reason and stop.
+
+Never try to start the run another way from your shell. Outside MendCode (the user's own terminal) it starts the run itself.
+
 It reads the models from `<pkg>/autopilot.json`, starts the package's `mend` workflow (`<pkg>/workflows/mend.js`) through `mendcode workflow run`, and prints `{"started": true, "workflowId": "wfl_…"}`. Add `--approved` only for a high item the user said yes to, `--publish no` only when the user said not to push, and `--model <name>` (or `--critic`, `--auditor`) only when the user named other models. If it prints `"started": false`, tell the user its `reason` in plain words; do not retry it through another tool. It also watches the run for its first seconds, so a run that cannot start comes back as `"started": false`. If the reason says an agent on another engine needs the full tier, the package's models run on another engine (the Claude package) and MendCode's tier is not `full`: say that switching the tier is the user's choice, and that the ChatGPT package (`mend-autopilot-codex`), when installed, runs without it.
 
 To continue an item that ended as a `draft` because the reviewer still found blockers, run the same command again with `--fix-rounds 2` (then `3`): it resumes the item's worktree and the next owner round starts from the reviewer's last findings. Do not remove that worktree. A draft that says its editSet is too narrow is different: widen the item's `editSet`, and only if the worktree has no commits, remove it before starting again.
-
-Do not start items with the `workflow_script` tool: its approval card lasts only while your turn runs, so when you reply the card is dropped and the item never starts.
 
 Start items that touch different files together, up to the owners the user's plan allows (one on the smallest plans). Start an item that depends on another only after that one is done.
 
 ## 6. Report
 
-After starting, say in a few lines: the items and their workflow ids, that they are already running, that each ends as a pull request with its evidence card, that they can follow it in `/workflows`, and that nothing is merged for them. Never say an item waits for the user unless it is a high item you asked about. Do not poll. When the user asks how it went, read it with `workflow_status` and report each item's result:
+After starting, say in a few lines: the items and their workflow ids, that they are already running, that each ends as a pull request with its evidence card, that they can follow it in `/workflows`, and that nothing is merged for them. Never say an item waits for the user unless it is a high item you asked about or its start card is still unanswered. Do not poll. When the user asks how it went, read it with `workflow_status` and report each item's result:
 
 - `merge-ready` with a pull request link: ready to merge.
 - `draft` with a link: opened as a draft; say its reason in plain words.

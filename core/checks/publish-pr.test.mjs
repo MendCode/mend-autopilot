@@ -21,6 +21,8 @@ function fakeRunner(overrides = {}) {
     'git remote get-url origin': { ok: true, stdout: 'git@github.com:acme/app.git' },
     'gh auth status': { ok: true, stdout: '' },
     'git symbolic-ref --quiet --short refs/remotes/origin/HEAD': { ok: true, stdout: 'origin/main' },
+    'git fetch': { ok: true, stdout: '' },
+    'git merge-base --is-ancestor': { ok: true, stdout: '' },
     'git push': { ok: true, stdout: '' },
     'gh pr view': { ok: false, stdout: '', stderr: 'no pull requests found' },
     'gh pr create': { ok: true, stdout: 'https://github.com/acme/app/pull/7' },
@@ -112,4 +114,53 @@ test('the body carries the checks, the regression, the audit and what was not ve
     assert.ok(body.includes(part), part);
   }
   assert.equal(titleFor(card({ goal: 'x'.repeat(100) })).length, 72);
+});
+
+const FORKED = {
+  'gh repo view acme/app': { ok: true, stdout: 'READ' },
+  'gh api user': { ok: true, stdout: 'dev' },
+  'gh repo view dev/app': { ok: true, stdout: 'acme/app' },
+  'gh pr list': { ok: true, stdout: '' },
+};
+
+test('without write access to origin, the branch goes to the user\'s fork and the pull request is opened on origin from it', () => {
+  const { run, calls } = fakeRunner(FORKED);
+  const result = publish(input(), run);
+  assert.equal(result.published, true);
+  assert.ok(calls.some((call) => call.join(' ') === 'git push --set-upstream https://github.com/dev/app.git mend/login-case:refs/heads/mend/login-case'));
+  assert.ok(!calls.some((call) => call[1] === 'push' && call.includes('origin')), 'never pushes to a repository the user cannot write');
+  const create = calls.find((call) => call[2] === 'create');
+  assert.equal(create[create.indexOf('--repo') + 1], 'acme/app');
+  assert.equal(create[create.indexOf('--head') + 1], 'dev:mend/login-case');
+  assert.equal(create[create.indexOf('--base') + 1], 'main');
+});
+
+test('without write access and without a fork, nothing is pushed and the reason names the fork command; no fork is created', () => {
+  const { run, calls } = fakeRunner({ ...FORKED, 'gh repo view dev/app': { ok: false, stderr: 'not found' } });
+  const result = publish(input(), run);
+  assert.equal(result.published, false);
+  assert.match(result.reason, /gh repo fork acme\/app --clone=false/);
+  assert.ok(!calls.some((call) => call[1] === 'push' || call[1] === 'fork'));
+});
+
+test('an item started from another pushed branch opens its pull request against that branch, so only its own commits show', () => {
+  const { run, calls } = fakeRunner({
+    ...FORKED,
+    'git merge-base --is-ancestor': { ok: false },
+    'git ls-remote --heads https://github.com/dev/app.git': { ok: true, stdout: `${'c'.repeat(40)}\trefs/heads/main\n${BASE}\trefs/heads/docs/goals` },
+  });
+  const result = publish(input(), run);
+  assert.equal(result.published, true);
+  const create = calls.find((call) => call[2] === 'create');
+  assert.equal(create[create.indexOf('--repo') + 1], 'dev/app');
+  assert.equal(create[create.indexOf('--base') + 1], 'docs/goals');
+  assert.equal(create[create.indexOf('--head') + 1], 'mend/login-case');
+});
+
+test('an item started from a commit no pushed branch points at is not published with someone else\'s commits', () => {
+  const { run, calls } = fakeRunner({ 'git merge-base --is-ancestor': { ok: false }, 'git ls-remote --heads': { ok: true, stdout: `${'c'.repeat(40)}\trefs/heads/main` } });
+  const result = publish(input(), run);
+  assert.equal(result.published, false);
+  assert.match(result.reason, /not on main and is the tip of no pushed branch/);
+  assert.ok(!calls.some((call) => call[1] === 'push'));
 });

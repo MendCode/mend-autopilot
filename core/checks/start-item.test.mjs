@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { startItem, workflowArgs, StartError } from './start-item.mjs';
+import { startItem, waitForStart, workflowArgs, StartError } from './start-item.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const files = {
@@ -81,10 +81,46 @@ test('named models win, publish no is passed on, and bad paths are refused', () 
   assert.throws(() => workflowArgs({ repo: '/repo', item: '../x.json', pkg: '/pkg', readJson }), StartError);
 });
 
-test('the skill starts items with start-item, not with a workflow_script card that dies with the turn', () => {
+test('the skill starts items with start-item; inside MendCode it makes the card call and keeps its turn alive until the run appears', () => {
   const skill = readFileSync(path.join(here, '../skills/mend-autopilot/SKILL.md'), 'utf8');
   assert.match(skill, /checks\/start-item\.mjs/);
   assert.ok(skill.indexOf('this file is not for you') < skill.indexOf('## 1.'), 'an owner that loads it is turned away before any lead instruction');
   assert.doesNotMatch(skill, /approve every start/i);
-  assert.doesNotMatch(skill, /call the `workflow_script` tool/);
+  assert.match(skill, /Call the `workflow_script` tool \(find it with `tool_search`\) with exactly the `name` and `args` of that `call`/);
+  assert.match(skill, /--wait-since <since>/);
+  assert.match(skill, /Do not end your turn before it returns: the card is dropped when your turn ends/);
+  assert.match(skill, /Never try to start the run another way from your shell/);
+});
+
+test('inside a MendCode session start-item does not call mendcode: it hands back the workflow_script call to make', () => {
+  const { calls, run } = recorder(started);
+  const result = startItem({ repo: '/repo', item: '.mend/items/low.json', pkg: '/pkg', readJson, pause, env: { MENDCODE_AGENT_SHELL: '/data' }, now: () => 1000 }, run);
+  assert.equal(calls.length, 0, 'the session shell is refused by MendCode, so it is never tried');
+  assert.equal(result.started, false);
+  assert.equal(result.insideMendcode, true);
+  assert.equal(result.since, 1000);
+  assert.deepEqual(result.call, { tool: 'workflow_script', name: 'mend', args: workflowArgs({ repo: '/repo', item: '.mend/items/low.json', pkg: '/pkg', readJson }) });
+  const held = startItem({ repo: '/repo', item: '.mend/items/risky.json', pkg: '/pkg', readJson, pause, env: { MENDCODE_AGENT_SHELL: '/data' } }, run);
+  assert.match(held.reason, /high risk/, 'a high item still needs the user\'s yes before any card');
+});
+
+test('--wait-since finds the run the user approved: a mend workflow here, started since, whose tasks name the item', () => {
+  const listing = (workflows) => ({ ok: true, stdout: JSON.stringify({ data: { workflows } }), stderr: '' });
+  const other = { workflowId: 'wfl_old', name: 'mend', directory: '/repo', startedAt: 500, state: 'running', tasks: [{ label: 'spec low' }] };
+  const neighbour = { workflowId: 'wfl_n', name: 'mend', directory: '/repo', startedAt: 2000, state: 'running', tasks: [{ label: 'spec lower' }] };
+  const mine = { workflowId: 'wfl_2', name: 'mend', directory: '/repo', startedAt: 1500, state: 'running', tasks: [{ label: 'spec low' }] };
+  const replies = [listing([other, neighbour]), listing([other, neighbour, mine])];
+  const seen = [];
+  const run = (command, args, cwd) => { seen.push([command, ...args, cwd].join(' ')); return replies.shift() ?? listing([]); };
+  let clock = 1000;
+  const result = waitForStart({ repo: '/repo', item: '.mend/items/low.json', since: 1000, pause: () => { clock += 10_000; }, now: () => clock }, run);
+  assert.deepEqual(result, { started: true, item: '.mend/items/low.json', workflowId: 'wfl_2' });
+  assert.ok(seen.every((call) => call === 'mendcode workflow list --json /repo'), 'only reads, which a session shell may do');
+});
+
+test('--wait-since gives up after its minutes when the card is never approved', () => {
+  let clock = 0;
+  const result = waitForStart({ repo: '/repo', item: '.mend/items/low.json', since: 0, minutes: 1, pause: () => { clock += 10_000; }, now: () => clock }, () => ({ ok: true, stdout: JSON.stringify({ data: { workflows: [] } }), stderr: '' }));
+  assert.equal(result.started, false);
+  assert.match(result.reason, /has not approved the workflow card/);
 });

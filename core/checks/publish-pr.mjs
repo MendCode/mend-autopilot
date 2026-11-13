@@ -76,6 +76,42 @@ function baseBranch({ worktree, run }) {
   return viewed.ok && viewed.stdout ? viewed.stdout : null;
 }
 
+const WRITE = new Set(['ADMIN', 'MAINTAIN', 'WRITE']);
+const slugOf = (url) => /github\.com[:/]([^/\s]+\/[^/\s]+?)(?:\.git)?\/?$/.exec(String(url ?? '').trim())?.[1] ?? null;
+
+/**
+ * Where the branch goes: origin when the user can push there (or GitHub cannot say), else the user's fork of it.
+ * A fork is never created here; without one the item is left unpublished with the command that makes it.
+ */
+function pushTarget({ worktree, run }) {
+  const upstream = slugOf(run('git', ['remote', 'get-url', 'origin'], worktree).stdout);
+  if (!upstream) return { remote: 'origin', upstream: null, repo: null };
+  const permission = run('gh', ['repo', 'view', upstream, '--json', 'viewerPermission', '--jq', '.viewerPermission'], worktree);
+  if (!permission.ok || WRITE.has(permission.stdout)) return { remote: 'origin', upstream, repo: upstream };
+  const login = run('gh', ['api', 'user', '--jq', '.login'], worktree);
+  if (!login.ok || !login.stdout) return { problem: `you cannot push to ${upstream} and your GitHub login could not be read` };
+  const fork = `${login.stdout}/${upstream.split('/')[1]}`;
+  const parent = run('gh', ['repo', 'view', fork, '--json', 'parent', '--jq', '.parent.owner.login+"/"+.parent.name'], worktree);
+  if (!parent.ok || parent.stdout.toLowerCase() !== upstream.toLowerCase()) return { problem: `you cannot push to ${upstream} and have no fork of it at ${fork}; fork it (gh repo fork ${upstream} --clone=false) and publish again` };
+  return { remote: `https://github.com/${fork}.git`, upstream, repo: fork, owner: login.stdout };
+}
+
+/**
+ * The pull request's base. An item started from the default branch targets it. One started from another branch (an
+ * open pull request's branch, say) targets that branch, so its pull request shows only the item's own commits.
+ */
+function stackBase({ worktree, run, baseSha, base, target }) {
+  run('git', ['fetch', '--quiet', 'origin', base], worktree);
+  if (run('git', ['merge-base', '--is-ancestor', baseSha, `origin/${base}`], worktree).ok) return {};
+  const places = [[target.remote, target.repo], ...(target.remote === 'origin' ? [] : [['origin', target.upstream]])];
+  for (const [remote, repo] of places) {
+    const heads = run('git', ['ls-remote', '--heads', remote], worktree);
+    const match = heads.ok ? heads.stdout.split('\n').map((line) => line.split('\t')).find(([sha, ref]) => sha === baseSha && ref && !ref.startsWith('refs/heads/mend/')) : undefined;
+    if (match) return { branch: match[1].slice('refs/heads/'.length), repo };
+  }
+  return { problem: `the item starts from ${String(baseSha).slice(0, 10)}, which is not on ${base} and is the tip of no pushed branch; push the branch it starts from, or start the item from ${base}` };
+}
+
 /**
  * Returns { published, state, url?, reason }. `published: false` with a reason is a normal outcome
  * (no remote, no GitHub login, a blocked item), not an error.
@@ -97,20 +133,30 @@ export function publish({ worktree, branch, card, reason = '' }, run = defaultRu
   const base = baseBranch({ worktree, run });
   if (!base) return skip('could not find the default branch of origin');
 
-  const pushed = run('git', ['push', '--set-upstream', 'origin', `${branch}:refs/heads/${branch}`], worktree);
+  const target = pushTarget({ worktree, run });
+  if (target.problem) return skip(target.problem);
+  const stacked = stackBase({ worktree, run, baseSha: card.baseSha, base, target });
+  if (stacked.problem) return skip(stacked.problem);
+
+  const pushed = run('git', ['push', '--set-upstream', target.remote, `${branch}:refs/heads/${branch}`], worktree);
   if (!pushed.ok) return skip(`git push refused: ${pushed.stderr.slice(-300)}`);
 
   const title = titleFor(card);
   const body = bodyFor(card, reason);
-  const existing = run('gh', ['pr', 'view', branch, '--json', 'url,state,isDraft', '--jq', '[.url,.state,(.isDraft|tostring)]|join(" ")'], worktree);
+  const prRepo = stacked.repo ?? target.upstream;
+  const headRef = target.owner && prRepo !== target.repo ? `${target.owner}:${branch}` : branch;
+  const repoArgs = prRepo ? ['--repo', prRepo] : [];
+  const existing = target.owner
+    ? run('gh', ['pr', 'list', ...repoArgs, '--head', branch, '--state', 'open', '--json', 'url,isDraft,headRepositoryOwner', '--jq', `[.[]|select(.headRepositoryOwner.login=="${target.owner}")][0]|[.url,"OPEN",(.isDraft|tostring)]|join(" ")`], worktree)
+    : run('gh', ['pr', 'view', branch, ...repoArgs, '--json', 'url,state,isDraft', '--jq', '[.url,.state,(.isDraft|tostring)]|join(" ")'], worktree);
   const [url, prState, isDraft] = existing.ok ? existing.stdout.split(' ') : [];
   if (url && prState === 'OPEN') {
-    const edited = run('gh', ['pr', 'edit', branch, '--title', title, '--body', body], worktree);
+    const edited = run('gh', ['pr', 'edit', url, '--title', title, '--body', body], worktree);
     if (!edited.ok) return { published: true, state: card.state, url, reason: `pushed; the description could not be updated: ${edited.stderr.slice(-200)}` };
-    if (card.state === 'merge-ready' && isDraft === 'true') run('gh', ['pr', 'ready', branch], worktree);
+    if (card.state === 'merge-ready' && isDraft === 'true') run('gh', ['pr', 'ready', url], worktree);
     return { published: true, state: card.state, url, reason: 'pushed to the open pull request and updated its description' };
   }
-  const created = run('gh', ['pr', 'create', '--base', base, '--head', branch, '--title', title, '--body', body, ...(card.state === 'draft' ? ['--draft'] : [])], worktree);
+  const created = run('gh', ['pr', 'create', ...repoArgs, '--base', stacked.branch ?? base, '--head', headRef, '--title', title, '--body', body, ...(card.state === 'draft' ? ['--draft'] : [])], worktree);
   if (!created.ok) return skip(`pushed ${branch}, but the pull request could not be opened: ${created.stderr.slice(-300)}`);
   return { published: true, state: card.state, url: created.stdout.split('\n').pop(), reason: card.state === 'draft' ? 'opened as a draft pull request' : 'opened the pull request' };
 }

@@ -103,7 +103,7 @@ Open a MendCode session in your repository and ask for what you want:
 Sign-in fails when the email has capital letters. Fix it.
 ```
 
-That is all. The `mend-autopilot` skill loads by itself whenever you ask for a change in a repository that already uses it, or ask for a pull request anywhere. It prepares the repository the first time (without changing a tracked file), splits the request into items, and starts one `mend` run per item right away. You follow the runs in `/workflows` and get one pull request per item. It stops to ask only for high-risk items: sign-in, permissions, payments, migrations, deletions or a public API.
+That is all. The `mend-autopilot` skill loads by itself whenever you ask for a change in a repository that already uses it, or ask for a pull request anywhere. It prepares the repository the first time (without changing a tracked file), splits the request into items, and starts one `mend` run per item. MendCode lets only you start a workflow, so each run starts once you approve its card; that is the only click. You follow the runs in `/workflows` and get one pull request per item, from your fork when you cannot push to the repository. It asks before going ahead only for high-risk items: sign-in, permissions, payments, migrations, deletions or a public API.
 
 ### Install by hand
 
