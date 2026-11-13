@@ -63,17 +63,19 @@ export function startItem({ repo, item, pkg, approved = false, models, publish, 
   if (record?.risk === 'high' && !approved) return { started: false, item, reason: 'high risk: ask the user once, then start it with --approved' };
   // MendCode lets only the user start a workflow: a session's own shell is refused, and the workflow_script tool
   // shows the user a card. Inside a session the lead makes that call and then waits here (--wait-since) for the answer.
-  if (env[AGENT_SHELL_ENV]) {
-    return {
-      started: false, item, insideMendcode: true, since: now(),
-      call: { tool: 'workflow_script', name: 'mend', args },
-      reason: 'inside a MendCode session only the user can start a workflow: call workflow_script with this name and args, then run start-item again with --wait-since <since> in the same turn',
-    };
-  }
+  const since = now();
+  const viaCard = () => ({
+    started: false, item, insideMendcode: true, since,
+    call: { tool: 'workflow_script', name: 'mend', args },
+    reason: 'inside a MendCode session only the user can start a workflow: call workflow_script with this name and args, then run start-item again with --wait-since <since> in the same turn',
+  });
+  // MendCode's own shells carry the variable; another engine's shell does not, and is known by the refusal below.
+  if (env[AGENT_SHELL_ENV]) return viaCard();
   // By path, not by name: a package's saved scripts resolve by name only in projects where the package is active.
   // The repository is the working directory, never --dir: --dir names MendCode's data directory, and a
   // data directory that is not the user's starts a second daemon whose runs the user never sees.
   const started = run('mendcode', ['workflow', 'run', path.join(pkg, 'workflows', 'mend.js'), '--args', JSON.stringify(args), '--permission', 'full', '--yes', '--json'], repo);
+  if (!started.ok && /only the user can/.test(started.stderr + started.stdout)) return viaCard();
   if (!started.ok) return { started: false, item, reason: `mendcode refused the start: ${(started.stderr || started.stdout).slice(-400)}` };
   const workflowId = parseLines(started.stdout).map((line) => line?.data?.workflow?.workflowId).find(Boolean);
   if (!workflowId) return { started: false, item, reason: `mendcode answered without a workflow id: ${started.stdout.slice(-400)}` };

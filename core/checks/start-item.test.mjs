@@ -100,6 +100,10 @@ test('inside a MendCode session start-item does not call mendcode: it hands back
   assert.equal(result.insideMendcode, true);
   assert.equal(result.since, 1000);
   assert.deepEqual(result.call, { tool: 'workflow_script', name: 'mend', args: workflowArgs({ repo: '/repo', item: '.mend/items/low.json', pkg: '/pkg', readJson }) });
+  const refusal = { ok: false, stdout: '', stderr: "error: A session may not change permissions, global settings or another session's authority from its own shell; only the user can." };
+  const engineShell = startItem({ repo: '/repo', item: '.mend/items/low.json', pkg: '/pkg', readJson, pause, env: {}, now: () => 1000 }, recorder(refusal).run);
+  assert.equal(engineShell.insideMendcode, true, 'another engine\'s shell has no variable; MendCode\'s refusal tells it apart');
+  assert.deepEqual(engineShell.call, result.call);
   const held = startItem({ repo: '/repo', item: '.mend/items/risky.json', pkg: '/pkg', readJson, pause, env: { MENDCODE_AGENT_SHELL: '/data' } }, run);
   assert.match(held.reason, /high risk/, 'a high item still needs the user\'s yes before any card');
 });
