@@ -3,8 +3,8 @@
 // Runs each side in a temporary git worktree it creates and removes itself; never in the user's checkout.
 
 import { execFile, spawn } from 'node:child_process';
-import { mkdtemp, realpath, rm } from 'node:fs/promises';
-import { realpathSync } from 'node:fs';
+import { mkdtemp, realpath, rm, symlink } from 'node:fs/promises';
+import { existsSync, realpathSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -121,6 +121,25 @@ async function addWorktree({ repo, parent, label, sha, BlockedError }) {
   return target;
 }
 
+// Installed dependencies are ignored by git, so a clean checkout has none and every import of a package fails
+// at base and head alike: a red that proves nothing. Without a setup command, each checkout links to the
+// dependency folders the source checkout already installed, at the same paths.
+const DEPENDENCY_DIRS = new Set(['node_modules', '.venv', 'venv']);
+
+export async function linkDependencies({ from, to }) {
+  const listed = await git(from, ['ls-files', '--others', '--ignored', '--exclude-standard', '--directory', '-z']).catch(() => '');
+  const linked = [];
+  for (const entry of listed.split('\0')) {
+    const relative = entry.replace(/\/$/, '');
+    if (!relative || !DEPENDENCY_DIRS.has(path.basename(relative))) continue;
+    const target = path.join(to, relative);
+    if (!existsSync(path.dirname(target)) || existsSync(target)) continue;
+    await symlink(path.join(from, relative), target, 'dir');
+    linked.push(relative);
+  }
+  return linked;
+}
+
 async function removeWorktrees(repo, parent, created) {
   for (const target of created) {
     try {
@@ -200,7 +219,9 @@ export async function runRedGreen({ repo, baseSha, headSha, command, keep, setup
     } catch (error) {
       throw new RedGreenBlockedError(`test overlay failed: ${(error.stderr || error.message).trim()}`);
     }
-    if (setup !== undefined) {
+    if (setup === undefined) {
+      for (const side of ['base', 'head']) await linkDependencies({ from: repoRoot, to: dirs[side] });
+    } else {
       for (const side of ['base', 'head']) {
         const result = await runCommand({ command: setup, cwd: dirs[side], guardCwd: repoRoot, timeoutMs, env: { ...process.env, MEND_REPO_ROOT: repoRoot } });
         if (result.exit !== 0) throw new RedGreenBlockedError(`setup failed at ${side}: ${setup} (exit ${result.exit})\n${result.log}`);

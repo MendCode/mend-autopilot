@@ -137,6 +137,20 @@ test('setup runs in both worktrees with the main repository root', async () => {
   assert.equal(result.headExit, 0);
 });
 
+test('without a setup, both checkouts use the dependencies the source checkout installed, so a missing package is not a red', async () => {
+  const repo = await makeRepo('broken', 'fixed');
+  await addHeadFiles(repo, { '.gitignore': 'node_modules/\n' });
+  await fs.mkdir(path.join(repo.root, 'node_modules/dep'), { recursive: true });
+  await fs.writeFile(path.join(repo.root, 'node_modules/dep/index.txt'), 'installed\n');
+  const command = `test -f node_modules/dep/index.txt || exit 2; ${CHECK}`;
+  const result = await runRedGreen({ repo: repo.root, baseSha: repo.baseSha, headSha: repo.headSha, command, tempRoot: PRIVATE_TMP });
+  assert.equal(result.pass, true, result.reason);
+  assert.equal(result.baseExit, 1, 'the base fails on the bug, not on the missing package');
+  assert.equal(await fs.readFile(path.join(repo.root, 'node_modules/dep/index.txt'), 'utf8'), 'installed\n', 'cleanup leaves the installed dependencies alone');
+  const withSetup = await runRedGreen({ repo: repo.root, baseSha: repo.baseSha, headSha: repo.headSha, setup: 'true', command, tempRoot: PRIVATE_TMP });
+  assert.equal(withSetup.headExit, 2, 'a setup command installs its own dependencies; nothing is linked');
+});
+
 test('keep runs in both prepared worktrees and records exits and logs', async () => {
   const repo = await makeRepo('broken', 'fixed');
   const keep = 'test -f dependency && echo keep-ok';
