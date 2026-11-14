@@ -185,3 +185,24 @@ test('the pull request body never carries paths of the user\'s machine', async (
   const body = calls.find((call) => call[2] === 'create');
   assert.doesNotMatch(body[body.indexOf('--body') + 1], /\/srv\/u1/);
 });
+
+test('an item that answers a review on the user\'s open pull request goes onto that pull request, not into a second one', () => {
+  const { run, calls } = fakeRunner({
+    ...FORKED,
+    'git merge-base --is-ancestor': { ok: false },
+    'git ls-remote --heads https://github.com/dev/app.git': { ok: true, stdout: `${BASE}\trefs/heads/docs/goals` },
+    'gh pr list --repo acme/app --head docs/goals': { ok: true, stdout: 'https://github.com/acme/app/pull/39' },
+    'gh pr comment': { ok: true, stdout: '' },
+  });
+  const result = publish(input(), run);
+  assert.equal(result.url, 'https://github.com/acme/app/pull/39');
+  assert.ok(calls.some((call) => call.join(' ') === 'git push https://github.com/dev/app.git mend/login-case:refs/heads/docs/goals'), 'a plain push: a branch that moved is refused, never overwritten');
+  assert.ok(!calls.some((call) => call.includes('--force') || call.includes('-f')));
+  assert.ok(!calls.some((call) => call[2] === 'create'));
+  assert.ok(calls.some((call) => call[2] === 'comment' && call[3] === 'https://github.com/acme/app/pull/39'));
+  const list = calls.find((call) => call[2] === 'list' && call.includes('docs/goals'));
+  assert.ok(list.includes('@me'), 'only the user\'s own pull request');
+  const draft = fakeRunner({ ...FORKED, 'git merge-base --is-ancestor': { ok: false }, 'git ls-remote --heads https://github.com/dev/app.git': { ok: true, stdout: `${BASE}\trefs/heads/docs/goals` }, 'gh pr list --repo acme/app --head docs/goals': { ok: true, stdout: 'https://github.com/acme/app/pull/39' } });
+  publish(input({ card: card({ state: 'draft' }) }), draft.run);
+  assert.ok(!draft.calls.some((call) => call.join(' ').includes(':refs/heads/docs/goals')), 'a draft never lands on the pull request it answers');
+});

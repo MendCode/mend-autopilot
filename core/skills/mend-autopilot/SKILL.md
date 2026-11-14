@@ -48,6 +48,7 @@ Write each as `.mend/items/<id>.json` (`id`: lowercase words with hyphens):
 ```
 
 - `title`: the pull request title, under 72 characters, in the repository's commit style. `goal` can be long and carry the facts; the title stays short.
+- `base`: where the item's branch starts. Leave it out to start from the commit checked out. When the checkout is on another pull request's branch or behind, an independent change sets it to the default branch of the project's real repository (`origin/main`, after `git fetch origin`), so its pull request carries only its own commits. An item that answers a review on an open pull request starts from that pull request's branch, and its commits go onto that pull request.
 - `editSet`: every file the change and its tests need, and nothing else. Too narrow stops the item as a draft; too wide weakens the review.
 - **Tests go in a new file** named after the item, next to the existing tests and matching their naming so the runner finds it (`login-email-case.test.ts` beside `login.test.ts`). Never put an existing test file in `editSet`: the integrity scan blocks every change to one, even an added test, so a weaker test can never slip in.
 - **An existing test the change must contradict** (it pins the very behaviour the item changes, often a test from an earlier item): put it in `editSet` and declare it in `"testChanges": [{"file": "<path>", "why": "<what the item changes that this test pins>"}]`. Only those files may change, only their affected expectations, never fewer assertions; deleting or renaming a test still blocks, and the card tells the user to read the change. When a planner's draft names an existing test file it needs, this is the way to widen the item.
@@ -94,6 +95,6 @@ After starting, say in a few lines: the items and their workflow ids, that they 
 ## Never
 
 - Write the change yourself, or edit a file in `.mend/worktrees/`.
-- Merge, force-push, or push any branch but `mend/<id>`.
+- Merge, force-push, or push any branch but `mend/<id>` (the workflow itself fast-forwards the branch of the user's own open pull request an item answers).
 - Change the user's models, permission mode, trust or tier.
 - Commit `.mend/`.

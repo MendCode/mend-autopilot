@@ -148,8 +148,11 @@ if (exists.ok) {
 }
 let baseSha = saved?.baseSha
 if (!saved) {
-  baseSha = lastLine((await run(git(["rev-parse", "HEAD"], repoRoot))).detail)
-  if (!/^[0-9a-f]{40}$/.test(baseSha)) return stopWith("blocked", "could not read the base commit")
+  // An item may name its base (origin/main): an independent change starts there, not on the branch checked out.
+  const baseRef = trimmed(item.base) || "HEAD"
+  if (!/^[A-Za-z0-9][A-Za-z0-9._\/-]*$/.test(baseRef)) return stopWith("blocked", "the item base must be a branch or commit name")
+  baseSha = lastLine((await run(git(["rev-parse", "--verify", baseRef + "^{commit}"], repoRoot))).detail)
+  if (!/^[0-9a-f]{40}$/.test(baseSha)) return stopWith("blocked", "could not read the base commit " + baseRef)
   const added = await run(git(["worktree", "add", "-b", branch, worktree, baseSha], repoRoot))
   if (!added.ok) return stopWith("blocked", "git worktree add failed: " + added.detail.slice(-300))
 }

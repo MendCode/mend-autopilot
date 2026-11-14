@@ -2,7 +2,8 @@
 // Publishes one finished item: pushes its branch and opens (or updates) its pull request with the
 // evidence card as the body. Merge-ready items open a ready pull request, drafts a draft one with
 // their reason; blocked items and items without commits are never published. It never merges,
-// never force-pushes and never touches any branch but the item's own.
+// never force-pushes and never touches any branch but the item's own, except one: a merge-ready item that
+// answers a review on the user's own open pull request fast-forwards that pull request's branch.
 // usage: publish-pr.mjs --stdin   with { "args": [<json>] }, json = { worktree, branch, card (object or path), item (path), reason }
 import { execFileSync } from 'node:child_process';
 import { readFileSync, realpathSync } from 'node:fs';
@@ -126,6 +127,14 @@ function stackBase({ worktree, run, baseSha, base, target }) {
   return { problem: `the item starts from ${String(baseSha).slice(0, 10)}, which is not on ${base} and is the tip of no pushed branch; push the branch it starts from, or start the item from ${base}` };
 }
 
+/** The user's own open pull request in the real repository whose branch the item started from, if any. */
+function answeredPr({ worktree, run, stacked, target }) {
+  if (!stacked.branch || !stacked.repo || !target.upstream) return null;
+  const owner = stacked.repo.split('/')[0];
+  const found = run('gh', ['pr', 'list', '--repo', target.upstream, '--head', stacked.branch, '--author', '@me', '--state', 'open', '--json', 'url,headRepositoryOwner', '--jq', `[.[]|select(.headRepositoryOwner.login=="${owner}")][0].url // ""`], worktree);
+  return found.ok && found.stdout.startsWith('https://') ? found.stdout : null;
+}
+
 /**
  * Returns { published, state, url?, reason }. `published: false` with a reason is a normal outcome
  * (no remote, no GitHub login, a blocked item), not an error.
@@ -152,11 +161,22 @@ export function publish({ worktree, branch, card, reason = '' }, run = defaultRu
   const stacked = stackBase({ worktree, run, baseSha: card.baseSha, base, target });
   if (stacked.problem) return skip(stacked.problem);
 
+  const title = titleFor(card);
+  const body = withoutLocalPaths(bodyFor(card, reason), { worktree });
+  // A review answered on the pull request that asked for it: no second pull request beside it. Without
+  // --force a push that is not a fast-forward is refused, so nothing on that branch is ever lost.
+  const answered = card.state === 'merge-ready' ? answeredPr({ worktree, run, stacked, target }) : null;
+  if (answered) {
+    const remote = stacked.repo === target.repo ? target.remote : 'origin';
+    const onto = run('git', ['push', remote, `${branch}:refs/heads/${stacked.branch}`], worktree);
+    if (!onto.ok) return skip(`git push onto ${stacked.branch} refused: ${onto.stderr.slice(-300)}`);
+    run('gh', ['pr', 'comment', answered, '--body', `### ${title}\n\n${body}`], worktree);
+    return { published: true, state: card.state, url: answered, reason: `pushed onto ${stacked.branch}, the branch of the open pull request it answers` };
+  }
+
   const pushed = run('git', ['push', '--set-upstream', target.remote, `${branch}:refs/heads/${branch}`], worktree);
   if (!pushed.ok) return skip(`git push refused: ${pushed.stderr.slice(-300)}`);
 
-  const title = titleFor(card);
-  const body = withoutLocalPaths(bodyFor(card, reason), { worktree });
   const prRepo = stacked.repo ?? target.upstream;
   const headRef = target.owner && prRepo !== target.repo ? `${target.owner}:${branch}` : branch;
   const repoArgs = prRepo ? ['--repo', prRepo] : [];
