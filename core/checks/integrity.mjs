@@ -190,6 +190,24 @@ function classify(filePath, globs) {
   return 'source';
 }
 
+// pytest's testpaths at base, when the repository sets them: a Python file named like a test (chip_test.py)
+// outside them is a script pytest never collects, not a test. Read at base, so a change cannot widen it.
+async function pytestTestpaths(repo, base) {
+  for (const [file, section] of [['pytest.ini', /^\[pytest\]/], ['pyproject.toml', /^\[tool\.pytest\.ini_options\]/], ['tox.ini', /^\[pytest\]/], ['setup.cfg', /^\[tool:pytest\]/]]) {
+    const text = await showFile(repo, base, file);
+    if (!text) continue;
+    let inside = false;
+    for (const line of text.split('\n')) {
+      if (/^\s*\[/.test(line)) inside = section.test(line.trim());
+      const value = inside ? /^\s*testpaths\s*=\s*(.+)$/.exec(line)?.[1] : undefined;
+      if (value) return value.replace(/[\[\]"',]/g, ' ').split(/\s+/).filter(Boolean).map((dir) => dir.replace(/^\.\//, '').replace(/\/$/, ''));
+    }
+  }
+  return null;
+}
+
+const outsideTestpaths = (filePath, testpaths) => Boolean(testpaths) && filePath.endsWith('.py') && !testpaths.some((dir) => dir === '.' || filePath === dir || filePath.startsWith(dir + '/'));
+
 // ---------------------------------------------------------------------------
 // Git
 
@@ -858,11 +876,13 @@ export async function scanDiff({ repo, baseSha, headSha, item, config, lookup = 
   const { pathspec } = await loadReviewPolicy({ repo, baseSha: base });
   const diffText = await git(repo, ['diff', '--no-color', '--no-ext-diff', '-U0', '-M', '--src-prefix=a/', '--dst-prefix=b/', base, head, '--', ...pathspec]);
   const files = parseUnifiedDiff(diffText);
+  const testpaths = await pytestTestpaths(repo, base);
   const newDependencies = [];
   const literalCandidates = [];
 
   for (const file of files) {
-    const kind = classify(file.path, settings.globs);
+    const classified = classify(file.path, settings.globs);
+    const kind = classified === 'test' && outsideTestpaths(file.path, testpaths) ? 'source' : classified;
     const ecosystem = ecosystemOf(file.path);
     const added = addedLines(file);
     const removed = removedLines(file);

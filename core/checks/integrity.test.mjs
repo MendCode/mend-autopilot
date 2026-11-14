@@ -568,3 +568,25 @@ test('a declaration never lets a test be deleted, lose assertions, or change wit
   const noReason = (await scanCase({ item: { editSet: ['tests/**'], testChanges: [{ file: 'tests/rooms.test.ts', why: ' ' }] }, base, head: { 'tests/rooms.test.ts': ["test('bath', () => {", '  expect(bath).toBe(2);', '  expect(deck).toBe(1);', '});'] } })).result;
   assert.equal(noReason.pass, false);
 });
+
+test('a Python script named like a test outside pytest\'s testpaths is a script, not a test; inside them it still is', async () => {
+  const ini = ['[pytest]', 'testpaths = tests', 'pythonpath = tools'];
+  const { result } = await scanCase({
+    item: { editSet: ['tools/chip_test.py', 'tests/test_chip.py'] },
+    base: { 'pytest.ini': ini, 'tools/chip_test.py': ['PORT = None'], 'tests/test_chip.py': ['def test_port():', '    assert True'] },
+    head: { 'tools/chip_test.py': ['PORT = "auto"'] },
+  });
+  assert.deepEqual(result.flags.map((flag) => flag.rule), []);
+  const { result: inside } = await scanCase({
+    item: { editSet: ['tests/**'] },
+    base: { 'pytest.ini': ini, 'tests/test_chip.py': ['def test_port():', '    assert True'] },
+    head: { 'tests/test_chip.py': ['def test_port():', '    assert 1'] },
+  });
+  assert.ok(inside.flags.some((flag) => flag.rule === 'test-edit'));
+  const { result: widened } = await scanCase({
+    item: { editSet: ['tools/chip_test.py', 'pytest.ini'] },
+    base: { 'pytest.ini': ['[pytest]', 'testpaths = tests tools'], 'tools/chip_test.py': ['PORT = None'] },
+    head: { 'pytest.ini': ini, 'tools/chip_test.py': ['PORT = "auto"'] },
+  });
+  assert.ok(widened.flags.some((flag) => flag.rule === 'test-edit'), 'the testpaths are read at base, so narrowing them in the change does not help');
+});

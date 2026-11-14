@@ -52,13 +52,24 @@ export function withoutLocalPaths(text, { worktree, home = homedir() }) {
   return home && home.length > 1 ? clean.split(home + '/').join('~/').split(home).join('~') : clean;
 }
 
+/** A workflow reason as a reviewer reads it: the integrity flags it carries as JSON become `file:line (detail)`. */
+export function readableReason(reason) {
+  return String(reason ?? '').replace(/:?\s*(\[\{.*\}\])/s, (whole, json) => {
+    try {
+      return ': ' + JSON.parse(json).map((flag) => `${flag.file}:${flag.line} (${flag.detail})`).join('; ');
+    } catch {
+      return whole;
+    }
+  });
+}
+
 /** The pull request body: what changed, what proves it and what nobody checked, from the card alone. */
 export function bodyFor(card, reason) {
   const lines = [];
   const ready = card.state === 'merge-ready';
   lines.push(ready
     ? `**Merge-ready.** Every check, the review and the audit passed at \`${String(card.headSha).slice(0, 12)}\`. Merging is your call.`
-    : `**Draft: not ready to merge.** ${cell(reason) || 'The item stopped before every check passed.'}`);
+    : `**Draft: not ready to merge.** ${cell(readableReason(reason)) || 'The item stopped before every check passed.'}`);
   if (card.risk?.tier === 'high') lines.push('', `**High risk** (${cell(card.risk.rule)}): read the change yourself before merging.`);
   lines.push('', '### Goal', '', String(card.goal ?? ''));
   const checks = (Array.isArray(card.checks) ? card.checks : []).slice(0, SECTION_MAX);
@@ -72,15 +83,19 @@ export function bodyFor(card, reason) {
   if (card.review?.verdict) lines.push(`- Review by the strong model: **${cell(card.review.verdict)}**`);
   if (card.verdict?.result) lines.push(`- Auditor in its own session: **${cell(card.verdict.result)}**`);
   for (const lane of lanes) lines.push(`  - ${cell(lane.lane)}: ${cell(lane.result)} (${cell(lane.method)})`);
-  const flags = (Array.isArray(card.integrity?.flags) ? card.integrity.flags : []).filter((flag) => flag?.severity === 'block');
-  lines.push(`- Integrity scan: ${flags.length ? `${flags.length} blocking flag(s)` : 'nothing flagged'}`);
-  const notVerified = list(card.notVerified).slice(0, SECTION_MAX);
+  // A draft that stopped before the card has no scan to report: saying "nothing flagged" there would be false.
+  if (Array.isArray(card.integrity?.flags)) {
+    const flags = card.integrity.flags.filter((flag) => flag?.severity === 'block');
+    lines.push(`- Integrity scan: ${flags.length ? `${flags.length} blocking flag(s)` : 'nothing flagged'}`);
+  }
+  // Notes about the workflow's own path are for the card, not for the repository's reviewers.
+  const notVerified = list(card.notVerified).filter((entry) => !/^Profile rubrics and scored critique did not run/.test(entry)).slice(0, SECTION_MAX);
   if (notVerified.length) {
     lines.push('', '### Not verified', '');
     for (const entry of notVerified) lines.push(`- ${cell(entry)}`);
   }
   lines.push('', `Risk: ${cell(card.risk?.tier ?? 'unknown')}. Rollback: ${cell(card.rollback ?? 'revert the merge commit')}.`);
-  lines.push('', `<sub>Made by [mend-autopilot](https://github.com/MendCode/mend-autopilot): a cheap model wrote the change, a strong model reviewed and audited it, programs ran the checks. The full card is \`.mend/evidence/${cell(card.item)}.json\` in the worktree.</sub>`);
+  lines.push('', `<sub>Made by [mend-autopilot](https://github.com/MendCode/mend-autopilot): a cheap model wrote the change, a strong model reviewed and audited it, programs ran the checks.</sub>`);
   return lines.join('\n');
 }
 

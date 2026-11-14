@@ -206,3 +206,14 @@ test('an item that answers a review on the user\'s open pull request goes onto t
   publish(input({ card: card({ state: 'draft' }) }), draft.run);
   assert.ok(!draft.calls.some((call) => call.join(' ').includes(':refs/heads/docs/goals')), 'a draft never lands on the pull request it answers');
 });
+
+test('the body says nothing false or internal: no scan a draft never ran, no JSON, no notes about the workflow\'s own path', () => {
+  const draft = bodyFor({ item: 'x', goal: 'g', state: 'draft' }, 'rounds spent: integrity flags to remove: [{"rule":"test-edit","file":"tools/chip_test.py","line":55,"detail":"existing test modified","severity":"block"}]');
+  assert.doesNotMatch(draft, /nothing flagged/);
+  assert.doesNotMatch(draft, /\{"rule"/);
+  assert.match(draft, /tools\/chip_test\.py:55 \(existing test modified\)/);
+  const ready = bodyFor(card({ notVerified: ['Profile rubrics and scored critique did not run (light path): bugfix', 'firmware on a board'] }), '');
+  assert.doesNotMatch(ready, /Profile rubrics|light path|in the worktree/);
+  assert.match(ready, /- firmware on a board/);
+  assert.match(ready, /Integrity scan: nothing flagged/);
+});
