@@ -9,7 +9,8 @@
 // Running it again on an item that stopped as a draft resumes its worktree: --fix-rounds N allows owner rounds
 // after the first up to N in total (default 1, at most 3), so the next round starts from the reviewer's last findings.
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, realpathSync } from 'node:fs';
+import { closeSync, existsSync, mkdtempSync, openSync, readFileSync, realpathSync, rmSync } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -23,11 +24,21 @@ export class StartError extends Error {
 const ITEM_PATH = /^\.mend\/items\/[a-z0-9][a-z0-9-]*\.json$/;
 const MODEL_KEYS = ['critic', 'model', 'auditor', 'engine'];
 
+// The CLI's answer goes to a file, not a pipe: MendCode can exit before a pipe drains, which cut a long
+// workflow listing at 64 KB and left --wait-since unable to see the run the user had approved.
 function defaultRunner(command, args, cwd) {
+  const dir = mkdtempSync(path.join(os.tmpdir(), 'mend-start-'));
+  const file = path.join(dir, 'stdout');
+  const fd = openSync(file, 'w');
+  const read = () => readFileSync(file, 'utf8').trim();
   try {
-    return { ok: true, stdout: execFileSync(command, args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024 }).trim(), stderr: '' };
+    execFileSync(command, args, { cwd, encoding: 'utf8', stdio: ['ignore', fd, 'pipe'], maxBuffer: 64 * 1024 * 1024 });
+    return { ok: true, stdout: read(), stderr: '' };
   } catch (error) {
-    return { ok: false, stdout: String(error.stdout ?? '').trim(), stderr: String(error.stderr ?? error.message ?? '').trim() };
+    return { ok: false, stdout: read(), stderr: String(error.stderr ?? error.message ?? '').trim() };
+  } finally {
+    closeSync(fd);
+    rmSync(dir, { recursive: true, force: true });
   }
 }
 
@@ -100,7 +111,7 @@ export function waitForStart({ repo, item, since, minutes = 30, pause = defaultP
   const deadline = now() + Math.max(1, Math.min(120, Number(minutes))) * 60_000;
   const named = (task) => String(task?.label ?? task?.title ?? '').split(/\s+/).includes(id);
   for (;;) {
-    const listed = run('mendcode', ['workflow', 'list', '--json'], repo);
+    const listed = run('mendcode', ['workflow', 'list', '--limit', '20', '--json'], repo);
     const workflows = listed.ok ? parseLines(listed.stdout).map((line) => line?.data?.workflows).find(Array.isArray) ?? [] : [];
     const found = workflows.find((workflow) => workflow.name === 'mend' && samePath(workflow.directory, repo) && Number(workflow.startedAt) >= Number(since) && (workflow.tasks ?? []).some(named));
     if (found) return ['failed', 'blocked', 'stopped'].includes(found.state)

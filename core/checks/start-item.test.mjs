@@ -123,7 +123,7 @@ test('--wait-since finds the run the user approved: a mend workflow here, starte
   let clock = 1000;
   const result = waitForStart({ repo: '/repo', item: '.mend/items/low.json', since: 1000, pause: () => { clock += 10_000; }, now: () => clock }, run);
   assert.deepEqual(result, { started: true, item: '.mend/items/low.json', workflowId: 'wfl_2' });
-  assert.ok(seen.every((call) => call === 'mendcode workflow list --json /repo'), 'only reads, which a session shell may do');
+  assert.ok(seen.every((call) => call === 'mendcode workflow list --limit 20 --json /repo'), 'only reads, which a session shell may do');
 });
 
 test('--wait-since gives up after its minutes when the card is never approved', () => {
