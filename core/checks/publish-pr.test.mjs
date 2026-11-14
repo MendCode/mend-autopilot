@@ -164,3 +164,24 @@ test('an item started from a commit no pushed branch points at is not published 
   assert.match(result.reason, /not on main and is the tip of no pushed branch/);
   assert.ok(!calls.some((call) => call[1] === 'push'));
 });
+
+test('the title is the item\'s own title, else the goal\'s first sentence without links, cut at a word', () => {
+  assert.equal(titleFor(card({ title: 'Roadmap and READMEs follow the owner\'s review of PR #39' })), 'Roadmap and READMEs follow the owner\'s review of PR #39');
+  const long = 'Apply the owner\'s requested changes 2, 3 and 4 on PR #39 (https://github.com/acme/app/pull/39#issuecomment edited 2026-11-12): bring the roadmap up to date.';
+  const title = titleFor(card({ goal: long }));
+  assert.doesNotMatch(title, /https?:|\(\s*$/);
+  assert.ok(title.length <= 72, title);
+  assert.match(title, /^Apply the owner's requested changes 2, 3 and 4 on PR #39/);
+  assert.equal(titleFor(card({ goal: 'Sign-in accepts an email in any letter case. Nothing else changes.' })), 'Sign-in accepts an email in any letter case');
+});
+
+test('the pull request body never carries paths of the user\'s machine', async () => {
+  const { withoutLocalPaths } = await import('./publish-pr.mjs');
+  const home = '/srv/u1';
+  const text = `\`${home}/code/app/.venv/bin/python -m pytest\` and \`cat ${home}/code/app/.mend/worktrees/login-case/out.log\` and \`ls ${home}/notes\``;
+  assert.equal(withoutLocalPaths(text, { worktree: `${home}/code/app/.mend/worktrees/login-case`, home }), '`.venv/bin/python -m pytest` and `cat out.log` and `ls ~/notes`');
+  const { run, calls } = fakeRunner();
+  publish(input({ worktree: `${home}/code/app/.mend/worktrees/login-case`, card: card({ checks: [{ command: `${home}/code/app/.venv/bin/python -m pytest`, exit: 0 }] }) }), run);
+  const body = calls.find((call) => call[2] === 'create');
+  assert.doesNotMatch(body[body.indexOf('--body') + 1], /\/srv\/u1/);
+});

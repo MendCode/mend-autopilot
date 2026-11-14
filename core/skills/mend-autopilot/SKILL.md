@@ -36,6 +36,7 @@ Write each as `.mend/items/<id>.json` (`id`: lowercase words with hyphens):
 {
   "id": "login-email-case",
   "type": "change",
+  "title": "Sign-in accepts any letter case in the email",
   "goal": "Sign-in accepts an email in any letter case",
   "acceptance": ["USER@x.com and user@x.com sign in to the same account", "other sign-in errors are unchanged"],
   "profiles": ["bugfix"],
@@ -46,6 +47,7 @@ Write each as `.mend/items/<id>.json` (`id`: lowercase words with hyphens):
 }
 ```
 
+- `title`: the pull request title, under 72 characters, in the repository's commit style. `goal` can be long and carry the facts; the title stays short.
 - `editSet`: every file the change and its tests need, and nothing else. Too narrow stops the item as a draft; too wide weakens the review.
 - **Tests go in a new file** named after the item, next to the existing tests and matching their naming so the runner finds it (`login-email-case.test.ts` beside `login.test.ts`). Never put an existing test file in `editSet`: the integrity scan blocks every change to one, even an added test, so a weaker test can never slip in.
 - **An existing test the change must contradict** (it pins the very behaviour the item changes, often a test from an earlier item): put it in `editSet` and declare it in `"testChanges": [{"file": "<path>", "why": "<what the item changes that this test pins>"}]`. Only those files may change, only their affected expectations, never fewer assertions; deleting or renaming a test still blocks, and the card tells the user to read the change. When a planner's draft names an existing test file it needs, this is the way to widen the item.
@@ -71,7 +73,7 @@ node <pkg>/checks/start-item.mjs --repo <root> --item .mend/items/<id>.json --pk
 2. Tell the user in one line that the card for that item is on their screen and that approving it starts the run.
 3. In the same turn, run `node <pkg>/checks/start-item.mjs --repo <root> --item .mend/items/<id>.json --wait-since <since>`. It waits up to 30 minutes until the run appears and prints `{"started": true, "workflowId": …}`. Do not end your turn before it returns: the card is dropped when your turn ends. If it answers `"started": false`, say its reason and stop.
 
-Never try to start the run another way from your shell. Outside MendCode (the user's own terminal) it starts the run itself.
+You make that call yourself: the user only answers MendCode's card with one key. Never give the user a command or a `/workflows run` line to type, and never try to start the run another way from your shell. Outside MendCode (the user's own terminal) it starts the run itself.
 
 It reads the models from `<pkg>/autopilot.json`, starts the package's `mend` workflow (`<pkg>/workflows/mend.js`) through `mendcode workflow run`, and prints `{"started": true, "workflowId": "wfl_…"}`. Add `--approved` only for a high item the user said yes to, `--publish no` only when the user said not to push, and `--model <name>` (or `--critic`, `--auditor`) only when the user named other models. If it prints `"started": false`, tell the user its `reason` in plain words; do not retry it through another tool. It also watches the run for its first seconds, so a run that cannot start comes back as `"started": false`. If the reason says an agent on another engine needs the full tier, the package's models run on another engine (the Claude package) and MendCode's tier is not `full`: say that switching the tier is the user's choice, and that the ChatGPT package (`mend-autopilot-codex`), when installed, runs without it.
 

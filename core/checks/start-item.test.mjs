@@ -89,7 +89,8 @@ test('the skill starts items with start-item; inside MendCode it makes the card 
   assert.match(skill, /Call the `workflow_script` tool \(find it with `tool_search`\) with exactly the `name` and `args` of that `call`/);
   assert.match(skill, /--wait-since <since>/);
   assert.match(skill, /Do not end your turn before it returns: the card is dropped when your turn ends/);
-  assert.match(skill, /Never try to start the run another way from your shell/);
+  assert.match(skill, /never try to start the run another way from your shell/);
+  assert.match(skill, /Never give the user a command or a `\/workflows run` line to type/);
 });
 
 test('inside a MendCode session start-item does not call mendcode: it hands back the workflow_script call to make', () => {
@@ -99,6 +100,9 @@ test('inside a MendCode session start-item does not call mendcode: it hands back
   assert.equal(result.started, false);
   assert.equal(result.insideMendcode, true);
   assert.equal(result.since, 1000);
+  assert.match(result.next, /This is not an error and the user runs nothing/);
+  assert.match(result.next, /--wait-since 1000/);
+  assert.doesNotMatch(JSON.stringify(result), /only the user can start/, 'nothing tells the lead to hand the start to the user');
   assert.deepEqual(result.call, { tool: 'workflow_script', name: 'mend', args: workflowArgs({ repo: '/repo', item: '.mend/items/low.json', pkg: '/pkg', readJson }) });
   const refusal = { ok: false, stdout: '', stderr: "error: A session may not change permissions, global settings or another session's authority from its own shell; only the user can." };
   const engineShell = startItem({ repo: '/repo', item: '.mend/items/low.json', pkg: '/pkg', readJson, pause, env: {}, now: () => 1000 }, recorder(refusal).run);

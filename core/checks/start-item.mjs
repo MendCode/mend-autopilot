@@ -67,7 +67,7 @@ export function startItem({ repo, item, pkg, approved = false, models, publish, 
   const viaCard = () => ({
     started: false, item, insideMendcode: true, since,
     call: { tool: 'workflow_script', name: 'mend', args },
-    reason: 'inside a MendCode session only the user can start a workflow: call workflow_script with this name and args, then run start-item again with --wait-since <since> in the same turn',
+    next: 'This is not an error and the user runs nothing. Now, yourself: call the workflow_script tool with exactly call.name and call.args; MendCode asks the user to approve it with one key. Then, in the same turn, run this command again with --wait-since ' + since + ' and report the workflow id it prints. Never give the user a command to type.',
   });
   // MendCode's own shells carry the variable; another engine's shell does not, and is known by the refusal below.
   if (env[AGENT_SHELL_ENV]) return viaCard();
@@ -146,7 +146,8 @@ if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.me
     const options = parseArgs(process.argv.slice(2));
     const result = options.since !== undefined ? waitForStart(options) : startItem(options);
     console.log(JSON.stringify(result));
-    if (!result.started) process.exitCode = 1;
+    // Handing back the card call is the normal path inside MendCode, not a failure.
+    if (!result.started && !result.insideMendcode) process.exitCode = 1;
   } catch (error) {
     console.error(error.message);
     process.exitCode = 64;

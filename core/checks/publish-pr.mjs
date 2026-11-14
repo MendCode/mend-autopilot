@@ -6,6 +6,7 @@
 // usage: publish-pr.mjs --stdin   with { "args": [<json>] }, json = { worktree, branch, card (object or path), item (path), reason }
 import { execFileSync } from 'node:child_process';
 import { readFileSync, realpathSync } from 'node:fs';
+import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 export class PublishError extends Error {
@@ -31,10 +32,23 @@ function defaultRunner(command, args, cwd) {
 const list = (values) => (Array.isArray(values) ? values : []).map(String).filter((value) => value && value !== 'none');
 const cell = (value) => String(value ?? '').replace(/\|/g, '\\|').replace(/\s+/g, ' ').trim();
 
+/** The item's own title, else the goal's first sentence without links, cut at a word. */
 export function titleFor(card) {
-  const goal = String(card.goal ?? card.item ?? '').replace(/\s+/g, ' ').trim();
-  const clipped = goal.length > TITLE_MAX ? goal.slice(0, TITLE_MAX - 1).trimEnd() + '…' : goal;
-  return clipped || String(card.item);
+  const own = typeof card.title === 'string' ? card.title.replace(/\s+/g, ' ').trim() : '';
+  const goal = own || String(card.goal ?? card.item ?? '')
+    .replace(/https?:\/\/\S+/g, '').replace(/\(\s*[^()]*?\s*\)/g, (group) => (/\w/.test(group.slice(1, -1)) ? group : ''))
+    .replace(/\s+/g, ' ').trim().split(/(?<=[.:;])\s/)[0].replace(/[.:;]$/, '');
+  if (goal.length <= TITLE_MAX) return goal || String(card.item);
+  const cut = goal.slice(0, TITLE_MAX - 1);
+  return (cut.includes(' ') ? cut.slice(0, cut.lastIndexOf(' ')) : cut).replace(/[\s,(]+$/, '') + '…';
+}
+
+/** Absolute paths of the user's machine never reach a pull request: the worktree and the repository become `.`, the home `~`. */
+export function withoutLocalPaths(text, { worktree, home = homedir() }) {
+  const roots = [worktree, String(worktree).split('/.mend/worktrees/')[0]].filter((root) => typeof root === 'string' && root.startsWith('/'));
+  let clean = String(text);
+  for (const root of [...new Set(roots)].sort((a, b) => b.length - a.length)) clean = clean.split(root + '/').join('').split(root).join('.');
+  return home && home.length > 1 ? clean.split(home + '/').join('~/').split(home).join('~') : clean;
 }
 
 /** The pull request body: what changed, what proves it and what nobody checked, from the card alone. */
@@ -142,7 +156,7 @@ export function publish({ worktree, branch, card, reason = '' }, run = defaultRu
   if (!pushed.ok) return skip(`git push refused: ${pushed.stderr.slice(-300)}`);
 
   const title = titleFor(card);
-  const body = bodyFor(card, reason);
+  const body = withoutLocalPaths(bodyFor(card, reason), { worktree });
   const prRepo = stacked.repo ?? target.upstream;
   const headRef = target.owner && prRepo !== target.repo ? `${target.owner}:${branch}` : branch;
   const repoArgs = prRepo ? ['--repo', prRepo] : [];
@@ -169,10 +183,13 @@ if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.me
     const input = JSON.parse(args[0]);
     const card = typeof input.card === 'string' ? JSON.parse(readFileSync(input.card, 'utf8')) : input.card;
     // A draft that never reached the card step carries only its ids; the item supplies the goal and risk.
-    if (card && typeof input.item === 'string' && !card.goal) {
+    if (card && typeof input.item === 'string') {
       const item = JSON.parse(readFileSync(input.item, 'utf8'));
-      card.goal = item.goal;
-      card.risk = card.risk ?? { tier: item.risk ?? 'unknown', rule: "the item's declared risk" };
+      if (typeof item.title === 'string' && item.title.trim()) card.title = item.title;
+      if (!card.goal) {
+        card.goal = item.goal;
+        card.risk = card.risk ?? { tier: item.risk ?? 'unknown', rule: "the item's declared risk" };
+      }
     }
     console.log(JSON.stringify(publish({ worktree: input.worktree, branch: input.branch, card, reason: input.reason })));
   } catch (error) {

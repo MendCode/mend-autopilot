@@ -127,3 +127,8 @@ test('the reviewer blocks concrete maintainability problems, never what the spec
   }
   assert.doesNotMatch(prompt, /Style preferences are nits/);
 });
+
+test('the owner writes in the style of the surrounding lines: width, wrapping, lists, headings, naming', () => {
+  const prompt = buildPrompt('owner', { ...data, round: 1, feedback: null });
+  assert.match(prompt, /the same line width and wrapping, list, table and heading style, naming and language/);
+});
